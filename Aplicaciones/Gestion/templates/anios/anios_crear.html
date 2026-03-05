@@ -1,0 +1,106 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Registrar Año Lectivo</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'anios_lista' %}">Años Lectivos</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Nuevo</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0 text-center">Datos del Año Lectivo</h5>
+      <small class="text-muted">Si marcas “Activo”, se desactivarán automáticamente los demás.</small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_anio">
+        {% csrf_token %}
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" class="form-control" placeholder="Ej: 2025-2026">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date" name="fecha_inicio" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Fecha fin</label>
+            <input type="date" name="fecha_fin" class="form-control">
+          </div>
+
+          <div class="col-md-12">
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" name="activo" id="chk_activo">
+              <label class="form-check-label" for="chk_activo">
+                Marcar como activo
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="text-end mt-4">
+          <a href="{% url 'anios_lista' %}" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+/* Validación: obligatorio + fecha fin >= inicio */
+$.validator.addMethod("fechaMayorIgual", function(value, element, params) {
+  const fi = $(params).val();
+  if (!fi || !value) return true;
+  return new Date(value) >= new Date(fi);
+}, "La fecha fin no puede ser menor a la fecha inicio.");
+
+$("#frm_anio").validate({
+  rules: {
+    nombre: { required: true, minlength: 4 },
+    fecha_inicio: { required: true },
+    fecha_fin: { required: true, fechaMayorIgual: "input[name='fecha_inicio']" }
+  },
+  messages: {
+    nombre: {
+      required: "Ingrese el nombre del año lectivo",
+      minlength: "Debe tener al menos 4 caracteres"
+    },
+    fecha_inicio: { required: "Ingrese la fecha de inicio" },
+    fecha_fin: {
+      required: "Ingrese la fecha de fin",
+      fechaMayorIgual: "La fecha fin no puede ser menor a la fecha inicio"
+    }
+  },
+  errorElement: "div",
+  errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+{% endblock %}

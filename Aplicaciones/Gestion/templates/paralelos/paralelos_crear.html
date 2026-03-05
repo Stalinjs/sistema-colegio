@@ -1,0 +1,123 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Nuevo Paralelo</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'paralelos_lista' %}">Paralelos</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Crear</li>
+    </ul>
+  </div>
+
+  <!-- Paso 1: Seleccionar sucursal (GET) -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal</h5>
+      <small class="text-muted">Se listarán solo los cursos de la sucursal elegida.</small>
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Sucursal</label>
+          <select name="sucursal" class="form-select" onchange="this.form.submit()">
+            <option value="">Seleccione...</option>
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <a href="{% url 'paralelos_lista' %}" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i> Volver
+          </a>
+          <a href="{% url 'paralelos_crear' %}" class="btn btn-outline-secondary">
+            <i class="fa fa-rotate-left"></i> Reiniciar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Paso 2: Crear (POST) -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 2: Datos del Paralelo</h5>
+      <small class="text-muted">Nombre (Ej: A, B, C) y Curso son obligatorios.</small>
+    </div>
+    <div class="card-body">
+
+      <form method="post" id="frm_paralelo">
+        {% csrf_token %}
+
+        <input type="hidden" name="sucursal_context" value="{{ sucursal_id }}">
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input type="text" name="nombre" class="form-control" placeholder="Ej: A">
+          </div>
+
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Curso *</label>
+            <select name="curso" class="form-select">
+              <option value="" selected disabled>Seleccione...</option>
+              {% for c in cursos %}
+                <option value="{{ c.id }}">{{ c.nombre }}</option>
+              {% endfor %}
+            </select>
+            {% if not cursos %}
+              <div class="form-text text-danger">
+                Seleccione una sucursal para listar cursos.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'paralelos_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$("#frm_paralelo").validate({
+    rules: {
+        nombre: { required: true, minlength: 1 },
+        curso: { required: true }
+    },
+    messages: {
+        nombre: {
+            required: "Ingrese el nombre del paralelo (Ej: A)",
+            minlength: "Debe tener al menos 1 caracter"
+        },
+        curso: { required: "Seleccione un curso" }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+
+{% endblock %}

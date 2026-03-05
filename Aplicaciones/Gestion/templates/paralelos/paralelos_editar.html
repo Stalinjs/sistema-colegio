@@ -1,0 +1,87 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Editar Paralelo</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'paralelos_lista' %}">Paralelos</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Editar</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Actualizar datos</h5>
+      <small class="text-muted">Evita duplicados (mismo curso + mismo paralelo).</small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_paralelo">
+        {% csrf_token %}
+
+        <div class="row">
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input type="text" name="nombre" value="{{ paralelo.nombre }}" class="form-control">
+          </div>
+
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Curso *</label>
+            <select name="curso" class="form-select">
+              <option value="" disabled>Seleccione...</option>
+              {% for c in cursos %}
+                <option value="{{ c.id }}" {% if paralelo.curso and c.id == paralelo.curso.id %}selected{% endif %}>
+                  {{ c.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'paralelos_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$("#frm_paralelo").validate({
+    rules: {
+        nombre: { required: true, minlength: 1 },
+        curso: { required: true }
+    },
+    messages: {
+        nombre: {
+            required: "Ingrese el nombre del paralelo",
+            minlength: "Debe tener al menos 1 caracter"
+        },
+        curso: { required: "Seleccione un curso" }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+
+{% endblock %}

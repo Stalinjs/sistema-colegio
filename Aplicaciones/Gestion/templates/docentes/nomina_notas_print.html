@@ -1,0 +1,118 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Nómina de Calificaciones</title>
+  <link rel="stylesheet" href="{% static 'css/reporte_nomina.css' %}">
+</head>
+<body>
+
+  <!-- (Opcional) barra solo en pantalla, NO imprime -->
+  <div class="toolbar no-print">
+    <div class="toolbar-inner">
+      <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir / Guardar PDF</button>
+      <button type="button" class="btn btn-ghost" onclick="window.close()">Cerrar</button>
+    </div>
+  </div>
+
+  <div class="sheet">
+
+    <!-- Encabezado institucional -->
+    <div class="encabezado">
+      <div class="logo">
+        <img src="{% static 'img/logomini.png' %}" alt="Logo 1">
+      </div>
+
+      <div class="institucion">
+        <div class="t1">UNIDAD EDUCATIVA</div>
+        <div class="t2">MONSEÑOR LEONIDAS PROAÑO</div>
+        <div class="t3">
+          Resolución Nro. MINEDUC-CZ3-2024-00442-R, 18 de noviembre de 2024 – AMIE:05H00002
+        </div>
+      </div>
+
+      <div class="logo">
+        <img src="{% static 'img/logo.jpg' %}" alt="Logo 2">
+      </div>
+    </div>
+    <div class="datos-top">
+      <div><strong>ASIGNATURA:</strong> {{ asignacion.asignatura.nombre }}</div>
+      <div><strong>CURSO:</strong> {{ asignacion.paralelo.curso.nombre }}</div>
+      <div><strong>PARALELO:</strong> {{ asignacion.paralelo.nombre }}</div>
+      <div><strong>AÑO LECTIVO:</strong> {{ asignacion.anio_lectivo.nombre }}</div>
+      <div><strong>DOCENTE:</strong>
+        {{ docente.usuario.apellido_paterno }} {{ docente.usuario.apellido_materno }} {{ docente.usuario.nombres }}
+      </div>
+      <div><strong>FECHA:</strong> {{ hoy|date:"d/m/Y" }}</div>
+      <div><strong>Extensión:</strong> {{ asignacion.paralelo.curso.sucursal.nombre }}</div>
+    </div>
+    
+
+    <div class="titulo">NÓMINA DE CALIFICACIONES</div>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th style="width:35px;">#</th>
+          <th style="width:110px;">CÉDULA</th>
+          <th>ESTUDIANTE</th>
+          <th style="width:60px;">T1</th>
+          <th style="width:60px;">T2</th>
+          <th style="width:60px;">T3</th>
+          <th style="width:70px;">PROM.</th>
+          <th style="width:80px;">SUPLET.</th>
+          <th style="width:90px;">ESTADO</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in filas %}
+        <tr>
+          <td class="center">{{ forloop.counter }}</td>
+          <td class="center">{{ f.matricula.estudiante.cedula }}</td>
+          <td>
+            {{ f.matricula.estudiante.apellido_paterno }}
+            {{ f.matricula.estudiante.apellido_materno }}
+            {{ f.matricula.estudiante.nombres }}
+          </td>
+
+          <td class="center">{% if f.nota and f.nota.t1 is not None %}{{ f.nota.t1|floatformat:2 }}{% else %}—{% endif %}</td>
+          <td class="center">{% if f.nota and f.nota.t2 is not None %}{{ f.nota.t2|floatformat:2 }}{% else %}—{% endif %}</td>
+          <td class="center">{% if f.nota and f.nota.t3 is not None %}{{ f.nota.t3|floatformat:2 }}{% else %}—{% endif %}</td>
+
+          <td class="center">{% if f.nota and f.nota.promedio is not None %}{{ f.nota.promedio|floatformat:2 }}{% else %}—{% endif %}</td>
+          <td class="center">{% if f.nota and f.nota.supletorio is not None %}{{ f.nota.supletorio|floatformat:2 }}{% else %}—{% endif %}</td>
+
+          <td class="center">
+            {% if f.nota and f.nota.estado %}{{ f.nota.estado }}{% else %}SIN DATOS{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="center">No hay estudiantes matriculados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="firmas">
+      <div class="firma">
+        <div class="line"></div>
+        <div class="name">DOCENTE</div>
+      </div>
+
+      <div class="firma">
+        <div class="line"></div>
+        <div class="name">SECRETARÍA</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div><strong>Dirección:</strong> Av. Iberoamérica y México (Barrio San Felipe)</div>
+      <div><strong>Teléfono:</strong> 032252225</div>
+      <div><strong>Correo:</strong> distritolatacunga05h00002i@gmail.com</div>
+    </div>
+
+  </div>
+</body>
+</html>

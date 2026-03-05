@@ -1,0 +1,161 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Especialidades</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Especialidades</li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Listado</li>
+    </ul>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+
+        <div class="col-md-4">
+          <label class="form-label mb-1">Estado</label>
+          <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="activas" {% if estado == "activas" %}selected{% endif %}>Activas</option>
+            <option value="inactivas" {% if estado == "inactivas" %}selected{% endif %}>Inactivas</option>
+            <option value="todas" {% if estado == "todas" %}selected{% endif %}>Todas</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label mb-1">Buscar</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="fa fa-search"></i></span>
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Nombre o descripción">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+          </div>
+        </div>
+
+        <div class="col-md-4 text-end">
+          <a href="{% url 'especialidades_crear' %}" class="btn btn-success btn-sm mt-4">
+            <i class="fa fa-plus"></i> Nueva especialidad
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle" id="tbl_especialidades">
+        <thead class="table-primary text-center">
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for e in especialidades %}
+          <tr>
+            <td class="text-center text-muted">{{ forloop.counter }}</td>
+            <td><b>{{ e.nombre }}</b></td>
+            <td>{{ e.descripcion|default:"—" }}</td>
+
+            <td class="text-center">
+              {% if e.activa %}
+                <span class="badge bg-success">Activa</span>
+              {% else %}
+                <span class="badge bg-danger">Inactiva</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              <a href="{% url 'especialidades_editar' e.id %}" class="btn btn-sm btn-warning">
+                <i class="fa fa-pen"></i> Editar
+              </a>
+
+              {% if e.activa %}
+                <button class="btn btn-sm btn-danger"
+                        onclick="desactivarEspecialidad('{{ e.id }}','{{ e.nombre }}')">
+                  <i class="fa fa-ban"></i> Desactivar
+                </button>
+              {% else %}
+                <button class="btn btn-sm btn-success"
+                        onclick="activarEspecialidad('{{ e.id }}','{{ e.nombre }}')">
+                  <i class="fa fa-check"></i> Activar
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              No existen especialidades registradas.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+    $('#tbl_especialidades').DataTable({
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+        },
+        dom: 'Bfrtip',
+        buttons: ['excel', 'pdf', 'print'],
+        responsive: true,
+    });
+});
+
+function desactivarEspecialidad(id, nombre) {
+  Swal.fire({
+    title: "¿Desactivar especialidad?",
+    text: "Se desactivará: " + nombre,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonText: "Cancelar",
+    confirmButtonText: "Sí, desactivar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = "/especialidades_desactivar/" + id + "/";
+    }
+  });
+}
+
+function activarEspecialidad(id, nombre) {
+  Swal.fire({
+    title: "¿Activar especialidad?",
+    text: "Se activará: " + nombre,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#28a745",
+    cancelButtonText: "Cancelar",
+    confirmButtonText: "Sí, activar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = "/especialidades_activar/" + id + "/";
+    }
+  });
+}
+</script>
+{% endblock %}
+{% endblock %}

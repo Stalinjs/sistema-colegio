@@ -1,0 +1,126 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Editar Estudiante</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'estudiantes_lista' %}">Estudiantes</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Editar</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Actualizar datos</h5>
+      <small class="text-muted">Los campos con * son obligatorios.</small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_estudiante">
+        {% csrf_token %}
+
+        <div class="row">
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Cédula *</label>
+            <input type="text" name="cedula" class="form-control" maxlength="10" value="{{ estudiante.cedula }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Nombres *</label>
+            <input type="text" name="nombres" class="form-control" value="{{ estudiante.nombres }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Apellido paterno *</label>
+            <input type="text" name="apellido_paterno" class="form-control" value="{{ estudiante.apellido_paterno }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Apellido materno *</label>
+            <input type="text" name="apellido_materno" class="form-control" value="{{ estudiante.apellido_materno }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Fecha de nacimiento</label>
+            <input type="date" name="fecha_nacimiento" class="form-control"
+                   value="{% if estudiante.fecha_nacimiento %}{{ estudiante.fecha_nacimiento|date:'Y-m-d' }}{% endif %}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Sucursal *</label>
+            <select name="sucursal" class="form-select">
+              <option value="" disabled>Seleccione...</option>
+              {% for s in sucursales %}
+                <option value="{{ s.id }}" {% if estudiante.sucursal and s.id == estudiante.sucursal.id %}selected{% endif %}>
+                  {{ s.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="telefono" class="form-control" value="{{ estudiante.telefono|default:'' }}">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Dirección</label>
+            <input type="text" name="direccion" class="form-control" value="{{ estudiante.direccion|default:'' }}">
+          </div>
+
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'estudiantes_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$("#frm_estudiante").validate({
+    rules: {
+        cedula: { required: true, minlength: 10, maxlength: 10, digits: true },
+        nombres: { required: true, minlength: 2 },
+        apellido_paterno: { required: true, minlength: 2 },
+        apellido_materno: { required: true, minlength: 2 },
+        sucursal: { required: true }
+    },
+    messages: {
+        cedula: {
+            required: "Ingrese la cédula",
+            minlength: "Debe tener 10 dígitos",
+            maxlength: "Debe tener 10 dígitos",
+            digits: "Solo números"
+        },
+        nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
+        apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
+        apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
+        sucursal: { required: "Seleccione la sucursal" }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+
+{% endblock %}

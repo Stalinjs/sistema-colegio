@@ -1,0 +1,180 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Editar Matrícula</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'matriculas_lista' %}">Matrículas</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Editar</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Actualizar datos</h5>
+      <small class="text-muted">
+        Los campos marcados con <b>*</b> son obligatorios.
+      </small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_matricula_edit" novalidate>
+        {% csrf_token %}
+
+        <div id="frontendErrors" class="alert alert-danger" style="display:none;">
+          <b>Revisa lo siguiente:</b>
+          <ul class="mb-0" id="frontendErrorsList"></ul>
+        </div>
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Estudiante *</label>
+            <select id="estudiante" name="estudiante" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for e in estudiantes %}
+                <option value="{{ e.id }}" {% if e.id == matricula.estudiante.id %}selected{% endif %}>
+                  {{ e.apellido_paterno }} {{ e.apellido_materno }} {{ e.nombres }} ({{ e.cedula }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Curso / Paralelo *</label>
+            <select id="paralelo" name="paralelo" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for p in paralelos %}
+                <option value="{{ p.id }}" {% if p.id == matricula.paralelo.id %}selected{% endif %}>
+                  {{ p.curso.nombre }} - {{ p.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Año lectivo *</label>
+            <select id="anio_lectivo" name="anio_lectivo" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for a in anios %}
+                <option value="{{ a.id }}" {% if a.id == matricula.anio_lectivo.id %}selected{% endif %}>
+                  {{ a.nombre }} {% if a.activo %}(Activo){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Tipo de programa *</label>
+            <select id="tipo_programa" name="tipo_programa" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="adultos" {% if matricula.tipo_programa == "adultos" %}selected{% endif %}>Personas adultas</option>
+              <option value="nna" {% if matricula.tipo_programa == "nna" %}selected{% endif %}>Niños y adolescentes</option>
+              <option value="intensivo" {% if matricula.tipo_programa == "intensivo" %}selected{% endif %}>Intensivo</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Jornada *</label>
+            <select id="jornada" name="jornada" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="MATUTINA" {% if matricula.jornada == "MATUTINA" %}selected{% endif %}>Matutina</option>
+              <option value="VESPERTINA" {% if matricula.jornada == "VESPERTINA" %}selected{% endif %}>Vespertina</option>
+              <option value="NOCTURNA" {% if matricula.jornada == "NOCTURNA" %}selected{% endif %}>Nocturna</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Temporalidad *</label>
+            <select id="temporalidad" name="temporalidad" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="INTENSIVA" {% if matricula.temporalidad == "INTENSIVA" %}selected{% endif %}>Intensiva</option>
+              <option value="NO_INTENSIVA" {% if matricula.temporalidad == "NO_INTENSIVA" %}selected{% endif %}>No intensiva</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Estado del estudiante *</label>
+            <select id="estado_estudiante" name="estado_estudiante" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="MATRICULADO" {% if matricula.estado_estudiante == "MATRICULADO" %}selected{% endif %}>Matriculado</option>
+              <option value="RENUNCIA" {% if matricula.estado_estudiante == "RENUNCIA" %}selected{% endif %}>Renuncia voluntaria</option>
+              <option value="DESERTOR" {% if matricula.estado_estudiante == "DESERTOR" %}selected{% endif %}>Desertor</option>
+            </select>
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="3">{{ matricula.observaciones }}</textarea>
+          </div>
+
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'matriculas_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("frm_matricula_edit");
+  const box = document.getElementById("frontendErrors");
+  const list = document.getElementById("frontendErrorsList");
+
+  function limpiar() {
+    box.style.display = "none";
+    list.innerHTML = "";
+    form.querySelectorAll(".form-select").forEach(el => el.classList.remove("is-invalid"));
+  }
+
+  function addError(msg){
+    const li = document.createElement("li");
+    li.textContent = msg;
+    list.appendChild(li);
+  }
+
+  form.addEventListener("submit", function(e){
+    limpiar();
+    let errores = [];
+
+    ["estudiante","paralelo","anio_lectivo","tipo_programa","jornada","temporalidad","estado_estudiante"]
+      .forEach(id => {
+        const el = document.getElementById(id);
+        if (!el.value){
+          errores.push("Falta completar: " + el.previousElementSibling.textContent.replace("*","").trim());
+          el.classList.add("is-invalid");
+        }
+      });
+
+    if (errores.length){
+      e.preventDefault();
+      box.style.display = "block";
+      errores.forEach(addError);
+      Swal.fire("Campos obligatorios","Revisa los campos marcados en rojo.","warning");
+    }
+  });
+});
+</script>
+{% endblock %}

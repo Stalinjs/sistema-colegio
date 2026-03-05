@@ -1,0 +1,326 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Períodos de notas</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Académico</li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Períodos de notas</li>
+    </ul>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body d-flex justify-content-between flex-wrap gap-2">
+      <div>
+        <div class="fw-bold">Año lectivo activo:</div>
+        <div class="text-muted">{{ anio.nombre }}</div>
+      </div>
+      <div class="text-end">
+        <a href="{% url 'permisos_edicion_lista' %}" class="btn btn-secondary btn-sm">
+          <i class="fa fa-key"></i> Permisos por oficio
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Configurar ventanas de ingreso de notas</h5>
+      <small class="text-muted">Si no configuras períodos, el sistema bloqueará el ingreso de notas.</small>
+    </div>
+
+    <div class="card-body">
+
+      <!-- ALERTAS FRONTEND (JS) -->
+      <div id="frontendErrors" class="mb-3" style="display:none;">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <div class="fw-bold mb-1">Revisa estos errores:</div>
+          <ul id="frontendErrorsList" class="mb-0"></ul>
+          <button type="button" class="btn-close" aria-label="Close"
+                  onclick="document.getElementById('frontendErrors').style.display='none'"></button>
+        </div>
+      </div>
+
+      <form method="post" id="formPeriodoNotas" novalidate>
+        {% csrf_token %}
+
+        <div class="row">
+
+          <!-- T1 -->
+          <div class="col-12">
+            <h6 class="fw-bold mt-2">Primer trimestre (T1)</h6>
+            <hr class="mt-0">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="t1_inicio">Inicio T1</label>
+            <input type="date" id="t1_inicio" name="t1_inicio" class="form-control"
+                   value="{{ periodo.t1_inicio|date:'Y-m-d' }}">
+            <div class="invalid-feedback">Revisa la fecha de inicio.</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="t1_fin">Fin T1</label>
+            <input type="date" id="t1_fin" name="t1_fin" class="form-control"
+                   value="{{ periodo.t1_fin|date:'Y-m-d' }}">
+            <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
+          </div>
+
+          <!-- T2 -->
+          <div class="col-12">
+            <h6 class="fw-bold mt-2">Segundo trimestre (T2)</h6>
+            <hr class="mt-0">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="t2_inicio">Inicio T2</label>
+            <input type="date" id="t2_inicio" name="t2_inicio" class="form-control"
+                   value="{{ periodo.t2_inicio|date:'Y-m-d' }}">
+            <div class="invalid-feedback">Revisa la fecha de inicio.</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="t2_fin">Fin T2</label>
+            <input type="date" id="t2_fin" name="t2_fin" class="form-control"
+                   value="{{ periodo.t2_fin|date:'Y-m-d' }}">
+            <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
+          </div>
+
+          <!-- T3 -->
+          <div class="col-12">
+            <h6 class="fw-bold mt-2">Tercer trimestre (T3)</h6>
+            <hr class="mt-0">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="t3_inicio">Inicio T3</label>
+            <input type="date" id="t3_inicio" name="t3_inicio" class="form-control"
+                   value="{{ periodo.t3_inicio|date:'Y-m-d' }}">
+            <div class="invalid-feedback">Revisa la fecha de inicio.</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="t3_fin">Fin T3</label>
+            <input type="date" id="t3_fin" name="t3_fin" class="form-control"
+                   value="{{ periodo.t3_fin|date:'Y-m-d' }}">
+            <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
+          </div>
+
+          <!-- Supletorio -->
+          <div class="col-12">
+            <h6 class="fw-bold mt-2">Supletorio</h6>
+            <hr class="mt-0">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="sup_inicio">Inicio supletorio</label>
+            <input type="date" id="sup_inicio" name="sup_inicio" class="form-control"
+                   value="{{ periodo.sup_inicio|date:'Y-m-d' }}">
+            <div class="invalid-feedback">Revisa la fecha de inicio.</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="sup_fin">Fin supletorio</label>
+            <input type="date" id="sup_fin" name="sup_fin" class="form-control"
+                   value="{{ periodo.sup_fin|date:'Y-m-d' }}">
+            <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
+          </div>
+
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'dashboard_secretaria' %}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar períodos
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    const form = document.getElementById("formPeriodoNotas");
+    const box = document.getElementById("frontendErrors");
+    const list = document.getElementById("frontendErrorsList");
+
+    const pares = [
+      { ini: "t1_inicio", fin: "t1_fin", label: "T1" },
+      { ini: "t2_inicio", fin: "t2_fin", label: "T2", requiere: ["t1_inicio", "t1_fin"], requiereLabel: "T1" },
+      { ini: "t3_inicio", fin: "t3_fin", label: "T3", requiere: ["t2_inicio", "t2_fin"], requiereLabel: "T2" },
+      { ini: "sup_inicio", fin: "sup_fin", label: "Supletorio", requiere: ["t3_inicio", "t3_fin"], requiereLabel: "T3" },
+    ];
+
+    function parseDate(v) {
+      return v ? new Date(v + "T00:00:00") : null;
+    }
+
+    function setInvalid(id, isInvalid) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (isInvalid) el.classList.add("is-invalid");
+      else el.classList.remove("is-invalid");
+    }
+
+    function setDisabled(ids, disabled) {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.disabled = disabled;
+        if (disabled) {
+          el.classList.remove("is-invalid");
+        }
+      });
+    }
+
+    function limpiarErroresUI() {
+      box.style.display = "none";
+      list.innerHTML = "";
+    }
+
+    function mostrarErroresUI(errores) {
+      list.innerHTML = "";
+      errores.forEach(msg => {
+        const li = document.createElement("li");
+        li.textContent = msg;
+        list.appendChild(li);
+      });
+      box.style.display = errores.length ? "block" : "none";
+    }
+
+    function parCompleto(p) {
+      const iniEl = document.getElementById(p.ini);
+      const finEl = document.getElementById(p.fin);
+      return !!(iniEl.value && finEl.value);
+    }
+
+    function validarPar(p) {
+      const iniEl = document.getElementById(p.ini);
+      const finEl = document.getElementById(p.fin);
+
+      const ini = parseDate(iniEl.value);
+      const fin = parseDate(finEl.value);
+
+      // reset
+      setInvalid(p.ini, false);
+      setInvalid(p.fin, false);
+
+      // Si uno está y el otro no
+      if ((ini && !fin) || (!ini && fin)) {
+        setInvalid(p.ini, true);
+        setInvalid(p.fin, true);
+        return `En ${p.label} debes ingresar fecha inicio y fecha fin.`;
+      }
+
+      // Si ambos están y fin < inicio
+      if (ini && fin && fin < ini) {
+        setInvalid(p.fin, true);
+        return `En ${p.label}, la fecha fin no puede ser anterior a la fecha inicio.`;
+      }
+
+      return null;
+    }
+
+    function aplicarBloqueosPorOrden() {
+      // Bloquea/desbloquea T2/T3/Supletorio según el anterior esté completo
+      const t1Ok = parCompleto(pares[0]);
+      const t2Ok = parCompleto(pares[1]);
+      const t3Ok = parCompleto(pares[2]);
+
+      setDisabled(["t2_inicio", "t2_fin"], !t1Ok);
+      setDisabled(["t3_inicio", "t3_fin"], !t2Ok);
+      setDisabled(["sup_inicio", "sup_fin"], !t3Ok);
+    }
+
+    function validarOrden(p) {
+      // Si intenta usar T2 pero T1 no está completo, etc.
+      if (!p.requiere) return null;
+
+      const reqOk = p.requiere.every(id => {
+        const el = document.getElementById(id);
+        return el && !!el.value;
+      });
+
+      if (!reqOk) {
+        // marca como inválido el requisito (opcional)
+        p.requiere.forEach(id => setInvalid(id, true));
+        return `Debes configurar primero ${p.requiereLabel} antes de ${p.label}.`;
+      }
+      return null;
+    }
+
+    function validarTodo() {
+      const errores = [];
+
+      // Validar pares
+      pares.forEach(p => {
+        // si está deshabilitado, no validar
+        const iniEl = document.getElementById(p.ini);
+        const finEl = document.getElementById(p.fin);
+        if (iniEl.disabled && finEl.disabled) return;
+
+        const msgPar = validarPar(p);
+        if (msgPar) errores.push(msgPar);
+      });
+
+      // Validar orden (si puso algo en un periodo sin haber completado el anterior)
+      pares.forEach(p => {
+        const iniEl = document.getElementById(p.ini);
+        const finEl = document.getElementById(p.fin);
+
+        const tieneAlgo = !!(iniEl.value || finEl.value);
+        if (!tieneAlgo) return;
+
+        const msgOrden = validarOrden(p);
+        if (msgOrden) errores.push(msgOrden);
+      });
+
+      return errores;
+    }
+
+    // En vivo
+    pares.forEach(p => {
+      ["input", "change"].forEach(evt => {
+        document.getElementById(p.ini).addEventListener(evt, () => {
+          limpiarErroresUI();
+          aplicarBloqueosPorOrden();
+          validarTodo();
+        });
+        document.getElementById(p.fin).addEventListener(evt, () => {
+          limpiarErroresUI();
+          aplicarBloqueosPorOrden();
+          validarTodo();
+        });
+      });
+    });
+
+    // Al cargar
+    aplicarBloqueosPorOrden();
+
+    // Submit
+    form.addEventListener("submit", function (e) {
+      limpiarErroresUI();
+      aplicarBloqueosPorOrden();
+      const errores = validarTodo();
+      if (errores.length) {
+        e.preventDefault();
+        mostrarErroresUI(errores);
+      }
+    });
+  })();
+</script>
+
+{% endblock %}

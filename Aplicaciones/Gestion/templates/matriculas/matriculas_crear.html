@@ -1,0 +1,320 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Nueva Matrícula</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'matriculas_lista' %}">Matrículas</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Crear</li>
+    </ul>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal</h5>
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Sucursal</label>
+          <select name="sucursal" class="form-select" onchange="this.form.submit()">
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6 d-flex justify-content-end gap-2">
+          <a href="{% url 'matriculas_lista' %}" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left"></i> Volver
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 2: Datos de Matrícula</h5>
+      <small class="text-muted">
+        Los campos marcados con <b>*</b> son obligatorios.
+      </small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_matricula" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="sucursal_context" value="{{ sucursal_id }}">
+
+        <div id="frontendErrors" class="alert alert-danger" style="display:none;">
+          <b>Revisa lo siguiente:</b>
+          <ul class="mb-0" id="frontendErrorsList"></ul>
+        </div>
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Estudiante *</label><br>
+
+            <select
+              id="estudiante"
+              name="estudiante"
+              class="selectpicker"
+              data-live-search="true"
+              title="Buscar estudiante..."
+              data-width="100%"
+              required
+            >
+              {% for e in estudiantes %}
+                <option value="{{ e.id }}">
+                  {{ e.apellido_paterno }} {{ e.apellido_materno }} {{ e.nombres }} ({{ e.cedula }})
+                </option>
+              {% endfor %}
+            </select>
+
+            <div class="invalid-feedback d-block" id="err_estudiante" style="display:none;">
+              Selecciona un estudiante.
+            </div>
+
+            {% if not estudiantes %}
+              <div class="form-text text-danger">No hay estudiantes en esta sucursal o no se han cargado aún.</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Curso / Paralelo *</label>
+            <select id="paralelo" name="paralelo" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for p in paralelos %}
+                <option value="{{ p.id }}">{{ p.curso.nombre }} - {{ p.nombre }}</option>
+              {% endfor %}
+            </select>
+            <div class="invalid-feedback">
+              Selecciona un paralelo.
+            </div>
+            {% if not paralelos %}
+              <div class="form-text text-danger">No hay paralelos en esta sucursal o no se han creado aún.</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Año lectivo *</label>
+            {% if anio_activo %}
+              <select id="anio_lectivo" name="anio_lectivo" class="form-select" required>
+                <option value="{{ anio_activo.id }}" selected>{{ anio_activo.nombre }} (Activo)</option>
+              </select>
+              
+            {% else %}
+              <select class="form-select" disabled>
+                <option>No hay año lectivo activo</option>
+              </select>
+              <div class="form-text text-danger">Activa un año lectivo para continuar.</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Oferta educativa *</label>
+            <select id="tipo_programa" name="tipo_programa" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="adultos">Personas adultas</option>
+              <option value="nna">Niños y adolescentes</option>
+              <option value="intensivo">Intensivo</option>
+            </select>
+            <div class="invalid-feedback">
+              Selecciona la oferta educativa.
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Jornada *</label>
+            <select id="jornada" name="jornada" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="MATUTINA">Matutina</option>
+              <option value="VESPERTINA">Vespertina</option>
+              <option value="NOCTURNA">Nocturna</option>
+            </select>
+            <div class="invalid-feedback">
+              La jornada es obligatoria.
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Temporalidad *</label>
+            <select id="temporalidad" name="temporalidad" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="INTENSIVA">Intensiva</option>
+              <option value="NO_INTENSIVA">No intensiva</option>
+            </select>
+            <div class="invalid-feedback">
+              La temporalidad es obligatoria.
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Estado del estudiante *</label>
+            <select id="estado_estudiante" name="estado_estudiante" class="form-select" required>
+              <option value="">Seleccione...</option>
+              <option value="MATRICULADO">Matriculado</option>
+              <option value="RENUNCIA">Renuncia voluntaria</option>
+              <option value="DESERTOR">Desertor</option>
+            </select>
+            <div class="invalid-feedback">
+              El estado del estudiante es obligatorio.
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="3" placeholder="(Opcional)"></textarea>
+          </div>
+
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'matriculas_lista' %}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+
+          {% if anio_activo %}
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-save"></i> Guardar matrícula
+            </button>
+          {% else %}
+            <button type="button" class="btn btn-primary" disabled>
+              <i class="fa fa-save"></i> Guardar matrícula
+            </button>
+          {% endif %}
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+  $('.selectpicker').selectpicker();
+
+  const form = document.getElementById("frm_matricula");
+  const box = document.getElementById("frontendErrors");
+  const list = document.getElementById("frontendErrorsList");
+
+  function limpiarErroresUI() {
+    box.style.display = "none";
+    list.innerHTML = "";
+
+    $("#paralelo, #tipo_programa, #jornada, #temporalidad, #estado_estudiante").removeClass("is-invalid");
+    $("#err_estudiante").hide();
+    $(".bootstrap-select .dropdown-toggle").removeClass("is-invalid");
+  }
+
+  function addError(msg) {
+    const li = document.createElement("li");
+    li.textContent = msg;
+    list.appendChild(li);
+  }
+
+  function estudianteValor() {
+    // bootstrap-select: valor real
+    return $("#estudiante").val();
+  }
+
+  function marcarErrorEstudiante() {
+    $("#err_estudiante").show();
+    $("#estudiante").closest(".bootstrap-select").find(".dropdown-toggle").addClass("is-invalid");
+  }
+
+  function validar() {
+    limpiarErroresUI();
+    const errores = [];
+
+    const est = estudianteValor();
+    const paralelo = $("#paralelo").val();
+    const anio = $("#anio_lectivo").length ? $("#anio_lectivo").val() : "";
+    const tipo = $("#tipo_programa").val();
+    const jornada = $("#jornada").val();
+    const temporalidad = $("#temporalidad").val();
+    const estado = $("#estado_estudiante").val();
+
+    if (!est) {
+      errores.push("Debes seleccionar un estudiante.");
+      marcarErrorEstudiante();
+    }
+    if (!paralelo) {
+      errores.push("Debes seleccionar un paralelo.");
+      $("#paralelo").addClass("is-invalid");
+    }
+    if (!anio) {
+      errores.push("No existe año lectivo activo para registrar matrículas.");
+    }
+    if (!tipo) {
+      errores.push("Debes seleccionar la oferta educativa.");
+      $("#tipo_programa").addClass("is-invalid");
+    }
+    if (!jornada) {
+      errores.push("La jornada es obligatoria.");
+      $("#jornada").addClass("is-invalid");
+    }
+    if (!temporalidad) {
+      errores.push("La temporalidad es obligatoria.");
+      $("#temporalidad").addClass("is-invalid");
+    }
+    if (!estado) {
+      errores.push("El estado del estudiante es obligatorio.");
+      $("#estado_estudiante").addClass("is-invalid");
+    }
+
+    if (errores.length) {
+      box.style.display = "block";
+      errores.forEach(addError);
+
+      Swal.fire({
+        title: "Revisa el formulario",
+        text: "Faltan campos obligatorios o hay datos inválidos.",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  // Validación en submit
+  form.addEventListener("submit", function(e) {
+    if (!validar()) {
+      e.preventDefault();
+    }
+  });
+
+  // Validación suave al cambiar
+  $("#paralelo, #tipo_programa, #jornada, #temporalidad, #estado_estudiante").on("change", function() {
+    limpiarErroresUI();
+  });
+  $("#estudiante").on("changed.bs.select", function() {
+    limpiarErroresUI();
+  });
+});
+</script>
+
+<style>
+/* Para que bootstrap-select se vea como invalid */
+.bootstrap-select .dropdown-toggle.is-invalid{
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 .15rem rgba(220,53,69,.15);
+}
+</style>
+{% endblock %}

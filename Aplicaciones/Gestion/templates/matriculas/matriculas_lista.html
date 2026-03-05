@@ -1,0 +1,196 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Matrículas</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Matrículas</li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Listado</li>
+    </ul>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Sucursal</label>
+          <select name="sucursal" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Año lectivo</label>
+          <select name="anio_lectivo" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for a in anios %}
+              <option value="{{ a.id }}" {% if anio_id == a.id|stringformat:"s" %}selected{% endif %}>
+                {{ a.nombre }} {% if a.activo %}(Activo){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Paralelo</label>
+          <select name="paralelo" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for p in paralelos %}
+              <option value="{{ p.id }}" {% if paralelo_id == p.id|stringformat:"s" %}selected{% endif %}>
+                {{ p.curso.nombre }} - {{ p.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Buscar</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="fa fa-search"></i></span>
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="CI, apellidos, curso...">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+          </div>
+        </div>
+
+        <div class="col-12 mt-2 d-flex gap-2 justify-content-end">
+          <a href="{% url 'matriculas_crear' %}?sucursal={{ sucursal_id }}" class="btn btn-success btn-sm">
+            <i class="fa fa-plus"></i> Nueva matrícula
+          </a>
+          <a href="{% url 'matriculas_lista' %}" class="btn btn-secondary btn-sm">
+            <i class="fa fa-rotate-left"></i> Limpiar filtros
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle" id="tbl_matriculas">
+        <thead class="table-primary text-center">
+          <tr>
+            <th>#</th>
+            <th>Sucursal</th>
+            <th>Año lectivo</th>
+            <th>Estudiante</th>
+            <th>Curso / Paralelo</th>
+            <th>Programa</th>
+            <th>Jornada</th>
+            <th>Temporalidad</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for m in matriculas %}
+          <tr>
+            <td class="text-center text-muted">{{ forloop.counter }}</td>
+            <td>{{ m.paralelo.curso.sucursal.nombre }}</td>
+            <td class="text-center">{{ m.anio_lectivo.nombre }}</td>
+
+            <td>
+              <b>{{ m.estudiante.apellido_paterno }} {{ m.estudiante.apellido_materno }} {{ m.estudiante.nombres }}</b>
+              <div class="text-muted small">CI: {{ m.estudiante.cedula }}</div>
+            </td>
+
+            <td>{{ m.paralelo.curso.nombre }} - {{ m.paralelo.nombre }}</td>
+
+            <td class="text-center">
+              <span class="badge bg-info text-dark">{{ m.get_tipo_programa_display }}</span>
+            </td>
+
+            <td class="text-center">
+              {% if m.jornada %}
+                <span class="badge bg-secondary">{{ m.get_jornada_display }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if m.temporalidad %}
+                <span class="badge bg-secondary">{{ m.get_temporalidad_display }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if m.estado_estudiante %}
+                {% if m.estado_estudiante == "MATRICULADO" %}
+                  <span class="badge bg-success">Matriculado</span>
+                {% elif m.estado_estudiante == "RENUNCIA" %}
+                  <span class="badge bg-warning text-dark">Renuncia</span>
+                {% else %}
+                  <span class="badge bg-danger">Desertor</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              <a href="{% url 'matriculas_editar' m.id %}" class="btn btn-sm btn-warning">
+                <i class="fa fa-pen"></i> Editar
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="text-center text-muted py-4">
+              No hay matrículas registradas con esos filtros.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+  $('#tbl_matriculas').DataTable({
+    language: { url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json" },
+    dom: 'Bfrtip',
+    buttons: ['excel', 'pdf', 'print'],
+    pageLength: 10,
+    order: []
+  });
+});
+
+</script>
+<style>
+  .matriculas-table {
+    min-width: 1400px; 
+  }
+
+  .matriculas-table th,
+  .matriculas-table td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Estudiantes</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Estudiantes</li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Listado</li>
+    </ul>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+
+        <div class="col-md-4">
+          <label class="form-label mb-1">Sucursal</label>
+          <select name="sucursal" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label mb-1">Buscar</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="fa fa-search"></i></span>
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="CI, apellidos, nombres...">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+          </div>
+        </div>
+
+        <div class="col-md-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'estudiantes_crear' %}?sucursal={{ sucursal_id }}" class="btn btn-success btn-sm">
+            <i class="fa fa-plus"></i> Nuevo estudiante
+          </a>
+          <a href="{% url 'estudiantes_lista' %}" class="btn btn-secondary btn-sm">
+            <i class="fa fa-rotate-left"></i> Limpiar
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle" id="tbl_estudiantes">
+        <thead class="table-primary text-center">
+          <tr>
+            <th>#</th>
+            <th>Sucursal</th>
+            <th>Cédula</th>
+            <th>Estudiante</th>
+            <th>Fecha Nac.</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for e in estudiantes %}
+          <tr>
+            <td class="text-center text-muted">{{ forloop.counter }}</td>
+            <td>{{ e.sucursal.nombre }}</td>
+            <td class="text-center">{{ e.cedula }}</td>
+
+            <td>
+              <b>{{ e.apellido_paterno }} {{ e.apellido_materno }} {{ e.nombres }}</b>
+            </td>
+
+            <td class="text-center">
+              {% if e.fecha_nacimiento %}
+                {{ e.fecha_nacimiento|date:"d/m/Y" }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if e.telefono %}{{ e.telefono }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+
+            <td>
+              {% if e.direccion %}{{ e.direccion }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+
+            <td class="text-center">
+              <a href="{% url 'estudiantes_editar' e.id %}" class="btn btn-sm btn-warning">
+                <i class="fa fa-pen"></i> Editar
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              No hay estudiantes registrados con esos filtros.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+    $('#tbl_estudiantes').DataTable({
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+        },
+        dom: 'Bfrtip',
+        buttons: ['excel', 'pdf', 'print'],
+        responsive: true,
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

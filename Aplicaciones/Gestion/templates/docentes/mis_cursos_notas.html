@@ -1,0 +1,271 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header no-print">
+    <h4 class="page-title">
+      {{ asignacion.asignatura.nombre }} - {{ asignacion.paralelo.curso.nombre }} / Paralelo {{ asignacion.paralelo.nombre }}
+    </h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_docente' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'mis_cursos' %}">Mis cursos</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Notas</li>
+    </ul>
+  </div>
+
+  <div class="d-flex justify-content-between flex-wrap gap-2 mb-3 no-print">
+    <div class="d-flex gap-2">
+      <a href="{% url 'mis_cursos' %}" class="btn btn-secondary btn-sm">
+        <i class="fa fa-arrow-left"></i> Regresar
+      </a>
+
+        <a href="{% url 'nomina_notas_print' asignacion.id %}" target="_blank" class="btn btn-outline-primary btn-sm">
+            <i class="fa fa-print"></i> Imprimir nómina
+        </a>
+    </div>
+
+    <div class="text-muted small">
+      Hoy: {{ hoy|date:"d/m/Y" }}
+    </div>
+  </div>
+
+  {% if not periodo_configurado %}
+    <div class="alert alert-warning no-print">
+      <b>Atención:</b> No existen períodos configurados para el año lectivo activo.
+      Por seguridad, el sistema tiene <b>bloqueado</b> el ingreso de notas.
+    </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-header no-print">
+      <h5 class="card-title mb-0">Registro de notas</h5>
+      <small class="text-muted">
+        Los campos se habilitan según las fechas configuradas por Secretaría o permisos por oficio.
+      </small>
+    </div>
+
+    <div class="card-body table-responsive">
+      <form method="post" id="frm_notas">
+        {% csrf_token %}
+
+        <table class="table table-hover align-middle tabla-notas">
+          <thead class="table-primary text-center">
+            <tr>
+              <th style="width:50px;">#</th>
+              <th style="width:140px;">Cédula</th>
+              <th>Estudiante</th>
+              <th style="width:90px;">T1</th>
+              <th style="width:90px;">T2</th>
+              <th style="width:90px;">T3</th>
+              <th style="width:110px;">Promedio</th>
+              <th style="width:120px;">Supletorio</th>
+              <th style="width:120px;">Estado</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for f in filas %}
+            <tr>
+              <td class="text-center text-muted">{{ forloop.counter }}</td>
+              <td class="text-center">{{ f.matricula.estudiante.cedula }}</td>
+              <td>
+                <b>{{ f.matricula.estudiante.apellido_paterno }} {{ f.matricula.estudiante.apellido_materno }} {{ f.matricula.estudiante.nombres }}</b>
+              </td>
+
+              <!-- T1 -->
+              <td class="text-center">
+                <input
+                  type="text"
+                  name="t1_{{ f.matricula.id }}"
+                  class="form-control form-control-sm text-center nota-input"
+                  value="{{ f.t1_val|default_if_none:'' }}"
+                  {% if not f.puede_t1 %}readonly{% endif %}
+                  inputmode="decimal"
+                  placeholder="1-10">
+                
+              </td>
+
+              <!-- T2 -->
+              <td class="text-center">
+                <input type="text"
+                    name="t2_{{ f.matricula.id }}"
+                    class="form-control form-control-sm text-center nota-input"
+                    value="{{ f.t2_val|default_if_none:'' }}"
+                    {% if not f.puede_t2 %}readonly{% endif %}
+                    inputmode="decimal"
+                    placeholder="1-10">
+              </td>
+
+              <!-- T3 -->
+              <td class="text-center">
+                <input
+                  type="text"
+                  name="t3_{{ f.matricula.id }}"
+                  class="form-control form-control-sm text-center nota-input"
+                  value="{{ f.t3_val|default_if_none:'' }}"
+                  {% if not f.puede_t3 %}readonly{% endif %}
+                  inputmode="decimal"
+                  placeholder="1-10">
+                
+              </td>
+
+              <!-- Promedio -->
+              <td class="text-center">
+                {% if f.nota and f.nota.promedio %}
+                  <span class="badge bg-black">{{ f.nota.promedio }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Supletorio -->
+              <td class="text-center">
+                <input
+                  type="text"
+                  name="sup_{{ f.matricula.id }}"
+                  class="form-control form-control-sm text-center nota-input"
+                  value="{{ f.sup_val|default_if_none:'' }}"
+                  {% if not f.puede_sup %}readonly{% endif %}
+                  inputmode="decimal"
+                  placeholder="1-10">
+                
+              </td>
+
+              <!-- Estado -->
+              <td class="text-center">
+                {% if f.nota and f.nota.estado == 'APROBADO' %}
+                  <span class="badge bg-success">APROBADO</span>
+                {% elif f.nota and f.nota.estado == 'SUPLETORIO' %}
+                  <span class="badge bg-warning text-dark">SUPLETORIO</span>
+                {% elif f.nota and f.nota.estado == 'REPROBADO' %}
+                  <span class="badge bg-danger">REPROBADO</span>
+                {% else %}
+                  <span class="badge bg-secondary">SIN DATOS</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" class="text-center text-muted py-4">
+                No hay estudiantes matriculados en este paralelo.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="text-end mt-3 no-print">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<style>
+
+.tabla-notas .nota-input{
+  background-color: #fff !important;
+  color: #292123 !important;
+  opacity: 1 !important;
+  font-size: .875rem !important;
+  padding: .25rem .5rem !important;
+  height: 32px !important;
+  line-height: 1.2 !important;
+}
+
+.tabla-notas .nota-input[readonly]{
+  background-color: #f2f3f5 !important;
+  color: #212529 !important;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+
+.tabla-notas .nota-input.is-invalid{
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 .15rem rgba(220,53,69,.15);
+}
+
+
+.print-only{ display: none; }
+@media print{
+  .no-print{ display: none !important; }
+  .print-only{ display: block !important; }
+  .card, .card-body{ box-shadow: none !important; border: none !important; }
+  .table{ font-size: 12px; }
+  .badge{ border: 1px solid #000; color:#000 !important; background: transparent !important; }
+  body{ background: #fff !important; }
+}
+</style>
+
+<script>
+// Regla: 0 a 10 y máximo 2 decimales (acepta coma o punto)
+$.validator.addMethod("notaRango", function(value, element) {
+    // si es readonly o disabled, no validar
+    if ($(element).prop("readonly") || $(element).prop("disabled")) return true;
+
+    value = $.trim(value || "");
+    if (value === "") return false; 
+
+    value = value.replace(",", ".");
+
+    // formato: 0, 0.5, 10, 10.00 (máx 2 decimales)
+    if (!/^\d{1,2}(\.\d{1,2})?$/.test(value)) return false;
+
+    var n = parseFloat(value);
+    if (isNaN(n)) return false;
+
+    return n >= 1 && n <= 10;
+}, "Nota fuera de rango");
+
+$(function () {
+    $("#frm_notas").validate({
+        ignore: [],
+        errorElement: "div",
+        errorClass: "text-danger mt-1",
+        highlight: function(element) {
+            $(element).addClass("is-invalid");
+        },
+        unhighlight: function(element) {
+            $(element).removeClass("is-invalid");
+        },
+        errorPlacement: function(error, element) {
+            error.insertAfter(element);
+        }
+    });
+
+    // Aplicar reglas a TODOS los inputs de notas
+    $(".nota-input").each(function(){
+        $(this).rules("add", {
+            notaRango: true
+        });
+    });
+
+    // (Opcional) Mostrar SweetAlert si hay errores al enviar
+    $("#frm_notas").on("submit", function(e){
+        if (!$(this).valid()) {
+            e.preventDefault();
+            Swal.fire({
+                title: "Revisa las notas",
+                text: "Hay campos con valores inválidos (1 a 10 y máximo 2 decimales).",
+                icon: "warning",
+                confirmButtonText: "OK"
+            });
+        }
+    });
+});
+
+</script>
+{% endblock %}

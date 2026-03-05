@@ -1,0 +1,124 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Editar Curso</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'cursos_lista' %}">Cursos</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Editar</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Actualizar datos</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_curso">
+        {% csrf_token %}
+
+        <div class="row">
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input type="text" name="nombre" value="{{ curso.nombre }}" class="form-control">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Orden *</label>
+            <input type="number" name="orden" value="{{ curso.orden }}" class="form-control" min="1" max="20" required>
+            <small class="text-muted">Ej: 8 (Octavo), 9 (Noveno), 10 (Décimo), 11 (1ro Bach), etc.</small>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nivel *</label>
+            <select name="nivel" class="form-select">
+              <option value="" disabled>Seleccione...</option>
+              {% for code, label in niveles %}
+                <option value="{{ code }}" {% if curso.nivel == code %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Sucursal *</label>
+            <select name="sucursal" class="form-select">
+              {% for s in sucursales %}
+                <option value="{{ s.id }}" {% if curso.sucursal and s.id == curso.sucursal.id %}selected{% endif %}>
+                  {{ s.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Especialidad (opcional)</label>
+            <select name="especialidad" class="form-select">
+              <option value="">— Sin especialidad —</option>
+              {% for e in especialidades %}
+                <option value="{{ e.id }}" {% if curso.especialidad and e.id == curso.especialidad.id %}selected{% endif %}>
+                  {{ e.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'cursos_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$("#frm_curso").validate({
+    rules: {
+        nombre: { required: true, minlength: 2 },
+        nivel: { required: true },
+        sucursal: { required: true },
+        orden: { required: true, digits: true, min: 1, max: 20 }
+    },
+    messages: {
+        nombre: {
+            required: "Ingrese el nombre del curso",
+            minlength: "Debe tener al menos 2 caracteres"
+        },
+        nivel: { required: "Seleccione el nivel" },
+        sucursal: { required: "Seleccione la sucursal" },
+        orden: {
+            required: "Ingrese el orden (ej: 8, 9, 10...)",
+            digits: "El orden debe ser un número entero",
+            min: "El orden mínimo es 1",
+            max: "El orden máximo es 20"
+        }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+
+{% endblock %}

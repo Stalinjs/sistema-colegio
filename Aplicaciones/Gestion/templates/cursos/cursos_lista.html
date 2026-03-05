@@ -1,0 +1,151 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Cursos</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Cursos</li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Listado</li>
+    </ul>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Sucursal</label>
+          <select name="sucursal" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Nivel</label>
+          <select name="nivel" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for code, label in niveles %}
+              <option value="{{ code }}" {% if nivel == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Especialidad</label>
+          <select name="especialidad" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            {% for e in especialidades %}
+              <option value="{{ e.id }}" {% if especialidad_id == e.id|stringformat:"s" %}selected{% endif %}>
+                {{ e.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Buscar</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="fa fa-search"></i></span>
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Curso o especialidad...">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+          </div>
+        </div>
+
+        <div class="col-12 mt-2 d-flex gap-2 justify-content-end">
+          <a href="{% url 'cursos_crear' %}?sucursal={{ sucursal_id }}" class="btn btn-success btn-sm">
+            <i class="fa fa-plus"></i> Nuevo curso
+          </a>
+          <a href="{% url 'cursos_lista' %}" class="btn btn-secondary btn-sm">
+            <i class="fa fa-rotate-left"></i> Limpiar filtros
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle" id="tbl_cursos">
+        <thead class="table-primary text-center">
+          <tr>
+            <th>#</th>
+            <th>Sucursal</th>
+            <th>Nivel</th>
+            <th>Curso</th>
+            <th>Especialidad</th>
+            <th>Orden</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for c in cursos %}
+          <tr>
+            <td class="text-center text-muted">{{ forloop.counter }}</td>
+            <td>{{ c.sucursal.nombre }}</td>
+            <td class="text-center">
+              <span class="badge bg-secondary">{{ c.get_nivel_display|default:c.nivel }}</span>
+            </td>
+            <td><b>{{ c.nombre }}</b></td>
+            <td>
+              {% if c.especialidad %}
+                {{ c.especialidad.nombre }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <span class="badge bg-info">{{ c.orden }}</span>
+            </td>
+            <td class="text-center">
+              <a href="{% url 'cursos_editar' c.id %}" class="btn btn-sm btn-warning">
+                <i class="fa fa-pen"></i> Editar
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              No existen cursos registrados con esos filtros.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+    $('#tbl_cursos').DataTable({
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+        },
+        dom: 'Bfrtip',
+        buttons: ['excel', 'pdf', 'print'],
+        responsive: true,
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

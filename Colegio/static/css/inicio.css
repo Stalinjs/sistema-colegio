@@ -1,0 +1,18 @@
+/* Altura fija del carrusel */
+.carousel-fixed {
+  height: 420px; /* ajusta a tu gusto: 380, 420, 500 */
+}
+
+/* Asegura que cada slide ocupe esa altura */
+.carousel-fixed .carousel-inner,
+.carousel-fixed .carousel-item {
+  height: 100%;
+}
+
+/* Las imágenes se adaptan sin deformarse */
+.carousel-fixed img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;      /* recorta para llenar */
+  object-position: center; /* centra el recorte */
+}

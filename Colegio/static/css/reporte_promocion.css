@@ -1,0 +1,313 @@
+:root{
+  --border: #000;
+  --text: #111827;
+  --muted: #374151;
+  --bg: #f3f4f6;
+  --sheet: #fff;
+
+  --panel: #ffffff;
+  --panel-border: #e5e7eb;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+
+  --shadow: 0 10px 24px rgba(0,0,0,.10);
+  --radius: 12px;
+
+  --blue: #1e40af; /* línea azul */
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* TOOLBAR */
+.toolbar{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 12px 14px;
+  background: rgba(243,244,246,.85);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--panel-border);
+}
+.toolbar-inner{
+  max-width: 1180px;
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+}
+.toolbar-form{
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.field{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+}
+.label{
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+.select{
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+}
+.actions{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn[disabled]{ opacity: .55; cursor: not-allowed; }
+.btn-primary{ background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-primary:hover{ background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn-outline{ border-color: #cbd5e1; }
+.btn-ghost{ background: transparent; border-color: transparent; }
+
+/* Alert */
+.alert{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.alert-warning{
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #7c2d12;
+}
+
+/* SHEET */
+.sheet{
+  width: 210mm;                /* A4 exacto */
+  min-height: 297mm;
+  margin: 18px auto;
+  background: var(--sheet);
+  padding: 10mm 12mm;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--panel-border);
+}
+
+/* HEADER con logos */
+.header-grid{
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.logo-left, .logo-right{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 55px;
+}
+.logo-left img, .logo-right img{
+  max-height: 55px;
+  max-width: 75px;
+  object-fit: contain;
+}
+
+.header-center{
+  text-align: center;
+  line-height: 1.15;
+}
+.header-center .h1{
+  font-weight: 700;
+  font-size: 12px;
+}
+.header-center .h2{
+  font-weight: 900;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.header-center .h3{
+  font-size: 9px;
+  color: #111;
+  margin-top: 4px;
+}
+
+/* línea azul */
+.blue-line{
+  margin: 6px 0 8px;
+  border-top: 2px solid var(--blue);
+}
+
+/* tabla top (AÑO LECTIVO / REGIMEN / EXTENSIÓN) */
+.top-info{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  margin: 2px 0 8px;
+}
+.top-info td{
+  padding: 2px 0;
+}
+.top-info td strong{
+  font-weight: 900;
+}
+
+/* título */
+.titulo{
+  text-align: center;
+  margin: 8px 0 10px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .5px;
+}
+
+/* texto */
+.parrafo{
+  font-size: 9.5px;
+  line-height: 1.35;
+  margin: 7px 0;
+}
+
+.estudiante{
+  text-align: center;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: .4px;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+}
+
+.curso-linea{
+  text-align: center;
+  font-size: 9.5px;
+  margin-bottom: 6px;
+}
+
+.linea-datos{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  font-size: 9.5px;
+  margin: 6px 0 6px;
+}
+
+/* tabla principal */
+.tabla{
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0 10px;
+  table-layout: fixed;
+  font-size: 9.5px;
+}
+
+.tabla th, .tabla td{
+  border: 1px solid #000;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+
+.tabla thead th{
+  text-align: center;
+  font-weight: 900;
+}
+
+.w-asig{ width: 42%; }
+.w-num{ width: 18%; }
+.center{ text-align: center; }
+.bold td{ font-weight: 900; }
+
+/* firmas */
+.firma-fecha{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 9.5px;
+}
+.firma-fecha .fecha{ font-weight: 700; }
+
+.firmas{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 45px;
+  margin-top: 18px;
+}
+
+.firma{
+  text-align: center;
+  font-size: 9.5px;
+}
+.firma .line{
+  border-top: 1px solid #000;
+  margin: 0 auto 4px;
+  width: 85%;
+  height: 1px;
+}
+.firma .name{ font-weight: 900; margin-bottom: 1px; }
+.firma .role{ font-weight: 700; }
+
+.elaborado{
+  margin-top: 8px;
+  font-size: 9px;
+}
+
+.footer{
+  margin-top: 8px;
+  font-size: 8.8px;
+  border-top: 1px solid #000;
+  padding-top: 6px;
+  color: #111;
+}
+.footer div{ margin: 1px 0; }
+
+/* PRINT */
+@media print{
+  html, body{ background: #fff; }
+  .no-print{ display: none !important; }
+
+  .sheet{
+    width: auto;
+    min-height: auto;
+    margin: 0;
+    padding: 10mm 12mm;
+    box-shadow: none;
+    border: none;
+  }
+}
+
+@page{
+  size: A4;
+  margin: 10mm;
+}

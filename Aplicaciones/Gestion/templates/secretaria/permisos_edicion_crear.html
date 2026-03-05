@@ -1,0 +1,102 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Nuevo permiso por oficio</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'permisos_edicion_lista' %}">Permisos por oficio</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Crear</li>
+    </ul>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="fw-bold">Año lectivo activo:</div>
+      <div class="text-muted">{{ anio.nombre }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Datos del permiso</h5>
+      <small class="text-muted">Si dejas cédula vacía, el permiso aplica a <b>todo el paralelo</b>.</small>
+    </div>
+
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Asignación (Asignatura / Curso / Paralelo) *</label>
+            <select name="asignacion_id" class="form-select" required>
+              <option value="" disabled selected>Seleccione...</option>
+              {% for a in asignaciones %}
+                <option value="{{ a.id }}">
+                  {{ a.asignatura.nombre }} | {{ a.paralelo.curso.nombre }} - {{ a.paralelo.nombre }}
+                  (Docente: {{ a.docente.usuario.apellido_paterno }} {{ a.docente.usuario.nombres }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Campo a habilitar *</label>
+            <select name="campo" class="form-select" required>
+              <option value="t1">T1</option>
+              <option value="t2">T2</option>
+              <option value="t3">T3</option>
+              <option value="supletorio">Supletorio</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Inicio *</label>
+            <input type="date" name="inicio" class="form-control" required>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Fin *</label>
+            <input type="date" name="fin" class="form-control" required>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Cédula del estudiante (opcional)</label>
+            <input type="text" name="cedula" maxlength="10" class="form-control"
+                   placeholder="Si llena, se habilita solo a ese estudiante">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Motivo (opcional)</label>
+            <input type="text" name="motivo" class="form-control"
+                   placeholder="Ej: corrección por error de digitación">
+          </div>
+
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'permisos_edicion_lista' %}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

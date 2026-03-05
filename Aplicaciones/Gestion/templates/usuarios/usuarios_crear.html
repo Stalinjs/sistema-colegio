@@ -1,0 +1,159 @@
+{% extends 'plantilla.html' %}
+{% block contenido %}
+
+<div class="page-inner">
+
+    <div class="page-header">
+        <h4 class="page-title">Registrar Usuario</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="{% url 'dashboard_admin' %}">
+                    <i class="fa fa-home"></i>
+                </a>
+            </li>
+            <li class="separator"><i class="fa fa-angle-right"></i></li>
+            <li class="nav-item">
+                <a href="{% url 'usuarios_lista' %}">Usuarios</a>
+            </li>
+            <li class="separator"><i class="fa fa-angle-right"></i></li>
+            <li class="nav-item">Nuevo</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0 text-center">Datos del Usuario</h5>
+            <small class="text-muted">
+                La cédula será usada como usuario y contraseña inicial
+            </small>
+        </div>
+
+        <div class="card-body">
+            <form method="post" id="frm_usuario">
+                {% csrf_token %}
+
+                <div class="row">
+
+                    <!-- Cédula -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Cédula</label>
+                        <input type="number" name="cedula" class="form-control">
+                    </div>
+
+                    <!-- Nombres -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Nombres</label>
+                        <input type="text" name="nombres" class="form-control">
+                    </div>
+
+                    <!-- Apellido paterno -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Apellido Paterno</label>
+                        <input type="text" name="apellido_paterno" class="form-control">
+                    </div>
+
+                    <!-- Apellido materno -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Apellido Materno</label>
+                        <input type="text" name="apellido_materno" class="form-control">
+                    </div>
+
+                    <!-- Rol -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Rol</label>
+                        <select name="rol" class="form-select">
+                            <option value="" disabled selected>Seleccione un rol</option>
+                            <option value="admin">Administrador</option>
+                            <option value="secretaria">Secretaría</option>
+                            <option value="docente">Docente</option>
+                        </select>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control">
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" name="correo" class="form-control">
+                    </div>
+
+                    <!-- Dirección -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" name="direccion" class="form-control">
+                    </div>
+
+                </div>
+
+                <div class="text-end mt-3">
+                    <a href="{% url 'usuarios_lista' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i> Guardar Usuario
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+$("#frm_usuario").validate({
+    rules: {
+        cedula: {
+            required: true,
+            minlength: 10,
+            maxlength: 10,
+            number: true
+        },
+        nombres: {
+            required: true,
+            minlength: 3
+        },
+        apellido_paterno: {
+            required: true,
+            minlength: 3
+        },
+        correo: {
+            required: true,
+            email: true
+        },
+        rol: {
+            required: true
+        }
+    },
+    messages: {
+        cedula: {
+            required: "Ingrese la cédula",
+            minlength: "La cédula debe tener 10 dígitos",
+            maxlength: "La cédula debe tener 10 dígitos",
+            number: "Solo se permiten números"
+        },
+        nombres: {
+            required: "Ingrese los nombres",
+            minlength: "Debe tener al menos 3 caracteres"
+        },
+        apellido_paterno: {
+            required: "Ingrese el apellido paterno",
+            minlength: "Debe tener al menos 3 caracteres"
+        },
+        correo: {
+            required: "Ingrese el correo electrónico",
+            email: "Ingrese un correo válido"
+        },
+        rol: {
+            required: "Seleccione un rol"
+        }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}

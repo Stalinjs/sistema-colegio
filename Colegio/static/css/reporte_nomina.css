@@ -1,0 +1,131 @@
+/* Base */
+body{
+  margin:0;
+  background:#e9edf3;
+  font-family: Arial, Helvetica, sans-serif;
+  color:#111;
+}
+
+/* Hoja */
+.sheet{
+  width: 210mm;
+  min-height: 297mm;
+  margin: 12px auto;
+  background:#fff;
+  padding: 14mm 12mm;
+  box-shadow: 0 6px 18px rgba(0,0,0,.15);
+}
+
+/* Toolbar */
+.toolbar{
+  position: sticky;
+  top: 0;
+  background: #fff;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.toolbar-inner{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+}
+.btn{
+  border:1px solid #bbb;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.btn-primary{ background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+.btn-ghost{ background:#fff; color:#111; }
+
+/* Encabezado */
+.encabezado{
+  display:grid;
+  grid-template-columns: 90px 1fr 90px;
+  align-items:center;
+  gap:10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #111;
+  margin-bottom: 10px;
+}
+.logo img{
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+.institucion{
+  text-align:center;
+}
+.institucion .t1{ font-weight:800; font-size: 12px; letter-spacing:.8px; }
+.institucion .t2{ font-weight:900; font-size: 16px; margin-top:2px; }
+.institucion .t3{ font-size: 10px; margin-top:3px; color:#333; }
+
+/* Datos */
+.datos-top{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:6px 18px;
+  font-size: 11px;
+  margin: 10px 0 12px 0;
+}
+.titulo{
+  text-align:center;
+  font-weight:900;
+  font-size: 14px;
+  letter-spacing:.8px;
+  margin: 10px 0 10px 0;
+}
+
+/* Tabla */
+.tabla{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.tabla th, .tabla td{
+  border:1px solid #111;
+  padding: 6px;
+}
+.tabla th{
+  background:#e9f1ff;
+  text-align:center;
+  font-weight:800;
+}
+.center{ text-align:center; }
+
+/* Firmas */
+.firmas{
+  margin-top: 26px;
+  display:flex;
+  justify-content:space-around;
+  gap:20px;
+  text-align:center;
+}
+.firma{ width: 40%; }
+.firma .line{
+  border-top: 1px solid #111;
+  margin: 40px 0 6px 0;
+}
+.firma .name{ font-weight:800; font-size: 11px; }
+
+/* Footer */
+.footer{
+  border-top: 1px solid #111;
+  margin-top: 18px;
+  padding-top: 8px;
+  font-size: 10px;
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:6px 12px;
+}
+
+/* Print */
+.no-print{ display:block; }
+@media print{
+  body{ background:#fff; }
+  .sheet{ box-shadow:none; margin:0; }
+  .no-print{ display:none !important; }
+  @page { size: A4; margin: 10mm; }
+}

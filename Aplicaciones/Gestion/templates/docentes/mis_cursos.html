@@ -1,0 +1,68 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+    <div class="page-header">
+        <h4 class="page-title">Mis Cursos Asignados</h4>
+        <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="{% url 'dashboard_docente' %}"><i class="fa fa-home"></i></a>
+        </li>
+        <li class="separator"><i class="fa fa-angle-right"></i></li>
+        <li class="nav-item">Docente</li>
+        <li class="separator"><i class="fa fa-angle-right"></i></li>
+        <li class="nav-item">Mis Cursos</li>
+        </ul>
+    </div>
+
+  <!-- Filtro Año lectivo -->
+    <div class="row mb-2">
+    <div class="col-md-7 text-end">
+        <form method="get">
+        <div class="input-group input-group-sm" style="max-width: 220px; float:right;">
+            <span class="input-group-text">
+            <i class="fa fa-calendar"></i>
+            </span>
+            <select name="anio" class="form-select" onchange="this.form.submit()">
+            <option value="">Año lectivo (Todos)</option>
+            {% for a in anios %}
+                <option value="{{ a.id }}" {% if anio_id == a.id|stringformat:"s" %}selected{% endif %}>
+                {{ a.nombre }}{% if a.activo %} (Activo){% endif %}
+                </option>
+            {% endfor %}
+            </select>
+        </div>
+        </form>
+    </div>
+    </div>
+
+
+
+  <!-- Tarjetas -->
+  <div class="row">
+    {% for a in asignaciones %}
+      <div class="col-sm-6 col-lg-4 mb-3">
+        <a href="{% url 'mis_cursos_notas' a.id %}" class="text-decoration-none">
+          <div class="card card-stats card-primary card-round">
+            <div class="card-body">
+              <div class="text-center">
+                <h4 class="mb-1">{{ a.asignatura.nombre }}</h4>
+                <p class="mb-1">{{ a.paralelo.curso.nombre }} - Paralelo {{ a.paralelo.nombre }}</p>
+                <p class="mb-0"><b>Año:</b> {{ a.anio_lectivo.nombre }}</p>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-warning">
+          No tienes cursos asignados para el año lectivo seleccionado.
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}

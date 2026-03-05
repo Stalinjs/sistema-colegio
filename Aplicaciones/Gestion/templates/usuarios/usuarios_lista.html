@@ -1,0 +1,167 @@
+{% extends 'plantilla.html' %}
+{% block contenido %}
+
+<div class="page-inner">
+
+    <div class="page-header">
+        <h4 class="page-title">Usuarios del Sistema</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home"><a href="{% url 'dashboard_admin' %}"><i class="fa fa-home"></i></a></li>
+            <li class="separator"><i class="fa fa-angle-right"></i></li>
+            <li class="nav-item">Usuarios</li>
+        </ul>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="row mb-3 align-items-center">
+
+    <!-- Filtro estado -->
+    <div class="col-md-5 text-end">
+        <div class="input-group input-group-sm" style="max-width: 220px; float:right;">
+            <span class="input-group-text">
+                <i class="fa fa-filter"></i>
+            </span>
+            <select name="estado" class="form-select" onchange="this.form.submit()">
+                <option value="todos">Activos e inactivos</option>
+                <option value="activos" {% if estado == "activos" %}selected{% endif %}>Activos</option>
+                <option value="inactivos" {% if estado == "inactivos" %}selected{% endif %}>Inactivos</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Filtro rol -->
+    <div class="col-md-4 text-end">
+        <div class="input-group input-group-sm" style="max-width: 220px; float:right;">
+            <span class="input-group-text">
+                <i class="fa fa-user"></i>
+            </span>
+            <select name="rol" class="form-select" onchange="this.form.submit()">
+                <option value="todos">Seleccione un rol</option>
+                <option value="admin" {% if rol == "admin" %}selected{% endif %}>Administrador</option>
+                <option value="docente" {% if rol == "docente" %}selected{% endif %}>Docente</option>
+                <option value="secretaria" {% if rol == "secretaria" %}selected{% endif %}>Secretaría</option>
+            </select>
+        </div>
+    </div>
+
+</form>
+
+
+    <div class="card">
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle" id="tbl_usuarios">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th>#</th>
+                        <th>Cédula</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for user in usuarios %}
+                    <tr class="text-center">
+                        <td class="text-muted">{{ user.id }}</td>
+                        <td>{{ user.cedula }}</td>
+                        <td class="text-start">{{ user.nombres }} {{ user.apellido_paterno }}</td>
+
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                {{ user.get_rol_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if user.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="{% url 'editar_usuario' user.id %}" 
+                            class="btn btn-sm btn-warning" 
+                            title="Editar">
+                                <i class="fa fa-pen"> Editar</i>
+                            </a>
+
+                            {% if user.activo %}
+                                <button class="btn btn-sm btn-danger"
+                                        onclick="desactivarUsuario('{{ user.id }}', '{{ user.nombres }} {{ user.apellido_paterno }}')">
+                                    <i class="fa fa-ban"></i> Desactivar
+                                </button>
+                            {% else %}
+                                <button class="btn btn-sm btn-success"
+                                        onclick="activarUsuario('{{ user.id }}', '{{ user.nombres }} {{ user.apellido_paterno }}')">
+                                    <i class="fa fa-check"></i> Activar
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+    $('#tbl_usuarios').DataTable({
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+        },
+        dom: 'Bfrtip',
+        buttons: ['excel', 'pdf', 'print'],
+        responsive: true,
+
+    });
+});
+
+
+function desactivarUsuario(id, nombre) {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "Se desactivará al usuario: " + nombre,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, desactivar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/desactivar_usuario/" + id + "/";
+        }
+    });
+}
+
+
+function activarUsuario(id, nombre) {
+    Swal.fire({
+        title: "¿Activar usuario?",
+        text: "Se activará al usuario: " + nombre,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, activar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/activar_usuario/" + id + "/";
+        }
+    });
+}
+</script>
+
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,207 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Certificado de Promoción</title>
+  <link rel="stylesheet" href="{% static 'css/reporte_promocion.css' %}">
+</head>
+<body>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar no-print">
+    <div class="toolbar-inner">
+      <form method="GET" class="toolbar-form">
+        <div class="field">
+          <label class="label">Comportamiento</label>
+          <select name="comp" class="select">
+            <option value="">-- Seleccionar --</option>
+            <option value="A" {% if comportamiento == "A" %}selected{% endif %}>A</option>
+            <option value="B" {% if comportamiento == "B" %}selected{% endif %}>B</option>
+            <option value="C" {% if comportamiento == "C" %}selected{% endif %}>C</option>
+            <option value="D" {% if comportamiento == "D" %}selected{% endif %}>D</option>
+            <option value="E" {% if comportamiento == "E" %}selected{% endif %}>E</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-outline">Actualizar vista previa</button>
+
+          <button type="button" class="btn btn-primary"
+                  onclick="window.print()"
+                  {% if not puede_emitir %}disabled{% endif %}>
+            Imprimir / Guardar PDF
+          </button>
+
+          <a href="{% url 'promocion_buscar' %}" class="btn btn-ghost">Volver</a>
+        </div>
+      </form>
+
+      {% if not puede_emitir %}
+        <div class="alert alert-warning">
+          Para emitir el certificado debe seleccionar el comportamiento (A–E).
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- CERTIFICADO -->
+  <div class="sheet">
+
+    <!-- ENCABEZADO con logos + línea azul -->
+    <div class="header-grid">
+      <div class="logo-left">
+        <img src="{% static 'img/logomini.png' %}" alt="Logo Ministerio">
+      </div>
+
+      <div class="header-center">
+        <div class="h1">UNIDAD EDUCATIVA</div>
+        <div class="h2">MONSEÑOR LEONIDAS PROAÑO</div>
+        <div class="h3">
+          Resolución Nro. MINEDUC-CZ3-2024-00442-R, 18 de noviembre de 2024 – AMIE:05H00002
+        </div>
+      </div>
+
+      <div class="logo-right">
+        <img src="{% static 'img/logo.jpg' %}" alt="Logo Institución">
+      </div>
+    </div>
+
+    <div class="blue-line"></div>
+
+    <!-- DATOS TOP como el excel -->
+    <table class="top-info">
+      <tr>
+        <td><strong>AÑO LECTIVO:</strong> {{ anio_lectivo_nombre }}</td>
+        <td><strong>REGIMEN:</strong> {{ regimen }}</td>
+      </tr>
+      <tr>
+        <td><strong>EXTENSIÓN:</strong> {{ extension }}</td>
+        <td></td>
+      </tr>
+    </table>
+
+    <div class="titulo">CERTIFICADO DE PROMOCIÓN</div>
+
+    <p class="parrafo">
+      El Rector de la Institución Educativa, de conformidad con lo prescrito en el Art. 197 del Reglamento General a la Ley Orgánica
+      de Educación Intercultural y demás normativas vigentes, certifica que el/la estudiante:
+    </p>
+
+    <div class="estudiante">
+      {{ estudiante.apellido_paterno }} {{ estudiante.apellido_materno }} {{ estudiante.nombres }}
+    </div>
+
+    <div class="curso-linea">
+      <span>del</span>
+      <strong>{{ curso_nombre|upper }}</strong>
+    </div>
+
+    <div class="linea-datos">
+      <div><strong>CÓDIGO DE ESTUDIANTE NRO.</strong> {{ estudiante.cedula }}</div>
+      <div>obtuvo las siguientes calificaciones durante el presente año lectivo.</div>
+    </div>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th rowspan="2" class="w-asig">ASIGNATURA</th>
+          <th colspan="2">PROMEDIO ANUAL</th>
+        </tr>
+        <tr>
+          <th class="w-num">CALIFICACIÓN CUANTITATIVA</th>
+          <th>CALIFICACIÓN CUALITATIVA</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% if filas %}
+          {% for f in filas %}
+          <tr>
+            <td>{{ f.asignatura|upper }}</td>
+            <td class="center">
+              {% if f.cuantitativa is not None %}
+                {{ f.cuantitativa|floatformat:2 }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>{{ f.cualitativa }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="3" class="center"><strong>No existen calificaciones registradas.</strong></td>
+          </tr>
+        {% endif %}
+
+        <tr class="bold">
+          <td>PROMEDIO</td>
+          <td class="center">
+            {% if promedio_general is not None %}
+              {{ promedio_general|floatformat:2 }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>{{ promedio_cualitativo }}</td>
+        </tr>
+
+        <tr class="bold">
+          <td>EVALUACIÓN DEL COMPORTAMIENTO</td>
+          <td class="center">{{ comportamiento|default:"—" }}</td>
+          <td>{{ comportamiento_texto }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="parrafo">
+      {% if promovido %}
+        Por lo tanto es promovido/a al: <strong>{{ siguiente_grado }}</strong>
+      {% else %}
+        <strong>NO PROMOVIDO/A</strong> (verificar calificaciones)
+      {% endif %}
+    </p>
+
+    <p class="parrafo">
+      Para certificar suscribe el Rector del Plantel, así consta en los libros de calificaciones que reposan en secretaría general.
+    </p>
+
+    <div class="firma-fecha">
+      <div>Dado y firmado en: <strong>LATACUNGA, COTOPAXI</strong>,</div>
+      <div class="fecha">{{ hoy|date:"l, d \\d\\e F \\d\\e Y" }}</div>
+    </div> 
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <div class="firmas">
+      <div class="firma">
+        <div class="line"></div>
+        <div class="name">Dr. Juan Ulloa</div>
+        <div class="role">RECTOR UEMLP</div>
+      </div>
+
+      <div class="firma">
+        <div class="line"></div>
+        <div class="name">Ing. Rocio Villamarin MSc.</div>
+        <div class="role">SECRETARIA (E) UEMLP</div>
+      </div>
+    </div>
+
+    <div class="elaborado">
+      <strong>Elaborado Por:</strong> {{ elaborado_por|default:"ING. ROCIO VILLAMARIN. MSc." }}
+    </div>
+
+    <div class="footer">
+      <div><strong>Dirección:</strong> Av. Iberoamérica y México (Barrio San Felipe)</div>
+      <div><strong>Teléfono:</strong> 032252225</div>
+      <div><strong>Correo electrónico:</strong> distritolatacunga05h00002i@gmail.com</div>
+    </div>
+
+  </div>
+
+</body>
+</html>

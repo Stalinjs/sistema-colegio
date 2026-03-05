@@ -1,0 +1,187 @@
+{% extends "plantilla.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Nueva Asignación</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'docente_asignacion_lista' %}">Asignación</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Crear</li>
+    </ul>
+  </div>
+
+  <!-- Paso 1: Filtros (GET) -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal y Paralelo</h5>
+      <small class="text-muted">Primero elige la sucursal y el paralelo. Luego aparecerán las asignaturas correctas.</small>
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+
+        <div class="col-md-6">
+          <label class="form-label">Sucursal</label>
+          <select name="sucursal" class="form-select" onchange="this.form.submit()">
+            
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Paralelo</label>
+          <select name="paralelo" class="form-select" onchange="this.form.submit()">
+            <option value="">Seleccione...</option>
+            {% for p in paralelos %}
+              <option value="{{ p.id }}" {% if paralelo_id == p.id|stringformat:"s" %}selected{% endif %}>
+                {{ p.curso.sucursal.nombre }} | {{ p.curso.nombre }} - {{ p.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <a href="{% url 'docente_asignacion_lista' %}" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i> Volver al listado
+          </a>
+          <a href="{% url 'docente_asignacion_crear' %}" class="btn btn-outline-secondary">
+            <i class="fa fa-rotate-left"></i> Reiniciar selección
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Paso 2: Formulario (POST) -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 2: Completar Asignación</h5>
+      {% if paralelo_sel %}
+        <small class="text-muted">
+          Curso: <b>{{ paralelo_sel.curso.nombre }}</b> | Paralelo: <b>{{ paralelo_sel.nombre }}</b>
+        </small>
+      {% else %}
+        <small class="text-muted">Seleccione un paralelo para habilitar asignaturas.</small>
+      {% endif %}
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_asignacion">
+        {% csrf_token %}
+
+        <!-- IMPORTANTE: paralelo elegido -->
+        <input type="hidden" name="paralelo" value="{{ paralelo_id }}">
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Docente</label>
+            <select name="docente" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for d in docentes %}
+                <option value="{{ d.id }}">
+                  {{ d.usuario.apellido_paterno }} {{ d.usuario.apellido_materno }} {{ d.usuario.nombres }} ({{ d.usuario.cedula }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Año lectivo</label>
+            <select name="anio_lectivo" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for a in anios %}
+                <option value="{{ a.id }}">{{ a.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label">Asignatura</label>
+
+            {% if paralelo_sel %}
+              <select name="asignatura" class="form-select" required>
+                <option value="">Seleccione...</option>
+                {% for asig in asignaturas %}
+                  <option value="{{ asig.id }}">{{ asig.nombre }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">
+                Solo aparecen asignaturas del curso seleccionado para evitar errores.
+              </div>
+            {% else %}
+              <select class="form-select" disabled>
+                <option>Seleccione un paralelo primero...</option>
+              </select>
+              <div class="form-text text-danger">
+                Debe seleccionar un paralelo en el Paso 1.
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'docente_asignacion_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+
+          {% if paralelo_sel %}
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-save"></i> Guardar asignación
+            </button>
+          {% else %}
+            <button type="button" class="btn btn-primary" disabled>
+              <i class="fa fa-save"></i> Guardar asignación
+            </button>
+          {% endif %}
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Validación simple sin plugins
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("frm_asignacion");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      const paralelo = "{{ paralelo_id|default:'' }}";
+      const docente = form.querySelector("[name='docente']").value;
+      const anio = form.querySelector("[name='anio_lectivo']").value;
+      const asignaturaEl = form.querySelector("[name='asignatura']");
+      const asignatura = asignaturaEl ? asignaturaEl.value : "";
+
+      if (!paralelo) {
+        e.preventDefault();
+        Swal.fire("Falta paralelo", "Seleccione sucursal y paralelo primero.", "warning");
+        return;
+      }
+      if (!docente || !anio || !asignatura) {
+        e.preventDefault();
+        Swal.fire("Campos obligatorios", "Docente, año lectivo y asignatura son obligatorios.", "warning");
+        return;
+      }
+    });
+  });
+</script>
+{% endblock %}

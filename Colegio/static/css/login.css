@@ -1,0 +1,77 @@
+
+/* ===============================
+   LOGO (SIN RECORTE)
+   =============================== */
+.login-logo-wrapper {
+  width: 100%;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* ===============================
+   SOLO LOGIN
+   =============================== */
+.login-body {
+  overflow: hidden;
+}
+
+/* ===============================
+   LOGIN PAGE
+   =============================== */
+.login-page {
+  height: 100vh;
+}
+
+.login-bg {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 120px);
+  min-height: 520px;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+/* ===============================
+   CARRUSEL
+   =============================== */
+.login-bg .carousel,
+.login-bg .carousel-inner,
+.login-bg .carousel-item {
+  height: 100%;
+}
+
+.login-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===============================
+   OVERLAY
+   =============================== */
+.login-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 2;
+}
+
+/* ===============================
+   FORM
+   =============================== */
+.login-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 3;
+}
+
+.login-card {
+  max-width: 380px;
+  width: 100%;
+  border-radius: 16px;
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(6px);
+}

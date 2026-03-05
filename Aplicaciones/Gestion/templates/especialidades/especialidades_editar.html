@@ -1,0 +1,75 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Editar Especialidad</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'especialidades_lista' %}">Especialidades</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">Editar</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Editar datos</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_especialidad">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label">Nombre *</label>
+          <input type="text" name="nombre" value="{{ especialidad.nombre }}" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea name="descripcion" class="form-control" rows="3">{{ especialidad.descripcion }}</textarea>
+        </div>
+
+        <div class="text-end">
+          <a href="{% url 'especialidades_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$("#frm_especialidad").validate({
+    rules: {
+        nombre: {
+            required: true,
+            minlength: 3
+        }
+    },
+    messages: {
+        nombre: {
+            required: "Ingrese el nombre de la especialidad",
+            minlength: "Debe tener al menos 3 caracteres"
+        }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="container">
+  <div class="page-inner">
+    <h3 class="fw-bold mb-3">Panel del Docente</h3>
+    <p class="text-muted mb-4">
+      Acceso rápido a tus cursos y al registro de calificaciones.
+    </p>
+
+    <div class="row g-4">
+
+      <!-- Mis Cursos -->
+      <div class="col-sm-6 col-md-4">
+        <a href="{% url 'mis_cursos' %}" class="text-decoration-none">
+          <div class="card shadow-sm p-3 d-flex align-items-center"
+               style="border-left: 8px solid #0d6efd;"
+               onmouseover="this.style.transform='scale(1.05)';this.style.transition='0.2s';"
+               onmouseout="this.style.transform='scale(1)';">
+            <div class="rounded p-2 me-3 text-white" style="background:#0d6efd;">
+              <i class="fas fa-book-open fa-lg"></i>
+            </div>
+            <div>
+              <div class="text-muted small">Cursos asignados</div>
+              <strong>Mis Cursos</strong>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Registrar / Subir Notas -->
+      <div class="col-sm-6 col-md-4">
+        <!-- Las notas se registran entrando a un curso desde "Mis Cursos" -->
+        <a href="{% url 'mis_cursos' %}" class="text-decoration-none">
+          <div class="card shadow-sm p-3 d-flex align-items-center"
+               style="border-left: 8px solid #198754;"
+               onmouseover="this.style.transform='scale(1.05)';this.style.transition='0.2s';"
+               onmouseout="this.style.transform='scale(1)';">
+            <div class="rounded p-2 me-3 text-white" style="background:#198754;">
+              <i class="fas fa-pen-alt fa-lg"></i>
+            </div>
+            <div>
+              <div class="text-muted small">Calificaciones</div>
+              <strong>Registrar Notas</strong>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Mi Perfil -->
+      <div class="col-sm-6 col-md-4">
+        <a href="{% url 'mi_perfil' %}" class="text-decoration-none">
+          <div class="card shadow-sm p-3 d-flex align-items-center"
+               style="border-left: 8px solid #0dcaf0;"
+               onmouseover="this.style.transform='scale(1.05)';this.style.transition='0.2s';"
+               onmouseout="this.style.transform='scale(1)';">
+            <div class="rounded p-2 me-3 text-white" style="background:#0dcaf0;">
+              <i class="fas fa-user-circle fa-lg"></i>
+            </div>
+            <div>
+              <div class="text-muted small">Cuenta</div>
+              <strong>Mi Perfil</strong>
+            </div>
+          </div>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Mensaje guía -->
+    <div class="mt-4 alert alert-info">
+      <strong>Tip:</strong> Para registrar notas, entra a <b>Mis Cursos</b> y selecciona el curso/asignatura correspondiente.
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

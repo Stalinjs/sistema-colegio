@@ -1,0 +1,290 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+<div class="page-inner">
+  <div class="page-header">
+    <h4 class="page-title">Editar Promoción Histórica</h4>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <small class="text-muted">Los campos con <b>*</b> son obligatorios.</small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_promo" novalidate>
+        {% csrf_token %}
+
+        <div id="frontendErrors" class="alert alert-danger" style="display:none;">
+          <b>Revisa lo siguiente:</b>
+          <ul class="mb-0" id="frontendErrorsList"></ul>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Estudiante *</label>
+            <select name="estudiante" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for e in estudiantes %}
+                <option value="{{ e.id }}" {% if e.id == promo.estudiante.id %}selected{% endif %}>
+                  {{ e.apellido_paterno }} {{ e.apellido_materno }} {{ e.nombres }} ({{ e.cedula }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Año lectivo *</label>
+            <select name="anio_lectivo" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for a in anios %}
+                <option value="{{ a.id }}" {% if a.id == promo.anio_lectivo.id %}selected{% endif %}>
+                  {{ a.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Curso *</label>
+            <select name="curso" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for c in cursos %}
+                <option value="{{ c.id }}" {% if c.id == promo.curso.id %}selected{% endif %}>
+                  {{ c.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Modo *</label>
+            <select name="resultado" class="form-select" required id="resultado">
+              <option value="">Seleccione...</option>
+              <option value="AUTO" selected>Calcular automático</option>
+              <option value="RETIRADO">Retirado</option>
+            </select>
+            <div class="form-text">
+              El sistema recalcula: promedio_final y APROBADO/REPROBADO según materias.
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Comportamiento</label>
+            <select name="comportamiento" class="form-select">
+              <option value="">—</option>
+              {% for c in COMPORTAMIENTO %}
+                <option value="{{ c }}" {% if promo.comportamiento == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Observación</label>
+            <input type="text" name="observacion" class="form-control" value="{{ promo.observacion|default_if_none:'' }}">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Promedio final</label>
+            <input type="text" class="form-control" value="{% if promo.promedio_final %}{{ promo.promedio_final|floatformat:2 }}{% else %}—{% endif %}" disabled>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Resultado calculado</label>
+            <input type="text" class="form-control" value="{{ promo.resultado }}" disabled>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div id="bloqueMaterias">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Materias y calificaciones</h6>
+            <button type="button" class="btn btn-outline-secondary" id="btnAdd">Agregar fila</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="tblDetalles">
+              <thead>
+                <tr>
+                  <th>Asignatura *</th>
+                  <th style="width: 200px;">Calificación *</th>
+                  <th style="width: 140px;">Eliminar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in detalles %}
+                <tr>
+                  <td>
+                    <input type="hidden" name="detalle_id[]" value="{{ d.id }}">
+                    <input type="text" name="asignatura_nombre[]" class="form-control" value="{{ d.asignatura_nombre }}">
+                  </td>
+                  <td>
+                    <input type="number" name="calificacion[]" class="form-control" step="0.01" min="0" max="10" value="{{ d.calificacion|floatformat:2 }}">
+                  </td>
+                  <td class="text-center">
+                    <input type="checkbox" name="delete_detalle[]" value="{{ d.id }}"> Eliminar
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td>
+                    <input type="hidden" name="detalle_id[]" value="">
+                    <input type="text" name="asignatura_nombre[]" class="form-control" placeholder="Ej: Matemáticas">
+                  </td>
+                  <td>
+                    <input type="number" name="calificacion[]" class="form-control" step="0.01" min="0" max="10">
+                  </td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger btnDel">Quitar</button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'promociones_lista' %}" class="btn btn-outline-secondary">Volver</a>
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function () {
+  const form = document.getElementById("frm_promo");
+  const tblBody = document.querySelector("#tblDetalles tbody");
+
+  const box = document.getElementById("frontendErrors");
+  const list = document.getElementById("frontendErrorsList");
+
+  function showBox() { box.style.display = "block"; }
+  function hideBox() { box.style.display = "none"; list.innerHTML = ""; }
+  function addError(msg) {
+    const li = document.createElement("li");
+    li.textContent = msg;
+    list.appendChild(li);
+  }
+
+  function limpiarErroresUI() {
+    hideBox();
+    $("select, input").removeClass("is-invalid");
+    $("#tblDetalles input").removeClass("is-invalid");
+  }
+
+  function toggleMaterias() {
+    const modo = $("#resultado").val();
+    if (modo === "RETIRADO") {
+      $("#bloqueMaterias").hide();
+    } else {
+      $("#bloqueMaterias").show();
+    }
+  }
+  $("#resultado").on("change", toggleMaterias);
+  toggleMaterias();
+
+  // Agregar fila nueva
+  $("#btnAdd").on("click", function () {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <input type="hidden" name="detalle_id[]" value="">
+        <input type="text" name="asignatura_nombre[]" class="form-control" placeholder="Ej: Matemáticas">
+      </td>
+      <td>
+        <input type="number" name="calificacion[]" class="form-control" step="0.01" min="0" max="10">
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline-danger btnDel">Quitar</button>
+      </td>
+    `;
+    tblBody.appendChild(tr);
+  });
+
+  // Quitar fila nueva (solo las que no tienen checkbox)
+  $(tblBody).on("click", ".btnDel", function (e) {
+    e.preventDefault();
+    $(this).closest("tr").remove();
+  });
+
+  function validar() {
+    limpiarErroresUI();
+    const errores = [];
+
+    const estudiante = $("select[name='estudiante']").val();
+    const anio = $("select[name='anio_lectivo']").val();
+    const curso = $("select[name='curso']").val();
+    const modo = $("#resultado").val();
+
+    if (!estudiante) { errores.push("Debes seleccionar un estudiante."); $("select[name='estudiante']").addClass("is-invalid"); }
+    if (!anio) { errores.push("Debes seleccionar un año lectivo."); $("select[name='anio_lectivo']").addClass("is-invalid"); }
+    if (!curso) { errores.push("Debes seleccionar un curso."); $("select[name='curso']").addClass("is-invalid"); }
+    if (!modo) { errores.push("Debes seleccionar el modo (AUTO o RETIRADO)."); $("#resultado").addClass("is-invalid"); }
+
+    let tieneDetallesValidos = false;
+
+    if (modo !== "RETIRADO") {
+      $("#tblDetalles tbody tr").each(function () {
+        const asig = $(this).find("input[name='asignatura_nombre[]']").val().trim();
+        const cal = $(this).find("input[name='calificacion[]']").val().trim();
+        const chk = $(this).find("input[type='checkbox'][name='delete_detalle[]']");
+
+        // Si es fila existente marcada para eliminar, se ignora
+        if (chk.length && chk.is(":checked")) return;
+
+        if (!asig && !cal) return;
+
+        if (!asig) {
+          errores.push("Hay una fila con asignatura vacía.");
+          $(this).find("input[name='asignatura_nombre[]']").addClass("is-invalid");
+        }
+        if (!cal) {
+          errores.push(`Falta calificación en: ${asig || "(sin asignatura)"}`);
+          $(this).find("input[name='calificacion[]']").addClass("is-invalid");
+        }
+
+        if (asig && cal) {
+          const num = Number(cal.replace(",", "."));
+          if (isNaN(num) || num < 0 || num > 10) {
+            errores.push(`Calificación inválida en: ${asig} (1 a 10)`);
+            $(this).find("input[name='calificacion[]']").addClass("is-invalid");
+          } else {
+            tieneDetallesValidos = true;
+          }
+        }
+      });
+
+      if (modo === "AUTO" && !tieneDetallesValidos) {
+        errores.push("Debes ingresar al menos 1 materia con calificación (AUTO).");
+      }
+    }
+
+    if (errores.length) {
+      showBox();
+      errores.forEach(addError);
+
+      Swal.fire({
+        title: "Revisa el formulario",
+        text: "Faltan campos obligatorios o hay datos inválidos.",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
+      return false;
+    }
+    return true;
+  }
+
+  form.addEventListener("submit", function (e) {
+    if (!validar()) e.preventDefault();
+  });
+
+  $("select, input").on("change input", function () {
+    limpiarErroresUI();
+  });
+});
+</script>
+{% endblock %}

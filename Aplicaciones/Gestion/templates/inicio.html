@@ -1,0 +1,198 @@
+{% extends "plantilla.html" %}
+{% load static %}
+{% block contenido %}
+<div class="container-fluid py-4">
+
+  <!-- CABECERA -->
+  <div class="row align-items-center g-3 mb-4">
+    <div class="col-12 col-lg-2 text-center text-lg-start">
+      <!-- Logo (pon tu ruta real) -->
+      <img src="{% static 'img/logo.jpg' %}" class="img-fluid rounded-3 shadow-sm" alt="Logo UE" style="max-height:110px;">
+      <!-- Si no quieres ni ese style, elimínalo y controla el tamaño con tu base o imagen -->
+    </div>
+
+    <div class="col-12 col-lg-10 text-center text-lg-start">
+      <div class="p-3 rounded-4 bg-primary text-white shadow-sm">
+        <h1 class="fw-bold mb-1 text-uppercase">
+          Unidad Educativa Monseñor Leonidas Proaño
+        </h1>
+        <h2 class="fw-semibold mb-0 text-uppercase opacity-75">
+          Latacunga
+        </h2>
+        <div class="mt-2 small">
+          Sistema Académico Institucional • Matrículas • Años lectivos • Notas (T1, T2, T3) • Supletorio
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARRUSEL (ELEGANTE) -->
+  <div class="row g-4">
+    <div class="col-12 col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div id="carouselColegio" class="carousel slide carousel-fixed" data-bs-ride="carousel" data-bs-interval="4500">
+
+          <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="2"></button>
+            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="3"></button>
+          </div>
+
+          <div class="carousel-inner">
+
+            <div class="carousel-item active">
+              <img src="{% static 'img/carrusel1.jpg' %}" class="d-block w-100" alt="Instalaciones 1">
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
+                <h5 class="fw-bold mb-1">Vida institucional</h5>
+                <p class="mb-0">Actividades académicas y formativas.</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <img src="{% static 'img/carrusel2.jpg' %}" class="d-block w-100" alt="Instalaciones 2">
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
+                <h5 class="fw-bold mb-1">Infraestructura</h5>
+                <p class="mb-0">Espacios para aprender y crecer.</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <img src="{% static 'img/carrusel3.jpg' %}" class="d-block w-100" alt="Talleres">
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
+                <h5 class="fw-bold mb-1">Bachillerato Técnico</h5>
+                <p class="mb-0">Práctica, laboratorio y habilidades para la vida.</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <img src="{% static 'img/carrusel4.jpg' %}" class="d-block w-100" alt="Ciencias">
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
+                <h5 class="fw-bold mb-1">Bachillerato en Ciencias</h5>
+                <p class="mb-0">Bases sólidas para la educación superior.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselColegio" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselColegio" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- BLOQUE COMO “BANDA” (similar al diseño del afiche) -->
+      <div class="row g-3 mt-2">
+        <div class="col-12 col-md-6">
+          <div class="p-3 rounded-4 bg-light border shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-primary rounded-pill px-3 py-2">Bachillerato Técnico</span>
+            </div>
+            <p class="mb-0 text-muted">
+              Módulos con enfoque práctico: talleres, laboratorios y competencias técnicas.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="p-3 rounded-4 bg-light border shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-dark rounded-pill px-3 py-2">Bachillerato General Ciencias</span>
+            </div>
+            <p class="mb-0 text-muted">
+              Formación integral para fortalecer razonamiento, ciencias y proyección universitaria.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL LATERAL (ACCESOS / INFO DEL SISTEMA) -->
+    <div class="col-12 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h4 class="fw-bold mb-2">Accesos rápidos</h4>
+
+          <div class="d-grid gap-2">
+            <h2 class="text-center">Misión</h2>
+            <p>----</p>
+
+            <h2 class="text-center">Visión</h2>
+            <p>----</p>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="p-3 rounded-4 bg-light border">
+            <h6 class="fw-bold mb-2">¿Qué permite el sistema?</h6>
+            <ul class="mb-0 text-muted">
+              <li>Gestión de Años Lectivos</li>
+              <li>Matrículas por sucursal, curso y paralelo</li>
+              <li>Registro de notas T1, T2, T3</li>
+              <li>Promedio final y supletorio</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALERÍA (tipo afiche, pero con cards Bootstrap) -->
+  <div class="row g-3 mt-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h4 class="fw-bold mb-0">Galería institucional</h4>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <img src="#" class="w-100" alt="Foto 1">
+        <div class="card-body">
+          <div class="fw-semibold">Aula / Computación</div>
+          <div class="text-muted small">Actividades académicas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <img src="#" class="w-100" alt="Foto 2">
+        <div class="card-body">
+          <div class="fw-semibold">Taller Técnico</div>
+          <div class="text-muted small">Aprendizaje práctico</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <img src="#" class="w-100" alt="Foto 3">
+        <div class="card-body">
+          <div class="fw-semibold">Patio / Comunidad</div>
+          <div class="text-muted small">Convivencia institucional</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <img src="#" class="w-100" alt="Foto 4">
+        <div class="card-body">
+          <div class="fw-semibold">Proyecto Ambiental</div>
+          <div class="text-muted small">Compromiso con el entorno</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

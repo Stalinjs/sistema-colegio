@@ -1,0 +1,518 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>UE Leonidas Monseñor Proaño</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+
+    <link rel="icon"
+          href="{% static 'plantilla/kaiadmin/assets/img/kaiadmin/favicon.ico' %}"
+          type="image/x-icon" />
+
+    <!-- ====== CSS PROPIO ====== -->
+    <link rel="stylesheet" href="{% static 'css/inicio.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+
+    <!-- ====== FONTS / ICONS ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/webfont/webfont.min.js' %}"></script>
+    <script>
+      WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+          families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+          ],
+          urls: ["{% static 'plantilla/kaiadmin/assets/css/fonts.min.css' %}"],
+        },
+        active: function () { sessionStorage.fonts = true; },
+      });
+    </script>
+
+    <!-- ====== CSS BASE (BOOTSTRAP + TEMPLATE) ====== -->
+    <link rel="stylesheet" href="{% static 'plantilla/kaiadmin/assets/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'plantilla/kaiadmin/assets/css/plugins.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'plantilla/kaiadmin/assets/css/kaiadmin.min.css' %}" />
+
+    <!-- (Opcional) Demo -->
+    <link rel="stylesheet" href="{% static 'plantilla/kaiadmin/assets/css/demo.css' %}" />
+
+    <!-- ====== CSS DE PLUGINS (SIEMPRE EN HEAD) ====== -->
+    <!-- bootstrap-select -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+
+    <!-- bootstrap-fileinput -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.4/css/fileinput.min.css"
+          integrity="sha512-yDVMONIXJPPAoULZ92Ygngsn8ZUGB4ejm6fCc6q9ZvdH8blFAOgg75XZSEaAJ5m4E/yPI1BAi5fF2axMHVuZ5w=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- DataTables Buttons CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+    <!-- ====== JS QUE NECESITAS TEMPRANO (JQUERY) ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/core/jquery-3.7.1.min.js' %}"></script>
+
+    <!-- jQuery Validation -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
+  </head>
+
+  <body class="{% block body_class %}{% endblock %}"></body>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <div class="sidebar" data-background-color="dark">
+        <div class="sidebar-logo">
+          <!-- Logo Header -->
+          <div class="logo-header" data-background-color="dark">
+            <a href="#" class="logo">
+              <img
+                src="{% static 'img/logo.jpg' %}"
+                alt="navbar brand"
+                class="navbar-brand"
+                height="20"
+              />
+            </a>
+            <div class="nav-toggle">
+              <button class="btn btn-toggle toggle-sidebar">
+                <i class="gg-menu-right"></i>
+              </button>
+              <button class="btn btn-toggle sidenav-toggler">
+                <i class="gg-menu-left"></i>
+              </button>
+            </div>
+            <button class="topbar-toggler more">
+              <i class="gg-more-vertical-alt"></i>
+            </button>
+          </div>
+          <!-- End Logo Header -->
+        </div>
+        <div class="sidebar-wrapper scrollbar scrollbar-inner">
+          <div class="sidebar-content">
+            <ul class="nav nav-secondary">
+
+              {% if request.session.usuario_rol == "admin" %}
+
+              <li class="nav-item">
+                  <a href="{% url 'dashboard_admin' %}">
+                      <i class="fas fa-home"></i>
+                      <p>Panel de inicio</p>
+                  </a>
+              </li>
+
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">ADMINISTRACIÓN</h4>
+              </li>
+
+              <!-- Usuarios -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuUsuarios">
+                  <i class="fas fa-users"></i>
+                  <p>Usuarios</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuUsuarios">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'usuarios_lista' %}"><span class="sub-item">Lista</span></a></li>
+                    <li><a href="{% url 'usuarios_crear' %}"><span class="sub-item">Registrar</span></a></li>
+                  </ul>
+                </div>
+              </li>
+
+              {% endif %}
+
+              <!-- MENÚ SOLO PARA SECRETARÍA -->
+              {% if request.session.usuario_rol == "secretaria" %}
+
+              <li class="nav-item">
+                <a href="{% url 'dashboard_secretaria' %}">
+                  <i class="fas fa-home"></i>
+                  <p>Panel de inicio</p>
+                </a>
+              </li>
+
+              <li class="nav-section">
+                <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
+                <h4 class="text-section">SECRETARÍA</h4>
+              </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuPersonasSec">
+                  <i class="fas fa-users"></i>
+                  <p>Personas</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuPersonasSec">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'estudiantes_lista' %}"><span class="sub-item">Estudiantes</span></a></li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuProcesosSec">
+                  <i class="fas fa-tasks"></i>
+                  <p>Procesos</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuProcesosSec">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'matriculas_lista' %}"><span class="sub-item">Matrículas</span></a></li>
+                    <li><a href="{% url 'docente_asignacion_lista' %}"><span class="sub-item">Asignaciones</span></a></li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuCatalogosSec">
+                  <i class="fas fa-school"></i>
+                  <p>Académico</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuCatalogosSec">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'sucursales_lista' %}"><span class="sub-item">Sucursales</span></a></li>
+                    <li><a href="{% url 'especialidades_lista' %}"><span class="sub-item">Especialidades</span></a></li>
+                    <li><a href="{% url 'cursos_lista' %}"><span class="sub-item">Cursos</span></a></li>
+                    <li><a href="{% url 'paralelos_lista' %}"><span class="sub-item">Paralelos</span></a></li>
+                    <li><a href="{% url 'asignaturas_lista' %}"><span class="sub-item">Asignaturas</span></a></li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuConfigSec">
+                  <i class="fas fa-cogs"></i>
+                  <p>Año lectivo</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuConfigSec">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'anios_lista' %}"><span class="sub-item">Años lectivos</span></a></li>
+                    <li><a href="{% url 'periodos_notas_config' %}"><span class="sub-item">Períodos de notas</span></a></li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuHistoricoSec">
+                  <i class="fas fa-archive"></i>
+                  <p>Histórico</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuHistoricoSec">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'promociones_lista' %}"><span class="sub-item">Promoción histórica</span></a></li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#menuReportesSec">
+                  <i class="fas fa-file-alt"></i>
+                  <p>Reportes</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="menuReportesSec">
+                  <ul class="nav nav-collapse">
+                    <li><a href="{% url 'promocion_buscar' %}"><span class="sub-item">Certificado de promoción</span></a></li>
+                    <!-- si tienes más reportes, los pones aquí -->
+                    <!-- <li><a href="#"><span class="sub-item">Nómina de notas</span></a></li> -->
+                  </ul>
+                </div>
+              </li>
+
+              {% endif %}
+
+
+              {% if request.session.usuario_rol == "docente" %}
+
+              <li class="nav-item">
+                  <a href="{% url 'dashboard_docente' %}">
+                      <i class="fas fa-home"></i>
+                      <p>Panel de inicio</p>
+                  </a>
+              </li>
+              
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">DOCENTE</h4>
+              </li>
+
+              <!-- Mis Cursos -->
+              <li class="nav-item">
+                <a href="{% url 'mis_cursos' %}">
+                  <i class="fas fa-book"></i>
+                  <p>Mis Cursos</p>
+                </a>
+              </li>
+
+              <!-- Registrar Notas -->
+              <li class="nav-item">
+                <!-- Las notas se registran entrando a un curso desde Mis Cursos -->
+                <a href="{% url 'mis_cursos' %}">
+                  <i class="fas fa-pen"></i>
+                  <p>Registrar Notas</p>
+                </a>
+              </li>
+
+              <!-- Mi Perfil -->
+              <li class="nav-item">
+                <a href="{% url 'mi_perfil' %}">
+                  <i class="fas fa-user"></i>
+                  <p>Mi Perfil</p>
+                </a>
+              </li>
+
+              {% endif %}
+
+
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- End Sidebar -->
+      <div class="main-panel">
+        <div class="main-header">
+          <div class="main-header-logo">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="dark">
+              <a href="index.html" class="logo">
+                <img
+                  src="#"
+                  alt="navbar brand"
+                  class="navbar-brand"
+                  height="20"
+                />
+              </a>
+              <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                  <i class="gg-menu-right"></i>
+                </button>
+                <button class="btn btn-toggle sidenav-toggler">
+                  <i class="gg-menu-left"></i>
+                </button>
+              </div>
+              <button class="topbar-toggler more">
+                <i class="gg-more-vertical-alt"></i>
+              </button>
+            </div>
+            <!-- End Logo Header -->
+          </div>
+          <!-- Navbar Header -->
+          <nav
+            class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
+            <div class="container-fluid">
+              <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
+
+                {% if request.session.usuario_id %}
+
+                <!-- USUARIO LOGUEADO -->
+                <li class="nav-item topbar-user dropdown hidden-caret">
+                  <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#">
+                    <div class="avatar-sm">
+                      <i class="fas fa-user-circle fa-2x"></i>
+                    </div>
+                    <span class="profile-username">
+                      <span class="op-7">Hola</span>
+                      <span class="fw-bold">{{ request.session.usuario_nombre }}</span>
+                    </span>
+                  </a>
+
+                  <ul class="dropdown-menu dropdown-user animated fadeIn">
+                    <div class="dropdown-user-scroll scrollbar-outer">
+
+                      <li>
+                        <div class="user-box">
+                          <div class="avatar-lg">
+                            <i class="fas fa-user-circle fa-3x"></i>
+                          </div>
+                          <div class="u-text">
+                            <h4>{{ request.session.usuario_nombre }}</h4>
+                            <p class="text-muted">{{ request.session.usuario_correo }}</p>
+
+                            <a href="{% url 'mi_perfil' %}">
+                              <i class="fa fa-user"></i> Mi perfil
+                            </a>
+                          </div>
+                        </div>
+                      </li>
+
+                      <li>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'logout' %}">
+                          🔒 Cerrar sesión
+                        </a>
+                      </li>
+
+                    </div>
+                  </ul>
+                </li>
+
+                {% else %}
+
+                <!-- SIN SESIÓN -->
+                <li class="nav-item">
+                  <a href="{% url 'login' %}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                  </a>
+                </li>
+
+                {% endif %}
+
+              </ul>
+            </div>
+
+          </nav>
+          <!-- End Navbar -->
+        </div>
+        <div class="container">
+          <div class="page-inner">
+      
+    <div class="container-fluid">
+        {% block contenido %}
+        {% endblock %}
+
+        <footer class="footer">
+          <div class="container-fluid d-flex justify-content-between">
+            <nav class="pull-left">
+              <ul class="nav">
+                <li class="nav-item mb-1">
+                  <a class="nav-link text-decoration-none fw-semibold" target="_blank" href="https://www.utc.edu.ec/">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROYECTO DE TITULACIÓN <br>
+                    UNIVERSIDAD TÉCNICA DE COTOPAXI
+                  </a>
+                </li>
+                
+              </ul>
+            </nav>
+            <div class="copyright">
+              <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SISTEMAS DE INFORMACIÓN <br>
+              ELABORADO POR ESTUDIANTES DE LA UTC</p>
+              
+              <a class="text-primary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                LATACUNGA 2025-2026</a>
+            </div>  
+            <div>
+              <p class="mb-1">
+              <a href="https://web.facebook.com/ueleonidasproano" 
+                target="_blank" 
+                class="text-decoration-none fw-semibold">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                UNIDAD EDUCATIVA <br> "MONSEÑOR LEONIDAD PROAÑO"
+              </a>
+            </p>
+            </div>
+            <div>
+              
+            </div>
+          </div>
+        </footer>
+    </div>
+
+    <!-- ====== CORE JS ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'plantilla/kaiadmin/assets/js/core/bootstrap.min.js' %}"></script>
+
+    <!-- ====== PLUGINS DEL TEMPLATE ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js' %}"></script>
+
+    <!-- (si realmente los usas) charts -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/chart.js/chart.min.js' %}"></script>
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js' %}"></script>
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/chart-circle/circles.min.js' %}"></script>
+
+    <!-- ====== DATATABLES ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/datatables/datatables.min.js' %}"></script>
+
+    <!-- DataTables Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.flash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+    <!-- ====== BOOTSTRAP-SELECT (JS) ====== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/i18n/defaults-es_ES.min.js"></script>
+
+    <!-- ====== FILEINPUT (JS) ====== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.4/js/fileinput.min.js"
+            integrity="sha512-0wQvB58Ha5coWmcgtg4f11CTSSxfrfLClUp9Vy0qhzYzCZDSnoB4Vhu5JXJFs7rU24LE6JsH+6hpP7vQ22lk5w=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.2/js/locales/es.min.js"></script>
+
+    <!-- ====== NOTIFY / MAPS (si los usas) ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js' %}"></script>
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/jsvectormap/jsvectormap.min.js' %}"></script>
+    <script src="{% static 'plantilla/kaiadmin/assets/js/plugin/jsvectormap/world.js' %}"></script>
+
+    <!-- ====== SWEETALERT ====== -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ====== TEMPLATE MAIN JS ====== -->
+    <script src="{% static 'plantilla/kaiadmin/assets/js/kaiadmin.min.js' %}"></script>
+
+   
+    <script>
+      $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#177dff",
+        fillColor: "rgba(23, 125, 255, 0.14)",
+      });
+
+      $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#f3545d",
+        fillColor: "rgba(243, 84, 93, .14)",
+      });
+
+      $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#ffa534",
+        fillColor: "rgba(255, 165, 52, .14)",
+      });
+    </script>
+
+    {% if messages %}
+      {% for message in messages %}
+        <script>
+          Swal.fire({
+            title: "{% if message.tags == 'error' %}Error{% else %}Información{% endif %}",
+            text: "{{ message }}",
+            icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+            confirmButtonText: "OK"
+          });
+        </script>
+      {% endfor %}
+    {% endif %}
+
+    <style>
+        .nota-input {
+            width: 70px !important;
+            text-align: center;
+            padding: 1px;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{% extends 'plantilla.html' %}
+{% load static %}
+
+{% block contenido %}
+
+<div class="page-inner">
+
+    <div class="page-header">
+        <h4 class="page-title">Mi Perfil</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="/dashboard_docente ">
+                    <i class="fa fa-home"></i>
+                </a>
+            </li>
+            <li class="separator"><i class="fa fa-angle-right"></i></li>
+            <li class="nav-item">Perfil</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Información personal</h4>
+        </div>
+
+        <div class="card-body">
+
+            {% if messages %}
+            {% for m in messages %}
+            <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label><strong>Cédula:</strong></label>
+                    <p>{{ usuario.cedula }}</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label><strong>Nombres:</strong></label>
+                    <p>{{ usuario.nombres }}</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label><strong>Apellidos:</strong></label>
+                    <p>{{ usuario.apellido_paterno }} {{ usuario.apellido_materno }}</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label><strong>Correo:</strong></label>
+                    <p>{{ usuario.correo }}</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label><strong>Teléfono:</strong></label>
+                    <p>{{ usuario.telefono }}</p>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label><strong>Dirección:</strong></label>
+                    <p>{{ usuario.direccion }}</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label><strong>Rol:</strong></label>
+                    <p class="badge badge-primary" style="font-size:14px;">{{ usuario.rol|upper }}</p>
+                </div>
+            </div>
+
+            <a href="{% url 'cambiar_password_perfil' %}" class="btn btn-warning mt-3">
+                <i class="fa fa-lock"></i> Cambiar contraseña
+            </a>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
