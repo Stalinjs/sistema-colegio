@@ -12,6 +12,9 @@ from django.utils import timezone
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+import random
+import string
+from django.core.mail import send_mail
 
 def inicio(request):
     return render(request, 'inicio.html')
@@ -63,21 +66,39 @@ def logout_view(request):
     request.session.flush()
     return redirect("/")
 
-# RECUPERAR CONTRASEÑA (pedir cédula)
 def recuperar_password(request):
     if request.method == "POST":
-        cedula = (request.POST.get("cedula") or "").strip()
+        correo = (request.POST.get("correo") or "").strip().lower()
 
         try:
-            usuario = Usuario.objects.get(cedula=cedula)
+            usuario = Usuario.objects.get(correo=correo, activo=True)
         except Usuario.DoesNotExist:
-            messages.error(request, "La cédula no está registrada.")
+            messages.error(request, "No existe un usuario activo con ese correo.")
             return redirect("recuperar_password")
 
-        # Guardamos la cedula en sesión temporal
-        request.session["recuperar_cedula"] = cedula
+        # Generar contraseña temporal
+        nueva_password = ''.join(random.choices(string.digits, k=8))
 
-        return redirect("cambiar_password")
+        usuario.password = make_password(nueva_password)
+        usuario.save()
+
+        send_mail(
+            subject="Recuperación de contraseña - Sistema Académico",
+            message=(
+                f"Estimado/a {usuario.nombres},\n\n"
+                "Se ha generado una nueva contraseña temporal para su acceso al Sistema Académico "
+                "de la Unidad Educativa Monseñor Leónidas Proaño.\n\n"
+                f"Usuario: {usuario.cedula}\n"
+                f"Nueva contraseña temporal: {nueva_password}\n\n"
+                "Le recomendamos ingresar al sistema y solicitar el cambio de contraseña."
+            ),
+            from_email=None,
+            recipient_list=[usuario.correo],
+            fail_silently=False,
+        )
+
+        messages.success(request, "Se envió una nueva contraseña temporal a su correo.")
+        return redirect("login")
 
     return render(request, "usuarios/recuperar_password.html")
 
@@ -165,15 +186,14 @@ def usuarios_crear(request):
     
     if request.method == "POST":
         cedula = (request.POST.get("cedula") or "").strip()
-        nombres = request.POST.get("nombres")
-        apellido_p = request.POST.get("apellido_paterno")
-        apellido_m = request.POST.get("apellido_materno")
-        correo = request.POST.get("correo")
-        telefono = request.POST.get("telefono")
-        direccion = request.POST.get("direccion")
-        rol = request.POST.get("rol")
+        nombres = (request.POST.get("nombres") or "").strip()
+        apellido_p = (request.POST.get("apellido_paterno") or "").strip()
+        apellido_m = (request.POST.get("apellido_materno") or "").strip()
+        correo = (request.POST.get("correo") or "").strip()
+        telefono = (request.POST.get("telefono") or "").strip()
+        direccion = (request.POST.get("direccion") or "").strip()
+        rol = (request.POST.get("rol") or "").strip()
 
-        # Validar único admin y secretaria
         if rol == "admin":
             if Usuario.objects.filter(rol="admin").exists():
                 messages.error(request, "Ya existe un Administrador. Solo puede existir uno.")
@@ -183,7 +203,6 @@ def usuarios_crear(request):
             if Usuario.objects.filter(rol="secretaria", activo=True).exists():
                 messages.error(request, "Ya existe una Secretaría activa. Desactive la actual para registrar otra.")
                 return redirect("usuarios_crear")
-
 
         # Validaciones básicas
         if Usuario.objects.filter(cedula=cedula).exists():
@@ -195,12 +214,13 @@ def usuarios_crear(request):
             nombres=nombres,
             apellido_paterno=apellido_p,
             apellido_materno=apellido_m,
-            correo=correo,
-            telefono=telefono,
-            direccion=direccion,
+            correo=correo if correo else None,
+            telefono=telefono if telefono else None,
+            direccion=direccion if direccion else None,
             rol=rol,
             password=make_password(cedula)
         )
+
         try:
             nuevo.save()
         except ValidationError as e:
@@ -209,10 +229,36 @@ def usuarios_crear(request):
                 msg = " ".join(msg)
             messages.error(request, msg)
             return redirect("usuarios_crear")
+
         if rol == "docente":
             Docente.objects.create(usuario=nuevo)
 
-        messages.success(request, "Usuario creado correctamente.")
+        if correo:
+            try:
+                send_mail(
+                    subject="Registro en el Sistema Académico",
+                    message=(
+                        f"Estimado/a {nuevo.nombres},\n\n"
+                        "Usted ha sido registrado en el Sistema Académico de la "
+                        "Unidad Educativa Monseñor Leónidas Proaño.\n\n"
+                        f"Usuario: {cedula}\n"
+                        f"Contraseña inicial: {cedula}\n"
+                        f"Rol asignado: {rol}\n\n"
+                        "Le recomendamos cambiar su contraseña al ingresar."
+                    ),
+                    from_email=None,
+                    recipient_list=[correo],
+                    fail_silently=False,
+                )
+                messages.success(request, "Usuario creado correctamente y correo enviado.")
+            except Exception:
+                messages.warning(
+                    request,
+                    "Usuario creado correctamente, pero no se pudo enviar el correo."
+                )
+        else:
+            messages.success(request, "Usuario creado correctamente.")
+
         return redirect("usuarios_lista")
 
     return render(request, "usuarios/usuarios_crear.html")
