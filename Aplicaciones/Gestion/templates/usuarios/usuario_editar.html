@@ -10,7 +10,8 @@
         <div class="row">
             <div class="col-md-4 mb-3">
                 <label>Cédula</label>
-                <input type="text" name="cedula" class="form-control" value="{{ usuario.cedula }}">
+                <input type="text" name="cedula" class="form-control" value="{{ usuario.cedula }}" readonly>
+                <small class="text-muted">La cédula no se puede modificar.</small>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -67,12 +68,6 @@
 <script>
 $("#frm_usuario").validate({
     rules: {
-        cedula: {
-            required: true,
-            minlength: 10,
-            maxlength: 10,
-            number: true
-        },
         nombres: {
             required: true,
             minlength: 3
@@ -90,12 +85,6 @@ $("#frm_usuario").validate({
         }
     },
     messages: {
-        cedula: {
-            required: "Ingrese la cédula",
-            minlength: "La cédula debe tener 10 dígitos",
-            maxlength: "La cédula debe tener 10 dígitos",
-            number: "Solo se permiten números"
-        },
         nombres: {
             required: "Ingrese los nombres",
             minlength: "Debe tener al menos 3 caracteres"

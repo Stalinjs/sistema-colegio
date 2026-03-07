@@ -269,7 +269,7 @@ def editar_usuario(request, usuario_id):
     usuario = get_object_or_404(Usuario, id=usuario_id)
 
     if request.method == "POST":
-        usuario.cedula = (request.POST.get("cedula") or "").strip()
+        
         usuario.nombres = request.POST.get("nombres")
         usuario.apellido_paterno = request.POST.get("apellido_paterno")
         usuario.apellido_materno = request.POST.get("apellido_materno")
@@ -277,11 +277,11 @@ def editar_usuario(request, usuario_id):
         usuario.telefono = request.POST.get("telefono")
         usuario.direccion = request.POST.get("direccion")
 
-        rol_nuevo = usuario.rol  # por defecto
+        rol_nuevo = usuario.rol  
         if usuario.rol != "admin":
-            rol_nuevo = request.POST.get("rol")  # rol que viene del select
+            rol_nuevo = request.POST.get("rol")  
 
-        # Validación evitar duplicidad de cédulas
+        
         if Usuario.objects.exclude(id=usuario_id).filter(cedula=usuario.cedula).exists():
             messages.error(request, "La cédula ya está registrada por otro usuario.")
             return redirect("editar_usuario", usuario_id=usuario.id)
@@ -1607,7 +1607,7 @@ def estudiantes_editar(request, estudiante_id):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
     if request.method == "POST":
-        cedula = (request.POST.get("cedula") or "").strip()
+        
         nombres = (request.POST.get("nombres") or "").strip()
         apellido_paterno = (request.POST.get("apellido_paterno") or "").strip()
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
@@ -1616,15 +1616,10 @@ def estudiantes_editar(request, estudiante_id):
         direccion = (request.POST.get("direccion") or "").strip() or None
         sucursal_id = (request.POST.get("sucursal") or "").strip()
 
-        if not cedula or not nombres or not apellido_paterno or not apellido_materno or not sucursal_id:
-            messages.error(request, "Cédula, nombres, apellidos y sucursal son obligatorios.")
+        if not nombres or not apellido_paterno or not apellido_materno or not sucursal_id:
+            messages.error(request, "Nombres, apellidos y sucursal son obligatorios.")
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
-
-        if Estudiante.objects.exclude(id=estudiante.id).filter(cedula=cedula).exists():
-            messages.error(request, "La cédula ya está registrada por otro estudiante.")
-            return redirect("estudiantes_editar", estudiante_id=estudiante.id)
-
-        estudiante.cedula = cedula
+        
         estudiante.nombres = nombres
         estudiante.apellido_paterno = apellido_paterno
         estudiante.apellido_materno = apellido_materno
