@@ -70,6 +70,10 @@ def recuperar_password(request):
     if request.method == "POST":
         correo = (request.POST.get("correo") or "").strip().lower()
 
+        if not correo:
+            messages.error(request, "Debe ingresar un correo.")
+            return redirect("recuperar_password")
+
         try:
             usuario = Usuario.objects.get(correo=correo, activo=True)
         except Usuario.DoesNotExist:
@@ -79,55 +83,64 @@ def recuperar_password(request):
         # Generar contraseña temporal
         nueva_password = ''.join(random.choices(string.digits, k=8))
 
+        # Guardar contraseña hasheada
         usuario.password = make_password(nueva_password)
         usuario.save()
 
-        send_mail(
-            subject="Recuperación de contraseña - Sistema Académico",
-            message=(
-                f"Estimado/a {usuario.nombres},\n\n"
-                "Se ha generado una nueva contraseña temporal para su acceso al Sistema Académico "
-                "de la Unidad Educativa Monseñor Leónidas Proaño.\n\n"
-                f"Usuario: {usuario.cedula}\n"
-                f"Nueva contraseña temporal: {nueva_password}\n\n"
-                "Le recomendamos ingresar al sistema y solicitar el cambio de contraseña."
-            ),
-            from_email=None,
-            recipient_list=[usuario.correo],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject="Recuperación de contraseña - Sistema Académico",
+                message=(
+                    f"Estimado/a {usuario.nombres},\n\n"
+                    "Se ha generado una nueva contraseña temporal para su acceso al Sistema Académico "
+                    "de la Unidad Educativa Monseñor Leónidas Proaño.\n\n"
+                    f"Usuario: {usuario.cedula}\n"
+                    f"Nueva contraseña temporal: {nueva_password}\n\n"
+                    "Le recomendamos ingresar al sistema y cambiar su contraseña desde su perfil."
+                ),
+                from_email=None,
+                recipient_list=[usuario.correo],
+                fail_silently=False,
+            )
+            messages.success(request, "Se envió una nueva contraseña temporal a su correo.")
+        except Exception as e:
+            messages.error(request, f"No se pudo enviar el correo. Error: {e}")
 
-        messages.success(request, "Se envió una nueva contraseña temporal a su correo.")
         return redirect("login")
 
     return render(request, "usuarios/recuperar_password.html")
 
-
 # CAMBIAR CONTRASEÑA (después de validar cédula)
 def cambiar_password(request):
-    cedula = request.session.get("recuperar_cedula")
+    usuario_id = request.session.get("usuario_id")
 
-    if not cedula:
-        messages.error(request, "Primero debes recuperar la contraseña.")
-        return redirect("recuperar_password")
+    if not usuario_id:
+        messages.error(request, "Debe iniciar sesión para cambiar su contraseña.")
+        return redirect("login")
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
 
     if request.method == "POST":
-        nueva_pass = request.POST.get("password")
-        confirmar = request.POST.get("password2")
+        password1 = (request.POST.get("password1") or "").strip()
+        password2 = (request.POST.get("password2") or "").strip()
 
-        if nueva_pass != confirmar:
+        if not password1 or not password2:
+            messages.error(request, "Debe completar ambos campos.")
+            return redirect("cambiar_password")
+
+        if password1 != password2:
             messages.error(request, "Las contraseñas no coinciden.")
             return redirect("cambiar_password")
 
-        usuario = Usuario.objects.get(cedula=cedula)
-        usuario.password = make_password(nueva_pass)
+        if len(password1) < 6:
+            messages.error(request, "La contraseña debe tener al menos 6 caracteres.")
+            return redirect("cambiar_password")
+
+        usuario.password = make_password(password1)
         usuario.save()
 
-        # Limpiar sesión temporal
-        del request.session["recuperar_cedula"]
-
-        messages.success(request, "Tu contraseña fue actualizada.")
-        return redirect("login")
+        messages.success(request, "Tu contraseña fue actualizada correctamente.")
+        return redirect("mi_perfil")
 
     return render(request, "usuarios/cambiar_password.html")
 
