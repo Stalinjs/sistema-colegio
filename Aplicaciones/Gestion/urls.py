@@ -3,7 +3,7 @@ from . import views
 from . import views_reportes as vr
 
 urlpatterns = [
-    path("", views.inicio),
+    path("", views.inicio, name="inicio"),
     # LOGIN
     path("login/", views.login_view, name="login"),
     path("login/validar/", views.login_validar, name="login_validar"),

@@ -1,198 +1,380 @@
-{% extends "plantilla.html" %}
+{% extends "base_publica.html" %}
 {% load static %}
+{% block title %}Inicio | UE Monseñor Leónidas Proaño{% endblock %}
+
 {% block contenido %}
-<div class="container-fluid py-4">
 
-  <!-- CABECERA -->
-  <div class="row align-items-center g-3 mb-4">
-    <div class="col-12 col-lg-2 text-center text-lg-start">
-      <!-- Logo (pon tu ruta real) -->
-      <img src="{% static 'img/logo.jpg' %}" class="img-fluid rounded-3 shadow-sm" alt="Logo UE" style="max-height:110px;">
-      <!-- Si no quieres ni ese style, elimínalo y controla el tamaño con tu base o imagen -->
-    </div>
+<section class="hero-section d-flex justify-content-center align-items-center" id="section_1">
+    <div class="container">
+        <div class="row">
 
-    <div class="col-12 col-lg-10 text-center text-lg-start">
-      <div class="p-3 rounded-4 bg-primary text-white shadow-sm">
-        <h1 class="fw-bold mb-1 text-uppercase">
-          Unidad Educativa Monseñor Leonidas Proaño
-        </h1>
-        <h2 class="fw-semibold mb-0 text-uppercase opacity-75">
-          Latacunga
-        </h2>
-        <div class="mt-2 small">
-          Sistema Académico Institucional • Matrículas • Años lectivos • Notas (T1, T2, T3) • Supletorio
+            <div class="col-lg-8 col-12 mx-auto text-center">
+                <h1 class="text-white">Unidad Educativa Monseñor Leónidas Proaño</h1>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</section>
 
-  <!-- CARRUSEL (ELEGANTE) -->
-  <div class="row g-4">
-    <div class="col-12 col-lg-8">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div id="carouselColegio" class="carousel slide carousel-fixed" data-bs-ride="carousel" data-bs-interval="4500">
+<section class="featured-section">
+    <div class="container">
+        <div class="row justify-content-center">
+           <div class="col-lg-4 col-md-6 col-12">
+                <div class="custom-block bg-white shadow-lg featured-card h-100">
+                    <div class="d-flex align-items-start">
+                        <div>
+                            <h5 class="mb-2">Sistema Académico</h5>
+                            <p class="mb-0">
+                                Plataforma institucional para matrículas, control de notas,
+                                promociones estudiantiles y consulta de información académica.
+                            </p>
+                        </div>
 
-          <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="2"></button>
-            <button type="button" data-bs-target="#carouselColegio" data-bs-slide-to="3"></button>
-          </div>
-
-          <div class="carousel-inner">
-
-            <div class="carousel-item active">
-              <img src="{% static 'img/carrusel1.jpg' %}" class="d-block w-100" alt="Instalaciones 1">
-              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
-                <h5 class="fw-bold mb-1">Vida institucional</h5>
-                <p class="mb-0">Actividades académicas y formativas.</p>
-              </div>
+                        <span class="badge bg-design rounded-pill ms-auto">1</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="carousel-item">
-              <img src="{% static 'img/carrusel2.jpg' %}" class="d-block w-100" alt="Instalaciones 2">
-              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
-                <h5 class="fw-bold mb-1">Infraestructura</h5>
-                <p class="mb-0">Espacios para aprender y crecer.</p>
-              </div>
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="custom-block bg-white shadow-lg featured-card h-100">
+                    <div class="d-flex align-items-start">
+                        <div>
+                            <h5 class="mb-2">Oferta educativa</h5>
+                            <p class="mb-0">
+                                INTENSIVO 5 MESES
+                            </p>
+                            <p class="mb-0">
+                                BASICA SUPERIOR Y BACHILLERATO
+                            </p>
+                        </div>
+
+                        <span class="badge bg-advertising rounded-pill ms-auto">2</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="carousel-item">
-              <img src="{% static 'img/carrusel3.jpg' %}" class="d-block w-100" alt="Talleres">
-              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
-                <h5 class="fw-bold mb-1">Bachillerato Técnico</h5>
-                <p class="mb-0">Práctica, laboratorio y habilidades para la vida.</p>
-              </div>
+        </div>
+    </div>
+</section>
+
+<section class="explore-section section-padding" id="section_2">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="mb-4">Nosotros</h2>
+                <p class="section-text">
+                    Conoce la identidad institucional y el compromiso formativo de la
+                    Unidad Educativa Monseñor Leónidas Proaño.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row g-4">
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="custom-block bg-white shadow-lg h-100 nosotros-card">
+                    <div class="d-flex align-items-start">
+                        <div>
+                            <h5 class="mb-2">Misión</h5>
+                            <p class="mb-0">
+                                Formar estudiantes con principios, conocimientos y habilidades
+                                que fortalezcan su desarrollo integral, promoviendo una educación
+                                inclusiva y orientada al servicio de la sociedad.
+                            </p>
+                        </div>
+                        <span class="badge bg-design rounded-pill ms-auto">1</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="carousel-item">
-              <img src="{% static 'img/carrusel4.jpg' %}" class="d-block w-100" alt="Ciencias">
-              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-4 p-3">
-                <h5 class="fw-bold mb-1">Bachillerato en Ciencias</h5>
-                <p class="mb-0">Bases sólidas para la educación superior.</p>
-              </div>
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="custom-block bg-white shadow-lg h-100 nosotros-card">
+                    <div class="d-flex align-items-start">
+                        <div>
+                            <h5 class="mb-2">Visión</h5>
+                            <p class="mb-0">
+                                Ser una institución educativa reconocida por su calidad académica,
+                                formación humana y compromiso con la comunidad, brindando oportunidades
+                                de aprendizaje para niños, adolescentes, jóvenes y adultos.
+                            </p>
+                        </div>
+                        <span class="badge bg-advertising rounded-pill ms-auto">2</span>
+                    </div>
+                </div>
             </div>
 
-          </div>
-
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselColegio" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-          </button>
-
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselColegio" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- BLOQUE COMO “BANDA” (similar al diseño del afiche) -->
-      <div class="row g-3 mt-2">
-        <div class="col-12 col-md-6">
-          <div class="p-3 rounded-4 bg-light border shadow-sm">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="badge bg-primary rounded-pill px-3 py-2">Bachillerato Técnico</span>
+            <div class="col-lg-4 col-md-12 col-12">
+                <div class="custom-block bg-white shadow-lg h-100 nosotros-card">
+                    <div class="d-flex align-items-start">
+                        <div>
+                            <h5 class="mb-2">Compromiso institucional</h5>
+                            <p class="mb-0">
+                                La institución ofrece una formación académica orientada al desarrollo
+                                personal, social y técnico de sus estudiantes, mediante modalidades de
+                                estudio adaptadas a diferentes necesidades educativas.
+                            </p>
+                        </div>
+                        <span class="badge bg-finance rounded-pill ms-auto">3</span>
+                    </div>
+                </div>
             </div>
-            <p class="mb-0 text-muted">
-              Módulos con enfoque práctico: talleres, laboratorios y competencias técnicas.
-            </p>
-          </div>
-        </div>
 
-        <div class="col-12 col-md-6">
-          <div class="p-3 rounded-4 bg-light border shadow-sm">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="badge bg-dark rounded-pill px-3 py-2">Bachillerato General Ciencias</span>
+        </div>
+    </div>
+</section>
+
+<section class="timeline-section section-padding" id="section_3">
+    <div class="section-overlay"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white mb-5">Oferta académica</h2>
+                <p class="text-white oferta-subtitulo">
+                    Conoce los niveles y especialidades académicas que ofrece la institución.
+                </p>
             </div>
-            <p class="mb-0 text-muted">
-              Formación integral para fortalecer razonamiento, ciencias y proyección universitaria.
-            </p>
-          </div>
+
+            <div class="col-lg-10 col-12 mx-auto">
+                <div class="timeline-container">
+                    <ul class="vertical-scrollable-timeline" id="vertical-scrollable-timeline">
+                        <div class="list-progress">
+                            <div class="inner"></div>
+                        </div>
+
+                        <li>
+                            <h4 class="text-white mb-3">Educación General Básica Superior</h4>
+                            <p class="text-white mb-3">
+                                La institución ofrece el nivel de Educación General Básica Superior
+                                dirigido a estudiantes que cursan los últimos años de la educación básica.
+                            </p>
+
+                            <div class="oferta-box text-white">
+                                <span>Octavo grado</span>
+                                <span>Noveno grado</span>
+                                <span>Décimo grado</span>
+                            </div>
+
+                            <div class="icon-holder">
+                                <i class="bi-mortarboard"></i>
+                            </div>
+                        </li>
+
+                        <li>
+                            <h4 class="text-white mb-3">Bachillerato en Ciencias</h4>
+                            <p class="text-white mb-3">
+                                El bachillerato en ciencias está orientado a fortalecer la formación académica
+                                de los estudiantes para continuar estudios superiores en diferentes áreas del conocimiento.
+                            </p>
+
+                            <div class="oferta-box text-white">
+                                <span>Primero de bachillerato</span>
+                                <span>Segundo de bachillerato</span>
+                                <span>Tercer de bachillerato</span>
+                            </div>
+
+                            <div class="icon-holder">
+                                <i class="bi-book"></i>
+                            </div>
+                        </li>
+
+                        <li>
+                            <h4 class="text-white mb-3">Bachillerato Técnico</h4>
+                            <p class="text-white mb-3">
+                                La institución ofrece bachillerato técnico con diferentes especialidades que
+                                permiten a los estudiantes desarrollar competencias prácticas para el ámbito
+                                laboral y productivo.
+                            </p>
+
+                            <div class="oferta-box text-white">
+                                <span>Producción Agropecuaria Sostenible</span>
+                                <span>Instalaciones eléctricas y automatización</span>
+                                <span>Gestión financiera y contable</span>
+                                <span>Diseño de modas</span>
+                            </div>
+
+                            <div class="icon-holder">
+                                <i class="bi-tools"></i>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
+</section>
+<section class="faq-section section-padding" id="section_4">
+    <div class="container">
+        <div class="row">
 
-    <!-- PANEL LATERAL (ACCESOS / INFO DEL SISTEMA) -->
-    <div class="col-12 col-lg-4">
-      <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body p-4">
-          <h4 class="fw-bold mb-2">Accesos rápidos</h4>
+            <div class="col-lg-6 col-12">
+                <h2 class="mb-4">Avisos institucionales</h2>
+            </div>
 
-          <div class="d-grid gap-2">
-            <h2 class="text-center">Misión</h2>
-            <p>----</p>
+            <div class="clearfix"></div>
 
-            <h2 class="text-center">Visión</h2>
-            <p>----</p>
-          </div>
+            <div class="col-lg-5 col-12">
+                <img src="{% static 'img/carrusel2.jpg' %}" class="img-fluid rounded" alt="Avisos">
+            </div>
 
-          <hr class="my-4">
+            <div class="col-lg-6 col-12 m-auto">
+                <div class="accordion" id="accordionAvisos">
 
-          <div class="p-3 rounded-4 bg-light border">
-            <h6 class="fw-bold mb-2">¿Qué permite el sistema?</h6>
-            <ul class="mb-0 text-muted">
-              <li>Gestión de Años Lectivos</li>
-              <li>Matrículas por sucursal, curso y paralelo</li>
-              <li>Registro de notas T1, T2, T3</li>
-              <li>Promedio final y supletorio</li>
-            </ul>
-          </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Proceso de matrículas
+                            </button>
+                        </h2>
+
+                        <div id="collapseOne" class="accordion-collapse collapse show"
+                             aria-labelledby="headingOne" data-bs-parent="#accordionAvisos">
+                            <div class="accordion-body">
+                                Secretaría informará las fechas y requisitos para el proceso de matrículas
+                                del período académico vigente.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Entrega de reportes académicos
+                            </button>
+                        </h2>
+
+                        <div id="collapseTwo" class="accordion-collapse collapse"
+                             aria-labelledby="headingTwo" data-bs-parent="#accordionAvisos">
+                            <div class="accordion-body">
+                                Los reportes y promociones estudiantiles serán emitidos según el cronograma
+                                institucional definido por la institución.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Eventos y actividades
+                            </button>
+                        </h2>
+
+                        <div id="collapseThree" class="accordion-collapse collapse"
+                             aria-labelledby="headingThree" data-bs-parent="#accordionAvisos">
+                            <div class="accordion-body">
+                                Próximamente se publicarán actividades culturales, deportivas, académicas
+                                y eventos institucionales de interés para la comunidad educativa.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
 
         </div>
-      </div>
     </div>
-  </div>
+</section>
+<section class="section-padding gallery-section" id="section_5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-12 text-center">
+                <h2 class="mb-3">Galería institucional</h2>
+                <p class="section-text mb-5">
+                    Espacios, actividades y momentos que reflejan el compromiso académico
+                    y formativo de la Unidad Educativa Monseñor Leónidas Proaño.
+                </p>
+            </div>
 
-  <!-- GALERÍA (tipo afiche, pero con cards Bootstrap) -->
-  <div class="row g-3 mt-4">
-    <div class="col-12">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h4 class="fw-bold mb-0">Galería institucional</h4>
-      </div>
-    </div>
+            <div class="col-lg-4 col-md-6 col-12 mb-4">
+                <div class="gallery-card shadow-sm">
+                    <img src="{% static 'img/carrusel1.jpg' %}" class="img-fluid gallery-img" alt="Vida institucional">
+                    <div class="gallery-info">
+                        <h5 class="mb-2">Vida institucional</h5>
+                        <p class="mb-0">Actividades académicas, culturales y participación estudiantil.</p>
+                    </div>
+                </div>
+            </div>
 
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <img src="#" class="w-100" alt="Foto 1">
-        <div class="card-body">
-          <div class="fw-semibold">Aula / Computación</div>
-          <div class="text-muted small">Actividades académicas</div>
+            <div class="col-lg-4 col-md-6 col-12 mb-4">
+                <div class="gallery-card shadow-sm">
+                    <img src="{% static 'img/carrusel3.jpg' %}" class="img-fluid gallery-img" alt="Formación técnica">
+                    <div class="gallery-info">
+                        <h5 class="mb-2">Formación técnica</h5>
+                        <p class="mb-0">Espacios de aprendizaje práctico y fortalecimiento de competencias.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-12 mb-4">
+                <div class="gallery-card shadow-sm">
+                    <img src="{% static 'img/carrusel4.jpg' %}" class="img-fluid gallery-img" alt="Preparación académica">
+                    <div class="gallery-info">
+                        <h5 class="mb-2">Preparación académica</h5>
+                        <p class="mb-0">Procesos educativos orientados al desarrollo integral del estudiante.</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
-      </div>
     </div>
+</section>
+<section class="contact-section section-padding section-bg" id="section_6">
+    <div class="container">
+        <div class="row align-items-center">
 
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <img src="#" class="w-100" alt="Foto 2">
-        <div class="card-body">
-          <div class="fw-semibold">Taller Técnico</div>
-          <div class="text-muted small">Aprendizaje práctico</div>
+            <div class="col-lg-12 col-12 text-center">
+                <h2 class="mb-3">Contáctanos</h2>
+                <p class="section-text mb-5">
+                    Comunícate con la institución para obtener información sobre oferta académica,
+                    matrículas y servicios del sistema académico institucional.
+                </p>
+            </div>
+
+            <div class="col-lg-5 col-12 mb-4 mb-lg-0">
+                <div class="contact-map-wrapper shadow-sm">
+                    <iframe class="google-map"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d249.3315276254989!2d-78.63106176742367!3d-0.919593485079244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d4604974155553%3A0x155b8681c3bbbfe7!2sUnidad%20Educativa%20PCEI%20Monse%C3%B1or%20Leonidas%20Proa%C3%B1o!5e0!3m2!1ses!2sec!4v1773006604317!5m2!1ses!2sec"
+                            width="100%" height="320" style="border:0;" allowfullscreen=""
+                            loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 col-12 mb-4 mb-lg-0 ms-auto">
+                <div class="contact-card h-100">
+                    <h4 class="mb-3">Institución</h4>
+                    <p class="mb-3">Latacunga, Cotopaxi, Ecuador</p>
+                    <hr>
+                    <p class="d-flex align-items-center mb-2">
+                        <span class="me-2 fw-semibold">Teléfono:</span>
+                        <a href="tel:0983944430" class="site-footer-link">0983944430</a>
+                    </p>
+                    <p class="d-flex align-items-center mb-0">
+                        <span class="me-2 fw-semibold">Correo:</span>
+                        <a href="mailto:pmonsenorleonidas@gmail.com" class="site-footer-link">
+                            pmonsenorleonidas@gmail.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 col-12 mx-auto">
+                <div class="contact-card h-100">
+                    <h4 class="mb-3">Sistema académico</h4>
+                    <p>
+                        Plataforma orientada a la gestión de matrículas, control de notas,
+                        promociones estudiantiles y consulta de información institucional.
+                    </p>
+                    <hr>
+                    
+                </div>
+            </div>
+
         </div>
-      </div>
     </div>
-
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <img src="#" class="w-100" alt="Foto 3">
-        <div class="card-body">
-          <div class="fw-semibold">Patio / Comunidad</div>
-          <div class="text-muted small">Convivencia institucional</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <img src="#" class="w-100" alt="Foto 4">
-        <div class="card-body">
-          <div class="fw-semibold">Proyecto Ambiental</div>
-          <div class="text-muted small">Compromiso con el entorno</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
+</section>
 {% endblock %}

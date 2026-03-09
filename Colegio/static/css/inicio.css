@@ -1,18 +1,94 @@
-/* Altura fija del carrusel */
-.carousel-fixed {
-  height: 420px; /* ajusta a tu gusto: 380, 420, 500 */
+#section_3 .section-overlay {
+    background: rgba(10, 45, 90, 0.68);
 }
 
-/* Asegura que cada slide ocupe esa altura */
-.carousel-fixed .carousel-inner,
-.carousel-fixed .carousel-item {
-  height: 100%;
+#section_3 .vertical-scrollable-timeline li {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 30px 30px 25px 95px;
+    margin-bottom: 35px;
+    backdrop-filter: blur(3px);
+    position: relative;
 }
 
-/* Las imágenes se adaptan sin deformarse */
-.carousel-fixed img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;      /* recorta para llenar */
-  object-position: center; /* centra el recorte */
+#section_3 .vertical-scrollable-timeline li h4 {
+    font-size: 28px;
+    font-weight: 700;
 }
+
+#section_3 .vertical-scrollable-timeline li p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #f8fbff;
+}
+
+#section_3 .icon-holder {
+    width: 64px;
+    height: 64px;
+    background: #ffffff;
+    color: #2a6fb0;
+    border: 4px solid #2a6fb0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 26px;
+    left: -5px;
+    top: 28px;
+}
+
+#section_3 .oferta-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+#section_3 .oferta-box span {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+#section_3 .oferta-subtitulo {
+    max-width: 650px;
+    margin: 0 auto 20px auto;
+    font-size: 17px;
+    opacity: 0.95;
+}
+
+#section_3 .list-progress {
+    left: 26px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+#section_3 .list-progress .inner {
+    background: #ffffff;
+}
+
+@media (max-width: 768px) {
+    #section_3 .vertical-scrollable-timeline li {
+        padding: 25px 20px 20px 80px;
+    }
+
+    #section_3 .vertical-scrollable-timeline li h4 {
+        font-size: 22px;
+    }
+
+    #section_3 .icon-holder {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+    }
+
+    #section_3 .oferta-box span {
+        width: 100%;
+        text-align: center;
+    }
+}
+

@@ -1,0 +1,209 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="Unidad Educativa Monseñor Leónidas Proaño">
+    <meta name="author" content="Stalin Manobanda">
+    <link rel="icon"
+      href="{% static 'img/logo.jpg' %}"
+      type="image/x-icon" />
+
+    <title>{% block title %}Unidad Educativa Monseñor Leónidas Proaño{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
+
+    <link href="{% static 'plantilla/Topic/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'plantilla/Topic/css/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="{% static 'plantilla/Topic/css/templatemo-topic-listing.css' %}" rel="stylesheet">
+
+    <style>
+        .navbar-brand img {
+            height: 42px;
+            background: white;
+            border-radius: 8px;
+            padding: 2px;
+        }
+        .navbar {
+            background: #2a6fb0;
+        }
+
+        .navbar .nav-link {
+            color: white !important;
+        }
+
+        .navbar .nav-link:hover {
+            color: #dfefff !important;
+        }
+        .navbar-brand img {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .site-header,
+        .hero-section {
+            background-image: linear-gradient(15deg, #a8c4e9 0%, #2a6fb0 100%);
+        }
+
+        .custom-btn,
+        .btn.custom-btn {
+            background-color: #2a6fb0;
+            border-color: #2a6fb0;
+        }
+
+        .custom-btn:hover,
+        .btn.custom-btn:hover {
+            background-color: #1e3a5f;
+            border-color: #1e3a5f;
+        }
+
+        .custom-border-btn {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .custom-border-btn:hover {
+            background-color: #ffffff;
+            color: #1e3a5f;
+        }
+
+        .section-overlay {
+            background-color: rgba(20, 54, 92, 0.55);
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body id="top">
+
+<main>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'inicio' %}">
+                <img src="{% static 'img/logo.jpg' %}" alt="Logo Colegio">
+                <span>UE MLP</span>
+            </a>
+
+            <div class="d-lg-none ms-auto me-4">
+                <a href="{% url 'login' %}" class="btn btn-light btn-sm rounded-pill px-3">
+                    <i class="bi-person"></i>
+                </a>
+            </div>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-lg-5 me-lg-auto">
+                    <li class="nav-item">
+                        <a class="nav-link click-scroll" href="#section_1">Inicio</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link click-scroll" href="#section_2">Nosotros</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link click-scroll" href="#section_3">Oferta académica</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link click-scroll" href="#section_4">Avisos</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link click-scroll" href="#section_5">Galería</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link click-scroll" href="#section_6">Contacto</a>
+                    </li>
+                </ul>
+
+                <div class="d-none d-lg-block">
+                    <a href="{% url 'login' %}" class="btn btn-light rounded-pill px-4 fw-semibold">
+                        <i class="bi-person"></i> Iniciar sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% block contenido %}{% endblock %}
+</main>
+
+<footer class="site-footer section-padding">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-3 col-md-4 col-6 ms-auto">
+                <h6 class="site-footer-title mb-3">Enlaces</h6>
+
+                <ul class="site-footer-links">
+                    <li class="site-footer-link-item">
+                        <a href="#section_1" class="site-footer-link">Inicio</a>
+                    </li>
+
+                    <li class="site-footer-link-item">
+                        <a href="#section_2" class="site-footer-link">Nosotros</a>
+                    </li>
+
+                    <li class="site-footer-link-item">
+                        <a href="#section_5" class="site-footer-link">Galería</a>
+                    </li>
+
+                    <li class="site-footer-link-item">
+                        <a href="#section_6" class="site-footer-link">Contacto</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-4 col-6 mb-4 mb-lg-0 ms-auto">
+                <h6 class="site-footer-title mb-3">Información</h6>
+
+                <p class="text-white d-flex mb-1">
+                    <a href="tel:0983944430" class="site-footer-link">0983944430</a>
+                </p>
+
+                <p class="text-white d-flex">
+                    <a href="mailto:pmonsenorleonidas@gmail.com" class="site-footer-link">
+                        pmonsenorleonidas@gmail.com
+                    </a>
+                </p>
+            </div>
+
+            <div class="col-lg-3 col-md-4 col-12 mt-4 mt-lg-0 ms-auto">
+                <p class="copyright-text mt-lg-5 mt-4">
+                    © {% now "Y" %} Unidad Educativa Monseñor Leónidas Proaño.<br>
+                    Sistema Académico Institucional.<br><br>
+                    
+                </p>
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<script src="{% static 'plantilla/Topic/js/jquery.min.js' %}"></script>
+<script src="{% static 'plantilla/Topic/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'plantilla/Topic/js/jquery.sticky.js' %}"></script>
+<script src="{% static 'plantilla/Topic/js/click-scroll.js' %}"></script>
+<script src="{% static 'plantilla/Topic/js/custom.js' %}"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
