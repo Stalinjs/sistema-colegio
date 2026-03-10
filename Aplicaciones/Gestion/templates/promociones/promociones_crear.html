@@ -21,7 +21,7 @@
 
         <div class="row g-3">
           <div class="col-md-4">
-            <label class="form-label">Sucursal *</label>
+            <label class="form-label">Extensión *</label>
             <select name="sucursal" class="form-select" onchange="window.location='?sucursal=' + this.value" required>
               {% for s in sucursales %}
                 <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>

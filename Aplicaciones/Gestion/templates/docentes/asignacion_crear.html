@@ -23,13 +23,13 @@
   <div class="card">
     <div class="card-header">
       <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal y Paralelo</h5>
-      <small class="text-muted">Primero elige la sucursal y el paralelo. Luego aparecerán las asignaturas correctas.</small>
+      <small class="text-muted">Primero elige la Extensión y el paralelo. Luego aparecerán las asignaturas correctas.</small>
     </div>
     <div class="card-body">
       <form method="get" class="row g-3 align-items-end">
 
         <div class="col-md-6">
-          <label class="form-label">Sucursal</label>
+          <label class="form-label">Extensión</label>
           <select name="sucursal" class="form-select" onchange="this.form.submit()">
             
             {% for s in sucursales %}

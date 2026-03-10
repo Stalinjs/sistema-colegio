@@ -21,13 +21,13 @@
   <!-- Paso 1: Seleccionar sucursal (GET) -->
   <div class="card mb-3">
     <div class="card-header">
-      <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal</h5>
+      <h5 class="card-title mb-0">Paso 1: Seleccionar la extensión</h5>
       <small class="text-muted">Se listarán solo los cursos de la sucursal elegida.</small>
     </div>
     <div class="card-body">
       <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
-          <label class="form-label">Sucursal</label>
+          <label class="form-label">Extensión</label>
           <select name="sucursal" class="form-select" onchange="this.form.submit()">
             <option value="">Seleccione...</option>
             {% for s in sucursales %}

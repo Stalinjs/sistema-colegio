@@ -53,7 +53,7 @@
           </div>
 
           <div class="col-md-6 mb-3">
-            <label class="form-label">Sucursal *</label>
+            <label class="form-label">Extensión *</label>
             <select name="sucursal" class="form-select">
               {% for s in sucursales %}
                 <option value="{{ s.id }}" {% if curso.sucursal and s.id == curso.sucursal.id %}selected{% endif %}>
