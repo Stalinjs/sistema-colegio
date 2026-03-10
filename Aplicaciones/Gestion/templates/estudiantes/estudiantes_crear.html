@@ -33,8 +33,24 @@
         <div class="row">
 
           <div class="col-md-4 mb-3">
+            <label class="form-label">Tipo de documento *</label>
+            <select name="tipo_documento" class="form-select">
+              <option value="CEDULA" selected>Cédula</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
             <label class="form-label">Cédula *</label>
             <input type="text" name="cedula" class="form-control" maxlength="10" placeholder="10 dígitos">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Sexo *</label>
+            <select name="sexo" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="HOMBRE">Hombre</option>
+              <option value="MUJER">Mujer</option>
+            </select>
           </div>
 
           <div class="col-md-4 mb-3">
@@ -58,6 +74,39 @@
           </div>
 
           <div class="col-md-4 mb-3">
+            <label class="form-label">Nacionalidad *</label>
+            <input type="text" name="nacionalidad" class="form-control" value="ECUATORIANA">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Etnia *</label>
+            <input type="text" name="etnia" class="form-control" placeholder="Ej: MESTIZA, INDÍGENA">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Nacionalidad indígena</label>
+            <input type="text" name="nacionalidad_indigena" class="form-control" placeholder="Ej: SHUAR">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">LGBTI</label>
+            <select name="lgbti" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="SI">Sí</option>
+              <option value="NO">No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Posee discapacidad validada</label>
+            <select name="posee_discapacidad" id="posee_discapacidad" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="SI">Sí</option>
+              <option value="NO">No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
             <label class="form-label">Extensión *</label>
             <select name="sucursal" class="form-select">
               <option value="" disabled>Seleccione...</option>
@@ -67,6 +116,16 @@
                 </option>
               {% endfor %}
             </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tipo de discapacidad</label>
+            <input type="text" name="tipo_discapacidad" id="tipo_discapacidad" class="form-control">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Porcentaje de discapacidad</label>
+            <input type="number" name="porcentaje_discapacidad" id="porcentaje_discapacidad" class="form-control" min="0" max="100">
           </div>
 
           <div class="col-md-6 mb-3">
@@ -98,28 +157,82 @@
 
 {% block scripts %}
 <script>
-$("#frm_estudiante").validate({
-    rules: {
-        cedula: { required: true, minlength: 10, maxlength: 10, digits: true },
-        nombres: { required: true, minlength: 2 },
-        apellido_paterno: { required: true, minlength: 2 },
-        apellido_materno: { required: true, minlength: 2 },
-        sucursal: { required: true }
-    },
-    messages: {
-        cedula: {
-            required: "Ingrese la cédula",
-            minlength: "Debe tener 10 dígitos",
-            maxlength: "Debe tener 10 dígitos",
-            digits: "Solo números"
+function toggleDiscapacidadFields() {
+    const posee = $("#posee_discapacidad").val();
+    const tipo = $("#tipo_discapacidad");
+    const porcentaje = $("#porcentaje_discapacidad");
+
+    if (posee === "SI") {
+        tipo.prop("readonly", false);
+        porcentaje.prop("readonly", false);
+    } else {
+        tipo.val("").prop("readonly", true);
+        porcentaje.val("").prop("readonly", true);
+    }
+}
+
+$(document).ready(function () {
+    toggleDiscapacidadFields();
+
+    $("#posee_discapacidad").on("change", function () {
+        toggleDiscapacidadFields();
+    });
+
+    $("#frm_estudiante").validate({
+        rules: {
+            tipo_documento: { required: true },
+            cedula: { required: true, minlength: 10, maxlength: 10, digits: true },
+            sexo: { required: true },
+            nombres: { required: true, minlength: 2 },
+            apellido_paterno: { required: true, minlength: 2 },
+            apellido_materno: { required: true, minlength: 2 },
+            nacionalidad: { required: true, minlength: 3 },
+            etnia: { required: true, minlength: 2 },
+            sucursal: { required: true },
+            porcentaje_discapacidad: {
+                required: function() {
+                    return $("#posee_discapacidad").val() === "SI";
+                },
+                number: true,
+                min: 0,
+                max: 100
+            },
+            tipo_discapacidad: {
+                required: function() {
+                    return $("#posee_discapacidad").val() === "SI";
+                },
+                minlength: 2
+            }
         },
-        nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
-        apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
-        apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
-        sucursal: { required: "Seleccione la sucursal" }
-    },
-    errorElement: "div",
-    errorClass: "text-danger mt-1"
+        messages: {
+            tipo_documento: { required: "Seleccione el tipo de documento" },
+            cedula: {
+                required: "Ingrese la cédula",
+                minlength: "Debe tener 10 dígitos",
+                maxlength: "Debe tener 10 dígitos",
+                digits: "Solo números"
+            },
+            sexo: { required: "Seleccione el sexo" },
+            nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
+            apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
+            apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
+            nacionalidad: { required: "Ingrese la nacionalidad", minlength: "Mínimo 3 caracteres" },
+            etnia: { required: "Ingrese la etnia", minlength: "Mínimo 2 caracteres" },
+            sucursal: { required: "Seleccione la extensión" },
+            tipo_discapacidad: {
+                required: "Ingrese el tipo de discapacidad",
+                minlength: "Mínimo 2 caracteres"
+            },
+            porcentaje_discapacidad: {
+                required: "Ingrese el porcentaje de discapacidad",
+                number: "Debe ser un número",
+                min: "No puede ser menor a 0",
+                max: "No puede ser mayor a 100"
+            }
+        },
+        errorElement: "div",
+        errorClass: "text-danger mt-1"
+    });
 });
 </script>
 {% endblock %}

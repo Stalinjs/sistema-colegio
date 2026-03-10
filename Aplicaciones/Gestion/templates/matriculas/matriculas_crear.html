@@ -19,12 +19,12 @@
 
   <div class="card mb-3">
     <div class="card-header">
-      <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal</h5>
+      <h5 class="card-title mb-0">Paso 1: Seleccionar Extensión</h5>
     </div>
     <div class="card-body">
       <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
-          <label class="form-label">Sucursal</label>
+          <label class="form-label">Extensión</label>
           <select name="sucursal" class="form-select" onchange="this.form.submit()">
             {% for s in sucursales %}
               <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
@@ -109,26 +109,29 @@
 
           <div class="col-md-4">
             <label class="form-label">Año lectivo *</label>
-            {% if anio_activo %}
-              <select id="anio_lectivo" name="anio_lectivo" class="form-select" required>
-                <option value="{{ anio_activo.id }}" selected>{{ anio_activo.nombre }} (Activo)</option>
-              </select>
-              
-            {% else %}
-              <select class="form-select" disabled>
-                <option>No hay año lectivo activo</option>
-              </select>
-              <div class="form-text text-danger">Activa un año lectivo para continuar.</div>
-            {% endif %}
+            <select id="anio_lectivo" name="anio_lectivo" class="form-select" required>
+              <option value="">Seleccione...</option>
+              {% for a in anios %}
+                <option value="{{ a.id }}" {% if anio_activo and a.id == anio_activo.id %}selected{% endif %}>
+                  {{ a.nombre }}{% if a.activo %} (Activo){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+            <div class="invalid-feedback">
+              Selecciona el año lectivo.
+            </div>
           </div>
 
           <div class="col-md-4">
             <label class="form-label">Oferta educativa *</label>
-            <select id="tipo_programa" name="tipo_programa" class="form-select" required>
+            <select id="oferta_educativa" name="oferta_educativa" class="form-select" required>
               <option value="">Seleccione...</option>
-              <option value="adultos">Personas adultas</option>
-              <option value="nna">Niños y adolescentes</option>
-              <option value="intensivo">Intensivo</option>
+              <option value="JOVENES_ADULTOS">
+                PARA PERSONAS JÓVENES, ADULTAS Y ADULTAS MAYORES CON ESCOLARIDAD INCONCLUSA
+              </option>
+              <option value="NNA_ESCOLARIDAD_INCONCLUSA">
+                PARA NIÑAS, NIÑOS Y ADOLESCENTES EN EDAD ESCOLAR CON ESCOLARIDAD INCONCLUSA
+              </option>
             </select>
             <div class="invalid-feedback">
               Selecciona la oferta educativa.
@@ -185,15 +188,9 @@
             Cancelar
           </a>
 
-          {% if anio_activo %}
-            <button type="submit" class="btn btn-primary">
-              <i class="fa fa-save"></i> Guardar matrícula
-            </button>
-          {% else %}
-            <button type="button" class="btn btn-primary" disabled>
-              <i class="fa fa-save"></i> Guardar matrícula
-            </button>
-          {% endif %}
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Guardar matrícula
+          </button>
         </div>
 
       </form>
@@ -216,7 +213,7 @@ $(document).ready(function () {
     box.style.display = "none";
     list.innerHTML = "";
 
-    $("#paralelo, #tipo_programa, #jornada, #temporalidad, #estado_estudiante").removeClass("is-invalid");
+    $("#paralelo, #anio_lectivo, #oferta_educativa, #jornada, #temporalidad, #estado_estudiante").removeClass("is-invalid");
     $("#err_estudiante").hide();
     $(".bootstrap-select .dropdown-toggle").removeClass("is-invalid");
   }
@@ -228,7 +225,6 @@ $(document).ready(function () {
   }
 
   function estudianteValor() {
-    // bootstrap-select: valor real
     return $("#estudiante").val();
   }
 
@@ -243,8 +239,8 @@ $(document).ready(function () {
 
     const est = estudianteValor();
     const paralelo = $("#paralelo").val();
-    const anio = $("#anio_lectivo").length ? $("#anio_lectivo").val() : "";
-    const tipo = $("#tipo_programa").val();
+    const anio = $("#anio_lectivo").val();
+    const oferta = $("#oferta_educativa").val();
     const jornada = $("#jornada").val();
     const temporalidad = $("#temporalidad").val();
     const estado = $("#estado_estudiante").val();
@@ -258,11 +254,12 @@ $(document).ready(function () {
       $("#paralelo").addClass("is-invalid");
     }
     if (!anio) {
-      errores.push("No existe año lectivo activo para registrar matrículas.");
+      errores.push("Debes seleccionar un año lectivo.");
+      $("#anio_lectivo").addClass("is-invalid");
     }
-    if (!tipo) {
+    if (!oferta) {
       errores.push("Debes seleccionar la oferta educativa.");
-      $("#tipo_programa").addClass("is-invalid");
+      $("#oferta_educativa").addClass("is-invalid");
     }
     if (!jornada) {
       errores.push("La jornada es obligatoria.");
@@ -293,17 +290,16 @@ $(document).ready(function () {
     return true;
   }
 
-  // Validación en submit
   form.addEventListener("submit", function(e) {
     if (!validar()) {
       e.preventDefault();
     }
   });
 
-  // Validación suave al cambiar
-  $("#paralelo, #tipo_programa, #jornada, #temporalidad, #estado_estudiante").on("change", function() {
+  $("#paralelo, #anio_lectivo, #oferta_educativa, #jornada, #temporalidad, #estado_estudiante").on("change", function() {
     limpiarErroresUI();
   });
+
   $("#estudiante").on("changed.bs.select", function() {
     limpiarErroresUI();
   });
@@ -311,7 +307,6 @@ $(document).ready(function () {
 </script>
 
 <style>
-/* Para que bootstrap-select se vea como invalid */
 .bootstrap-select .dropdown-toggle.is-invalid{
   border-color: #dc3545 !important;
   box-shadow: 0 0 0 .15rem rgba(220,53,69,.15);

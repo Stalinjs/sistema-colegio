@@ -17,7 +17,6 @@
     </ul>
   </div>
 
-  <!-- Filtros -->
   <div class="card mb-3">
     <div class="card-body">
       <form method="get" class="row g-2 align-items-end">
@@ -80,10 +79,9 @@
     </div>
   </div>
 
-  <!-- Tabla -->
   <div class="card">
     <div class="card-body table-responsive">
-      <table class="table table-hover align-middle" id="tbl_matriculas">
+      <table class="table table-hover align-middle matriculas-table" id="tbl_matriculas">
         <thead class="table-primary text-center">
           <tr>
             <th>#</th>
@@ -91,7 +89,7 @@
             <th>Año lectivo</th>
             <th>Estudiante</th>
             <th>Curso / Paralelo</th>
-            <th>Programa</th>
+            <th>Oferta educativa</th>
             <th>Jornada</th>
             <th>Temporalidad</th>
             <th>Estado</th>
@@ -114,7 +112,7 @@
             <td>{{ m.paralelo.curso.nombre }} - {{ m.paralelo.nombre }}</td>
 
             <td class="text-center">
-              <span class="badge bg-info text-dark">{{ m.get_tipo_programa_display }}</span>
+              <span class="badge bg-info text-dark">{{ m.get_oferta_educativa_display }}</span>
             </td>
 
             <td class="text-center">
@@ -179,11 +177,11 @@ $(document).ready(function () {
     order: []
   });
 });
-
 </script>
+
 <style>
   .matriculas-table {
-    min-width: 1400px; 
+    min-width: 1400px;
   }
 
   .matriculas-table th,

@@ -31,9 +31,25 @@
         <div class="row">
 
           <div class="col-md-4 mb-3">
+            <label class="form-label">Tipo de documento *</label>
+            <select name="tipo_documento" class="form-select">
+              <option value="CEDULA" {% if estudiante.tipo_documento == "CEDULA" %}selected{% endif %}>Cédula</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
             <label class="form-label">Cédula *</label>
             <input type="text" name="cedula" class="form-control" maxlength="10" value="{{ estudiante.cedula }}" readonly>
             <small class="text-muted">La cédula no se puede modificar.</small>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Sexo *</label>
+            <select name="sexo" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="HOMBRE" {% if estudiante.sexo == "HOMBRE" %}selected{% endif %}>Hombre</option>
+              <option value="MUJER" {% if estudiante.sexo == "MUJER" %}selected{% endif %}>Mujer</option>
+            </select>
           </div>
 
           <div class="col-md-4 mb-3">
@@ -58,6 +74,39 @@
           </div>
 
           <div class="col-md-4 mb-3">
+            <label class="form-label">Nacionalidad *</label>
+            <input type="text" name="nacionalidad" class="form-control" value="{{ estudiante.nacionalidad|default:'' }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Etnia *</label>
+            <input type="text" name="etnia" class="form-control" value="{{ estudiante.etnia|default:'' }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Nacionalidad indígena</label>
+            <input type="text" name="nacionalidad_indigena" class="form-control" value="{{ estudiante.nacionalidad_indigena|default:'' }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">LGBTI</label>
+            <select name="lgbti" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="SI" {% if estudiante.lgbti == "SI" %}selected{% endif %}>Sí</option>
+              <option value="NO" {% if estudiante.lgbti == "NO" %}selected{% endif %}>No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Posee discapacidad validada</label>
+            <select name="posee_discapacidad" id="posee_discapacidad" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="SI" {% if estudiante.posee_discapacidad == "SI" %}selected{% endif %}>Sí</option>
+              <option value="NO" {% if estudiante.posee_discapacidad == "NO" %}selected{% endif %}>No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
             <label class="form-label">Extensión *</label>
             <select name="sucursal" class="form-select">
               <option value="" disabled>Seleccione...</option>
@@ -67,6 +116,17 @@
                 </option>
               {% endfor %}
             </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tipo de discapacidad</label>
+            <input type="text" name="tipo_discapacidad" id="tipo_discapacidad" class="form-control" value="{{ estudiante.tipo_discapacidad|default:'' }}">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Porcentaje de discapacidad</label>
+            <input type="number" name="porcentaje_discapacidad" id="porcentaje_discapacidad" class="form-control" min="0" max="100"
+                   value="{{ estudiante.porcentaje_discapacidad|default:'' }}">
           </div>
 
           <div class="col-md-6 mb-3">
@@ -98,21 +158,75 @@
 
 {% block scripts %}
 <script>
-$("#frm_estudiante").validate({
-    rules: {
-        nombres: { required: true, minlength: 2 },
-        apellido_paterno: { required: true, minlength: 2 },
-        apellido_materno: { required: true, minlength: 2 },
-        sucursal: { required: true }
-    },
-    messages: {
-        nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
-        apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
-        apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
-        sucursal: { required: "Seleccione la sucursal" }
-    },
-    errorElement: "div",
-    errorClass: "text-danger mt-1"
+function toggleDiscapacidadFields() {
+    const posee = $("#posee_discapacidad").val();
+    const tipo = $("#tipo_discapacidad");
+    const porcentaje = $("#porcentaje_discapacidad");
+
+    if (posee === "SI") {
+        tipo.prop("readonly", false);
+        porcentaje.prop("readonly", false);
+    } else {
+        tipo.val("").prop("readonly", true);
+        porcentaje.val("").prop("readonly", true);
+    }
+}
+
+$(document).ready(function () {
+    toggleDiscapacidadFields();
+
+    $("#posee_discapacidad").on("change", function () {
+        toggleDiscapacidadFields();
+    });
+
+    $("#frm_estudiante").validate({
+        rules: {
+            tipo_documento: { required: true },
+            sexo: { required: true },
+            nombres: { required: true, minlength: 2 },
+            apellido_paterno: { required: true, minlength: 2 },
+            apellido_materno: { required: true, minlength: 2 },
+            nacionalidad: { required: true, minlength: 3 },
+            etnia: { required: true, minlength: 2 },
+            sucursal: { required: true },
+            porcentaje_discapacidad: {
+                required: function() {
+                    return $("#posee_discapacidad").val() === "SI";
+                },
+                number: true,
+                min: 0,
+                max: 100
+            },
+            tipo_discapacidad: {
+                required: function() {
+                    return $("#posee_discapacidad").val() === "SI";
+                },
+                minlength: 2
+            }
+        },
+        messages: {
+            tipo_documento: { required: "Seleccione el tipo de documento" },
+            sexo: { required: "Seleccione el sexo" },
+            nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
+            apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
+            apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
+            nacionalidad: { required: "Ingrese la nacionalidad", minlength: "Mínimo 3 caracteres" },
+            etnia: { required: "Ingrese la etnia", minlength: "Mínimo 2 caracteres" },
+            sucursal: { required: "Seleccione la extensión" },
+            tipo_discapacidad: {
+                required: "Ingrese el tipo de discapacidad",
+                minlength: "Mínimo 2 caracteres"
+            },
+            porcentaje_discapacidad: {
+                required: "Ingrese el porcentaje de discapacidad",
+                number: "Debe ser un número",
+                min: "No puede ser menor a 0",
+                max: "No puede ser mayor a 100"
+            }
+        },
+        errorElement: "div",
+        errorClass: "text-danger mt-1"
+    });
 });
 </script>
 {% endblock %}

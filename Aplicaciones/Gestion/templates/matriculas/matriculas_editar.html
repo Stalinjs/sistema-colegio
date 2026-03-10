@@ -75,12 +75,15 @@
           </div>
 
           <div class="col-md-4">
-            <label class="form-label">Tipo de programa *</label>
-            <select id="tipo_programa" name="tipo_programa" class="form-select" required>
+            <label class="form-label">Oferta educativa *</label>
+            <select id="oferta_educativa" name="oferta_educativa" class="form-select" required>
               <option value="">Seleccione...</option>
-              <option value="adultos" {% if matricula.tipo_programa == "adultos" %}selected{% endif %}>Personas adultas</option>
-              <option value="nna" {% if matricula.tipo_programa == "nna" %}selected{% endif %}>Niños y adolescentes</option>
-              <option value="intensivo" {% if matricula.tipo_programa == "intensivo" %}selected{% endif %}>Intensivo</option>
+              <option value="JOVENES_ADULTOS" {% if matricula.oferta_educativa == "JOVENES_ADULTOS" %}selected{% endif %}>
+                PARA PERSONAS JÓVENES, ADULTAS Y ADULTAS MAYORES CON ESCOLARIDAD INCONCLUSA
+              </option>
+              <option value="NNA_ESCOLARIDAD_INCONCLUSA" {% if matricula.oferta_educativa == "NNA_ESCOLARIDAD_INCONCLUSA" %}selected{% endif %}>
+                PARA NIÑAS, NIÑOS Y ADOLESCENTES EN EDAD ESCOLAR CON ESCOLARIDAD INCONCLUSA
+              </option>
             </select>
           </div>
 
@@ -115,7 +118,7 @@
 
           <div class="col-md-12">
             <label class="form-label">Observaciones</label>
-            <textarea name="observaciones" class="form-control" rows="3">{{ matricula.observaciones }}</textarea>
+            <textarea name="observaciones" class="form-control" rows="3">{{ matricula.observaciones|default:'' }}</textarea>
           </div>
 
         </div>
@@ -149,30 +152,30 @@ document.addEventListener("DOMContentLoaded", function () {
     form.querySelectorAll(".form-select").forEach(el => el.classList.remove("is-invalid"));
   }
 
-  function addError(msg){
+  function addError(msg) {
     const li = document.createElement("li");
     li.textContent = msg;
     list.appendChild(li);
   }
 
-  form.addEventListener("submit", function(e){
+  form.addEventListener("submit", function(e) {
     limpiar();
     let errores = [];
 
-    ["estudiante","paralelo","anio_lectivo","tipo_programa","jornada","temporalidad","estado_estudiante"]
+    ["estudiante", "paralelo", "anio_lectivo", "oferta_educativa", "jornada", "temporalidad", "estado_estudiante"]
       .forEach(id => {
         const el = document.getElementById(id);
-        if (!el.value){
+        if (!el.value) {
           errores.push("Falta completar: " + el.previousElementSibling.textContent.replace("*","").trim());
           el.classList.add("is-invalid");
         }
       });
 
-    if (errores.length){
+    if (errores.length) {
       e.preventDefault();
       box.style.display = "block";
       errores.forEach(addError);
-      Swal.fire("Campos obligatorios","Revisa los campos marcados en rojo.","warning");
+      Swal.fire("Campos obligatorios", "Revisa los campos marcados en rojo.", "warning");
     }
   });
 });

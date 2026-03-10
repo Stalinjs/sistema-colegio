@@ -871,7 +871,7 @@ def paralelos_lista(request):
     curso_id = request.GET.get("curso", "").strip()
     q = request.GET.get("q", "").strip()
 
-    # ✅ Default: Latacunga (Matriz)
+    # Default: Latacunga (Matriz)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
         if s_lat:
@@ -1574,7 +1574,10 @@ def estudiantes_lista(request):
             Q(cedula__icontains=q) |
             Q(nombres__icontains=q) |
             Q(apellido_paterno__icontains=q) |
-            Q(apellido_materno__icontains=q)
+            Q(apellido_materno__icontains=q) |
+            Q(sexo__icontains=q) |
+            Q(nacionalidad__icontains=q) |
+            Q(etnia__icontains=q)
         )
 
     estudiantes = estudiantes.order_by("sucursal__nombre", "apellido_paterno", "apellido_materno", "nombres")
@@ -1586,8 +1589,6 @@ def estudiantes_lista(request):
         "sucursales": sucursales,
         "sucursal_id": sucursal_id,
     })
-
-
 def estudiantes_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
@@ -1603,12 +1604,25 @@ def estudiantes_crear(request):
 
     if request.method == "POST":
         cedula = (request.POST.get("cedula") or "").strip()
+        tipo_documento = (request.POST.get("tipo_documento") or "CEDULA").strip()
         nombres = (request.POST.get("nombres") or "").strip()
         apellido_paterno = (request.POST.get("apellido_paterno") or "").strip()
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
         fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
         telefono = (request.POST.get("telefono") or "").strip() or None
         direccion = (request.POST.get("direccion") or "").strip() or None
+
+        sexo = (request.POST.get("sexo") or "").strip() or None
+        nacionalidad = (request.POST.get("nacionalidad") or "").strip() or None
+        etnia = (request.POST.get("etnia") or "").strip() or None
+        nacionalidad_indigena = (request.POST.get("nacionalidad_indigena") or "").strip() or None
+        lgbti = (request.POST.get("lgbti") or "").strip() or None
+        posee_discapacidad = (request.POST.get("posee_discapacidad") or "").strip() or None
+        tipo_discapacidad = (request.POST.get("tipo_discapacidad") or "").strip() or None
+
+        porcentaje_discapacidad_raw = (request.POST.get("porcentaje_discapacidad") or "").strip()
+        porcentaje_discapacidad = int(porcentaje_discapacidad_raw) if porcentaje_discapacidad_raw else None
+
         sucursal_id_post = (request.POST.get("sucursal") or "").strip()
         sucursal_context = (request.POST.get("sucursal_context") or "").strip()
 
@@ -1625,12 +1639,21 @@ def estudiantes_crear(request):
         try:
             Estudiante.objects.create(
                 cedula=cedula,
+                tipo_documento=tipo_documento,
                 nombres=nombres,
                 apellido_paterno=apellido_paterno,
                 apellido_materno=apellido_materno,
                 fecha_nacimiento=fecha_nacimiento,
                 telefono=telefono,
                 direccion=direccion,
+                sexo=sexo,
+                nacionalidad=nacionalidad,
+                etnia=etnia,
+                nacionalidad_indigena=nacionalidad_indigena,
+                lgbti=lgbti,
+                posee_discapacidad=posee_discapacidad,
+                tipo_discapacidad=tipo_discapacidad,
+                porcentaje_discapacidad=porcentaje_discapacidad,
                 sucursal=sucursal
             )
         except ValidationError as e:
@@ -1638,6 +1661,8 @@ def estudiantes_crear(request):
                 msg = (
                     e.message_dict.get("cedula")
                     or e.message_dict.get("fecha_nacimiento")
+                    or e.message_dict.get("tipo_discapacidad")
+                    or e.message_dict.get("porcentaje_discapacidad")
                     or e.messages
                 )
             else:
@@ -1648,6 +1673,9 @@ def estudiantes_crear(request):
 
             messages.error(request, msg)
             return redirect(f"{request.path}?sucursal={sucursal_context}")
+        except ValueError:
+            messages.error(request, "El porcentaje de discapacidad debe ser numérico.")
+            return redirect(f"{request.path}?sucursal={sucursal_context}")
 
         messages.success(request, "Estudiante creado correctamente.")
         return redirect("estudiantes_lista")
@@ -1656,8 +1684,6 @@ def estudiantes_crear(request):
         "sucursales": sucursales,
         "sucursal_id": sucursal_id,
     })
-
-
 def estudiantes_editar(request, estudiante_id):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
@@ -1666,26 +1692,48 @@ def estudiantes_editar(request, estudiante_id):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
     if request.method == "POST":
-        
+        tipo_documento = (request.POST.get("tipo_documento") or "CEDULA").strip()
         nombres = (request.POST.get("nombres") or "").strip()
         apellido_paterno = (request.POST.get("apellido_paterno") or "").strip()
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
         fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
         telefono = (request.POST.get("telefono") or "").strip() or None
         direccion = (request.POST.get("direccion") or "").strip() or None
+
+        sexo = (request.POST.get("sexo") or "").strip() or None
+        nacionalidad = (request.POST.get("nacionalidad") or "").strip() or None
+        etnia = (request.POST.get("etnia") or "").strip() or None
+        nacionalidad_indigena = (request.POST.get("nacionalidad_indigena") or "").strip() or None
+        lgbti = (request.POST.get("lgbti") or "").strip() or None
+        posee_discapacidad = (request.POST.get("posee_discapacidad") or "").strip() or None
+        tipo_discapacidad = (request.POST.get("tipo_discapacidad") or "").strip() or None
+
+        porcentaje_discapacidad_raw = (request.POST.get("porcentaje_discapacidad") or "").strip()
+        porcentaje_discapacidad = int(porcentaje_discapacidad_raw) if porcentaje_discapacidad_raw else None
+
         sucursal_id = (request.POST.get("sucursal") or "").strip()
 
         if not nombres or not apellido_paterno or not apellido_materno or not sucursal_id:
             messages.error(request, "Nombres, apellidos y sucursal son obligatorios.")
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
-        
+
+        estudiante.tipo_documento = tipo_documento
         estudiante.nombres = nombres
         estudiante.apellido_paterno = apellido_paterno
         estudiante.apellido_materno = apellido_materno
         estudiante.fecha_nacimiento = fecha_nacimiento
         estudiante.telefono = telefono
         estudiante.direccion = direccion
+        estudiante.sexo = sexo
+        estudiante.nacionalidad = nacionalidad
+        estudiante.etnia = etnia
+        estudiante.nacionalidad_indigena = nacionalidad_indigena
+        estudiante.lgbti = lgbti
+        estudiante.posee_discapacidad = posee_discapacidad
+        estudiante.tipo_discapacidad = tipo_discapacidad
+        estudiante.porcentaje_discapacidad = porcentaje_discapacidad
         estudiante.sucursal = get_object_or_404(Sucursal, id=sucursal_id)
+
         try:
             estudiante.save()
         except ValidationError as e:
@@ -1693,6 +1741,8 @@ def estudiantes_editar(request, estudiante_id):
                 msg = (
                     e.message_dict.get("cedula")
                     or e.message_dict.get("fecha_nacimiento")
+                    or e.message_dict.get("tipo_discapacidad")
+                    or e.message_dict.get("porcentaje_discapacidad")
                     or e.messages
                 )
             else:
@@ -1703,6 +1753,9 @@ def estudiantes_editar(request, estudiante_id):
 
             messages.error(request, msg)
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
+        except ValueError:
+            messages.error(request, "El porcentaje de discapacidad debe ser numérico.")
+            return redirect("estudiantes_editar", estudiante_id=estudiante.id)
 
         messages.success(request, "Estudiante actualizado correctamente.")
         return redirect("estudiantes_lista")
@@ -1711,9 +1764,7 @@ def estudiantes_editar(request, estudiante_id):
         "estudiante": estudiante,
         "sucursales": sucursales,
     })
-
 # ========================================================================= MATRICUAS =====================
-
 def matriculas_lista(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
@@ -1727,13 +1778,13 @@ def matriculas_lista(request):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     anios = AnioLectivo.objects.all().order_by("-activo", "-id")  # activo primero
 
-    # ✅ Default: Latacunga (Matriz)
+    # Default: Latacunga (Matriz)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre__iexact="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
-    # ✅ Default: Año activo
+    # Default: Año activo
     anio_activo = AnioLectivo.objects.filter(activo=True).first()
     if not anio_id and anio_activo:
         anio_id = str(anio_activo.id)
@@ -1771,7 +1822,6 @@ def matriculas_lista(request):
         "estudiante__nombres",
     )
 
-    # paralelos para filtro (solo de la sucursal elegida)
     paralelos = Paralelo.objects.select_related("curso__sucursal").order_by(
         "curso__nombre", "nombre"
     )
@@ -1800,13 +1850,11 @@ def _flash_validation_error(request, e: ValidationError):
             else:
                 messages.error(request, str(msgs))
     else:
-        # e.messages suele venir como lista
         if hasattr(e, "messages"):
             for msg in e.messages:
                 messages.error(request, str(msg))
         else:
             messages.error(request, str(e))
-
 
 def matriculas_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
@@ -1815,13 +1863,12 @@ def matriculas_crear(request):
     sucursal_id = (request.GET.get("sucursal") or "").strip()
 
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre__iexact="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
-    # Para históricos: dejamos escoger cualquier año (incluye activo)
     anios = AnioLectivo.objects.all().order_by("-activo", "-id")
     anio_activo = AnioLectivo.objects.filter(activo=True).first()
 
@@ -1840,21 +1887,24 @@ def matriculas_crear(request):
         estudiante_id = (request.POST.get("estudiante") or "").strip()
         paralelo_id = (request.POST.get("paralelo") or "").strip()
         anio_id = (request.POST.get("anio_lectivo") or "").strip()
-        tipo_programa = (request.POST.get("tipo_programa") or "").strip()
+        oferta_educativa = (request.POST.get("oferta_educativa") or "").strip()
 
-        jornada = request.POST.get("jornada") or None
-        temporalidad = request.POST.get("temporalidad") or None
-        estado_estudiante = request.POST.get("estado_estudiante") or None
-        observaciones = request.POST.get("observaciones") or None
+        jornada = (request.POST.get("jornada") or "").strip() or None
+        temporalidad = (request.POST.get("temporalidad") or "").strip() or None
+        estado_estudiante = (request.POST.get("estado_estudiante") or "").strip() or None
+        observaciones = (request.POST.get("observaciones") or "").strip() or None
 
-        sucursal_id_post = request.POST.get("sucursal_context") or sucursal_id or ""
+        sucursal_id_post = (request.POST.get("sucursal_context") or sucursal_id or "").strip()
 
-        if not (estudiante_id and paralelo_id and anio_id and tipo_programa):
+        if not (estudiante_id and paralelo_id and anio_id and oferta_educativa):
             messages.error(request, "Complete los campos obligatorios.")
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
 
         estudiante = get_object_or_404(Estudiante, id=estudiante_id)
-        paralelo = get_object_or_404(Paralelo.objects.select_related("curso__sucursal"), id=paralelo_id)
+        paralelo = get_object_or_404(
+            Paralelo.objects.select_related("curso__sucursal"),
+            id=paralelo_id
+        )
         anio = get_object_or_404(AnioLectivo, id=anio_id)
 
         try:
@@ -1862,7 +1912,7 @@ def matriculas_crear(request):
                 estudiante=estudiante,
                 paralelo=paralelo,
                 anio_lectivo=anio,
-                tipo_programa=tipo_programa,
+                oferta_educativa=oferta_educativa,
                 jornada=jornada,
                 temporalidad=temporalidad,
                 estado_estudiante=estado_estudiante,
@@ -1887,17 +1937,20 @@ def matriculas_crear(request):
         "estudiantes": estudiantes,
         "paralelos": paralelos,
         "anio_activo": anio_activo,
-        "anios": anios,  # úsalo en el select para escoger año
+        "anios": anios,
     }
     return render(request, "matriculas/matriculas_crear.html", context)
-
 
 def matriculas_editar(request, matricula_id):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
     matricula = get_object_or_404(
-        Matricula.objects.select_related("estudiante__sucursal", "paralelo__curso__sucursal", "anio_lectivo"),
+        Matricula.objects.select_related(
+            "estudiante__sucursal",
+            "paralelo__curso__sucursal",
+            "anio_lectivo"
+        ),
         id=matricula_id
     )
 
@@ -1910,32 +1963,34 @@ def matriculas_editar(request, matricula_id):
         curso__sucursal_id=sucursal_id
     ).order_by("curso__nombre", "nombre")
 
-    # Para históricos: permitimos editar año lectivo a cualquiera
     anios = AnioLectivo.objects.all().order_by("-activo", "-id")
 
     if request.method == "POST":
         estudiante_id = (request.POST.get("estudiante") or "").strip()
         paralelo_id = (request.POST.get("paralelo") or "").strip()
         anio_id = (request.POST.get("anio_lectivo") or "").strip()
-        tipo_programa = (request.POST.get("tipo_programa") or "").strip()
+        oferta_educativa = (request.POST.get("oferta_educativa") or "").strip()
 
-        jornada = request.POST.get("jornada") or None
-        temporalidad = request.POST.get("temporalidad") or None
-        estado_estudiante = request.POST.get("estado_estudiante") or None
-        observaciones = request.POST.get("observaciones") or None
+        jornada = (request.POST.get("jornada") or "").strip() or None
+        temporalidad = (request.POST.get("temporalidad") or "").strip() or None
+        estado_estudiante = (request.POST.get("estado_estudiante") or "").strip() or None
+        observaciones = (request.POST.get("observaciones") or "").strip() or None
 
-        if not (estudiante_id and paralelo_id and anio_id and tipo_programa):
+        if not (estudiante_id and paralelo_id and anio_id and oferta_educativa):
             messages.error(request, "Complete los campos obligatorios.")
             return redirect("matriculas_editar", matricula_id=matricula.id)
 
         estudiante = get_object_or_404(Estudiante, id=estudiante_id)
-        paralelo = get_object_or_404(Paralelo.objects.select_related("curso__sucursal"), id=paralelo_id)
+        paralelo = get_object_or_404(
+            Paralelo.objects.select_related("curso__sucursal"),
+            id=paralelo_id
+        )
         anio = get_object_or_404(AnioLectivo, id=anio_id)
 
         matricula.estudiante = estudiante
         matricula.paralelo = paralelo
         matricula.anio_lectivo = anio
-        matricula.tipo_programa = tipo_programa
+        matricula.oferta_educativa = oferta_educativa
         matricula.jornada = jornada
         matricula.temporalidad = temporalidad
         matricula.estado_estudiante = estado_estudiante
@@ -1962,7 +2017,6 @@ def matriculas_editar(request, matricula_id):
         "anios": anios,
     }
     return render(request, "matriculas/matriculas_editar.html", context)
-
 
 # ========================== PROMO ======================================
 

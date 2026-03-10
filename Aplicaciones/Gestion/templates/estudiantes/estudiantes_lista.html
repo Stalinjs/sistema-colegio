@@ -17,13 +17,12 @@
     </ul>
   </div>
 
-  <!-- Filtros -->
   <div class="card mb-3">
     <div class="card-body">
       <form method="get" class="row g-2 align-items-end">
 
         <div class="col-md-4">
-          <label class="form-label mb-1">Sucursal</label>
+          <label class="form-label mb-1">Extensión</label>
           <select name="sucursal" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="">Todas</option>
             {% for s in sucursales %}
@@ -38,7 +37,7 @@
           <label class="form-label mb-1">Buscar</label>
           <div class="input-group input-group-sm">
             <span class="input-group-text"><i class="fa fa-search"></i></span>
-            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="CI, apellidos, nombres...">
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="CI, apellidos, nombres, sexo, etnia...">
             <button class="btn btn-primary" type="submit">Buscar</button>
           </div>
         </div>
@@ -56,19 +55,20 @@
     </div>
   </div>
 
-  <!-- Tabla -->
   <div class="card">
     <div class="card-body table-responsive">
       <table class="table table-hover align-middle" id="tbl_estudiantes">
         <thead class="table-primary text-center">
           <tr>
             <th>#</th>
-            <th>Sucursal</th>
+            <th>Extensión</th>
             <th>Cédula</th>
             <th>Estudiante</th>
+            <th>Sexo</th>
+            <th>Nacionalidad</th>
+            <th>Etnia</th>
             <th>Fecha Nac.</th>
             <th>Teléfono</th>
-            <th>Dirección</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -77,11 +77,37 @@
           {% for e in estudiantes %}
           <tr>
             <td class="text-center text-muted">{{ forloop.counter }}</td>
+
             <td>{{ e.sucursal.nombre }}</td>
+
             <td class="text-center">{{ e.cedula }}</td>
 
             <td>
               <b>{{ e.apellido_paterno }} {{ e.apellido_materno }} {{ e.nombres }}</b>
+            </td>
+
+            <td class="text-center">
+              {% if e.sexo %}
+                {{ e.sexo }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if e.nacionalidad %}
+                {{ e.nacionalidad }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if e.etnia %}
+                {{ e.etnia }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
             </td>
 
             <td class="text-center">
@@ -93,11 +119,11 @@
             </td>
 
             <td class="text-center">
-              {% if e.telefono %}{{ e.telefono }}{% else %}<span class="text-muted">—</span>{% endif %}
-            </td>
-
-            <td>
-              {% if e.direccion %}{{ e.direccion }}{% else %}<span class="text-muted">—</span>{% endif %}
+              {% if e.telefono %}
+                {{ e.telefono }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
             </td>
 
             <td class="text-center">
@@ -108,7 +134,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="text-center text-muted py-4">
+            <td colspan="10" class="text-center text-muted py-4">
               No hay estudiantes registrados con esos filtros.
             </td>
           </tr>

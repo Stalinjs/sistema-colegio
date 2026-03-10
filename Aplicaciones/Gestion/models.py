@@ -248,15 +248,56 @@ class Docente(UpperCaseMixin, models.Model):
 # ESTUDIANTES
 # ============================================================
 class Estudiante(UpperCaseMixin, models.Model):
-    UPPERCASE_FIELDS = ["nombres", "apellido_paterno", "apellido_materno", "direccion"]
+    TIPO_DOCUMENTO_CHOICES = [
+        ("CEDULA", "Cédula"),
+    ]
+
+    SEXO_CHOICES = [
+        ("HOMBRE", "Hombre"),
+        ("MUJER", "Mujer"),
+    ]
+
+    SI_NO_CHOICES = [
+        ("SI", "Sí"),
+        ("NO", "No"),
+    ]
+
+    UPPERCASE_FIELDS = [
+        "nombres",
+        "apellido_paterno",
+        "apellido_materno",
+        "direccion",
+        "nacionalidad",
+        "etnia",
+        "nacionalidad_indigena",
+        "tipo_discapacidad",
+    ]
 
     cedula = models.CharField(max_length=10, unique=True)
+    tipo_documento = models.CharField(
+        max_length=20,
+        choices=TIPO_DOCUMENTO_CHOICES,
+        default="CEDULA"
+    )
+
     nombres = models.CharField(max_length=200)
     apellido_paterno = models.CharField(max_length=200)
     apellido_materno = models.CharField(max_length=200)
+
     fecha_nacimiento = models.DateField(null=True, blank=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
     direccion = models.CharField(max_length=200, blank=True, null=True)
+
+    sexo = models.CharField(max_length=10, choices=SEXO_CHOICES, null=True, blank=True)
+    nacionalidad = models.CharField(max_length=100, null=True, blank=True)
+    etnia = models.CharField(max_length=100, null=True, blank=True)
+    nacionalidad_indigena = models.CharField(max_length=100, null=True, blank=True)
+
+    lgbti = models.CharField(max_length=2, choices=SI_NO_CHOICES, null=True, blank=True)
+    posee_discapacidad = models.CharField(max_length=2, choices=SI_NO_CHOICES, null=True, blank=True)
+    tipo_discapacidad = models.CharField(max_length=100, null=True, blank=True)
+    porcentaje_discapacidad = models.PositiveSmallIntegerField(null=True, blank=True)
+
     sucursal = models.ForeignKey(Sucursal, on_delete=models.PROTECT)
 
     def clean(self):
@@ -269,6 +310,7 @@ class Estudiante(UpperCaseMixin, models.Model):
         if not validar_cedula_ec(self.cedula):
             errors["cedula"] = _("Cédula inválida. Verifique que sea una cédula ecuatoriana real de 10 dígitos.")
 
+        # --- FECHA DE NACIMIENTO ---
         if self.fecha_nacimiento:
             hoy = date.today()
 
@@ -287,6 +329,21 @@ class Estudiante(UpperCaseMixin, models.Model):
             elif edad > EDAD_MAX:
                 errors["fecha_nacimiento"] = _(f"La edad del estudiante no puede superar {EDAD_MAX} años.")
 
+        # --- DISCAPACIDAD ---
+        if self.porcentaje_discapacidad is not None:
+            if self.porcentaje_discapacidad < 0 or self.porcentaje_discapacidad > 100:
+                errors["porcentaje_discapacidad"] = _("El porcentaje de discapacidad debe estar entre 0 y 100.")
+
+        if self.posee_discapacidad == "NO":
+            self.tipo_discapacidad = None
+            self.porcentaje_discapacidad = None
+
+        if self.posee_discapacidad == "SI":
+            if not self.tipo_discapacidad:
+                errors["tipo_discapacidad"] = _("Debe ingresar el tipo de discapacidad.")
+            if self.porcentaje_discapacidad is None:
+                errors["porcentaje_discapacidad"] = _("Debe ingresar el porcentaje de discapacidad.")
+
         if errors:
             raise ValidationError(errors)
 
@@ -294,11 +351,9 @@ class Estudiante(UpperCaseMixin, models.Model):
         self.normalize_fields()
         self.full_clean()
         return super().save(*args, **kwargs)
-    
+
     def __str__(self):
         return f"{self.cedula} - {self.nombres}"
-
-
 # ============================================================
 # ASIGNATURAS
 # ============================================================
@@ -337,10 +392,15 @@ class DocenteAsignacion(models.Model):
 class Matricula(UpperCaseMixin, models.Model):
     UPPERCASE_FIELDS = ["observaciones"]
 
-    TIPO_PROGRAMA = [
-        ("adultos", "Personas adultas"),
-        ("nna", "Niños y adolescentes"),
-        ("intensivo", "Intensivo"),
+    OFERTA_EDUCATIVA = [
+        (
+            "JOVENES_ADULTOS",
+            "PARA PERSONAS JÓVENES, ADULTAS Y ADULTAS MAYORES CON ESCOLARIDAD INCONCLUSA"
+        ),
+        (
+            "NNA_ESCOLARIDAD_INCONCLUSA",
+            "PARA NIÑAS, NIÑOS Y ADOLESCENTES EN EDAD ESCOLAR CON ESCOLARIDAD INCONCLUSA"
+        ),
     ]
 
     ESTADOS = [
@@ -364,7 +424,7 @@ class Matricula(UpperCaseMixin, models.Model):
     paralelo = models.ForeignKey("Paralelo", on_delete=models.PROTECT)
     anio_lectivo = models.ForeignKey("AnioLectivo", on_delete=models.PROTECT)
 
-    tipo_programa = models.CharField(max_length=20, choices=TIPO_PROGRAMA)
+    oferta_educativa = models.CharField(max_length=40, choices=OFERTA_EDUCATIVA)
     jornada = models.CharField(max_length=20, choices=JORNADAS, null=True, blank=True)
     temporalidad = models.CharField(max_length=20, choices=TEMPORALIDAD, null=True, blank=True)
     estado_estudiante = models.CharField(max_length=20, choices=ESTADOS, null=True, blank=True)
@@ -397,6 +457,8 @@ class Matricula(UpperCaseMixin, models.Model):
             errors["anio_lectivo"] = _("No puedes matricular en un año lectivo inactivo.")
 
         # 3) Campos obligatorios reales
+        if not self.oferta_educativa:
+            errors["oferta_educativa"] = _("La oferta educativa es obligatoria.")
         if not self.jornada:
             errors["jornada"] = _("La jornada es obligatoria.")
         if not self.temporalidad:
@@ -413,7 +475,11 @@ class Matricula(UpperCaseMixin, models.Model):
 
             ult_aprob = (
                 Promocion.objects
-                .filter(estudiante_id=self.estudiante_id, resultado="APROBADO", curso__orden__isnull=False)
+                .filter(
+                    estudiante_id=self.estudiante_id,
+                    resultado="APROBADO",
+                    curso__orden__isnull=False
+                )
                 .select_related("curso")
                 .order_by("-curso__orden")
                 .first()
@@ -439,11 +505,9 @@ class Matricula(UpperCaseMixin, models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        # Normaliza antes de validar
         self.normalize_fields()
         self.full_clean()
         return super().save(*args, **kwargs)
-
 
 # ============================================================
 # PROMOCION
