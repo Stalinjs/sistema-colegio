@@ -382,51 +382,43 @@
         {% block contenido %}
         {% endblock %}
 
-        <footer class="footer py-4 bg-light border-top">
-          <div class="container-fluid">
-            <div class="row align-items-center text-center text-md-start justify-content-between">
+        <footer class="footer">
+          <div class="container-fluid d-flex flex-column flex-md-row justify-content-between align-items-center flex-wrap">
 
-              <!-- COLUMNA IZQUIERDA -->
-              <div class="col-md-4 mb-3 mb-md-0">
-                <h6 class="fw-bold mb-2">Contacto</h6>
+            <!-- IZQUIERDA -->
+            <div class="text-start">
+              <h6 class="fw-bold mb-2">Contacto</h6>
 
-                <p class="mb-1">
-                  <i class="bi bi-telephone-fill me-2"></i>
-                  <a href="tel:0995186761" class="text-decoration-none text-dark">
-                    0995186761
-                  </a>
-                </p>
+              <p class="mb-1">
+                <i class="bi bi-telephone-fill me-2"></i>
+                0995186761
+              </p>
 
-                <p class="mb-0">
-                  <i class="bi bi-envelope-fill me-2"></i>
-                  <a href="mailto:pmonsenorleonidas@gmail.com" class="text-decoration-none text-dark">
-                    pmonsenorleonidas@gmail.com
-                  </a>
-                </p>
-              </div>
-
-              <!-- COLUMNA CENTRO -->
-              <div class="col-md-4 text-center mb-3 mb-md-0">
-                <img src="{% static 'img/logo.jpg' %}" 
-                    alt="Logo Colegio"
-                    class="footer-logo">
-
-                <p class="mt-2 mb-0 fw-semibold">
-                  Unidad Educativa Monseñor Leónidas Proaño
-                </p>
-              </div>
-
-              <!-- COLUMNA DERECHA -->
-              <div class="col-md-4 text-center text-md-end">
-                <p class="mb-1">
-                  © {% now "Y" %}
-                </p>
-                <p class="mb-0">
-                  Sistema Académico Institucional
-                </p>
-              </div>
-
+              <p class="mb-0">
+                <i class="bi bi-envelope-fill me-2"></i>
+                pmonsenorleonidas@gmail.com
+              </p>
             </div>
+            <br>
+            <!-- CENTRO -->
+            <div class="text-center">
+              <img src="{% static 'img/logo.jpg' %}" 
+                  alt="Logo Colegio"
+                  style="height:50px;">
+
+              <p class="mt-2 mb-0 fw-semibold">
+                Unidad Educativa Monseñor Leónidas Proaño
+              </p>
+            </div>
+            <br>
+            <!-- DERECHA -->
+            <div class="text-center">
+              <p class="mb-0">
+                © {% now "Y" %} Universidad Técnica de Cotopaxi <br>
+                Sistema Académico
+              </p>
+            </div>
+
           </div>
         </footer>
     </div>
@@ -521,21 +513,24 @@
     {% endif %}
 
     <style>
-        .nota-input {
-            width: 70px !important;
-            text-align: center;
-            padding: 1px;
-        }
-        .footer{
-            font-size:14px;
-        }
+      .footer{
+          font-size:14px;
+      }
+      .nota-input {
+          width: 70px !important;
+          text-align: center;
+          padding: 1px;
+      }
+      .footer{
+          font-size:14px;
+      }
 
-        .footer-logo{
-            height:55px;
-        }
-        .footer a:hover{
-            color:#0d6efd;
-        }
+      .footer-logo{
+          height:55px;
+      }
+      .footer a:hover{
+          color:#0d6efd;
+      }
     </style>
 </body>
 </html>

@@ -142,56 +142,63 @@
     {% block contenido %}{% endblock %}
 </main>
 
-<footer class="site-footer section-padding">
-    <div class="container">
-        <div class="row">
+<footer class="site-footer">
+    <div class="row">
+        <div class="col-lg-3 col-md-4 col-5 ms-auto">
+            <h6 class="site-footer-title mb-3">Enlaces</h6>
 
-            <div class="col-lg-3 col-md-4 col-6 ms-auto">
-                <h6 class="site-footer-title mb-3">Enlaces</h6>
+            <ul class="site-footer-links">
+                <li class="site-footer-link-item">
+                    <a href="{% url 'inicio' %}#section_1" class="site-footer-link">Inicio</a>
+                </li>
 
-                <ul class="site-footer-links">
-                    <li class="site-footer-link-item">
-                        <a href="{% url 'inicio' %}#section_1" class="site-footer-link">Inicio</a>
-                    </li>
+                <li class="site-footer-link-item">
+                    <a href="{% url 'inicio' %}#section_2" class="site-footer-link">Nosotros</a>
+                </li>
 
-                    <li class="site-footer-link-item">
-                        <a href="{% url 'inicio' %}#section_2" class="site-footer-link">Nosotros</a>
-                    </li>
+                <li class="site-footer-link-item">
+                    <a href="{% url 'inicio' %}#section_5" class="site-footer-link">Galería</a>
+                </li>
 
-                    <li class="site-footer-link-item">
-                        <a href="{% url 'inicio' %}#section_5" class="site-footer-link">Galería</a>
-                    </li>
+                <li class="site-footer-link-item">
+                    <a href="{% url 'inicio' %}#section_6" class="site-footer-link">Contacto</a>
+                </li>
+            </ul>
+        </div>
 
-                    <li class="site-footer-link-item">
-                        <a href="{% url 'inicio' %}#section_6" class="site-footer-link">Contacto</a>
-                    </li>
-                </ul>
-            </div>
+        <div class="col-lg-3 col-md-6 mb-4"> <br>
+            <img src="{% static 'img/logo.jpg' %}" alt="Logo Colegio" style="max-width:90px;" class="mb-3">
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <h6 class="site-footer-title mb-3">Contacto</h6>
 
-            <div class="col-lg-3 col-md-4 col-6 mb-4 mb-lg-0 ms-auto">
-                <h6 class="site-footer-title mb-3">Información</h6>
+            <p class="d-flex align-items-center mb-2">
+                <i class="bi bi-telephone-fill me-2 text-primary"></i>
+                0995186761
+            </p>
 
-                <p class="text-white d-flex mb-1">
-                    <a href="tel:0983944430" class="site-footer-link">0995186761</a>
-                </p>
+            <p class="d-flex align-items-center mb-2">
+                <i class="bi bi-envelope-fill me-2 text-primary"></i>
+                pmonsenorleonidas@gmail.com
+            </p>
+            <p class="d-flex align-items-center mb-2">
+                <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                Av. Iberoamericana
+            </p>
+        </div>
 
-                <p class="text-white d-flex">
-                    <a href="mailto:pmonsenorleonidas@gmail.com" class="site-footer-link">
-                        pmonsenorleonidas@gmail.com
-                    </a>
-                </p>
-            </div>
-
-            <div class="col-lg-3 col-md-4 col-12 mt-4 mt-lg-0 ms-auto">
-                <p class="copyright-text mt-lg-5 mt-4">
-                    © {% now "Y" %} Unidad Educativa Monseñor Leónidas Proaño.<br>
-                    Sistema Académico Institucional.<br><br>
-                    
-                </p>
-            </div>
-
+        <div class="row mt-4">
+        <div class="col-11 text-center">
+            <p class="copyright-text mb-0">
+                © {% now "Y" %} Universidad Técnica de Cotopaxi
+            </p>
+            <small class="text-muted">
+                Sistema Académico 
+            </small>
         </div>
     </div>
+    
 </footer>
 
 <script src="{% static 'plantilla/Topic/js/jquery.min.js' %}"></script>
@@ -202,8 +209,21 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 {% block extra_js %}{% endblock %}
+{% if messages %}
+      {% for message in messages %}
+        <script>
+          Swal.fire({
+            title: "{% if message.tags == 'error' %}Error{% else %}Información{% endif %}",
+            text: "{{ message }}",
+            icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+            confirmButtonText: "OK"
+          });
+        </script>
+      {% endfor %}
+    {% endif %}
 </body>
 </html>
