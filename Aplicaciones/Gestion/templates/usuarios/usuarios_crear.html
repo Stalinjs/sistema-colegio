@@ -76,21 +76,39 @@
                     </div>
 
                     <!-- Correo -->
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label">Correo electrónico</label>
                         <input type="email" name="correo" class="form-control">
                     </div>
 
+                    <!-- Provincia -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Provincia</label>
+                        <input type="text" name="provincia" class="form-control">
+                    </div>
+
+                    <!-- Cantón -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Cantón</label>
+                        <input type="text" name="canton" class="form-control">
+                    </div>
+
+                    <!-- Parroquia -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Parroquia</label>
+                        <input type="text" name="parroquia" class="form-control">
+                    </div>
+
                     <!-- Dirección -->
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label">Dirección</label>
-                        <input type="text" name="direccion" class="form-control">
+                        <textarea name="direccion" class="form-control" rows="3"></textarea>
                     </div>
 
                 </div>
 
                 <div class="text-end mt-3">
-                    <a href="{% url 'usuarios_lista' %}" class="btn btn-secondary">
+                    <a href="{% url 'usuarios_lista' %}" class="btn btn-outline-secondary">
                         <i class="fa fa-arrow-left"></i> Cancelar
                     </a>
                     <button type="submit" class="btn btn-primary">
@@ -121,11 +139,30 @@ $("#frm_usuario").validate({
             required: true,
             minlength: 3
         },
+        apellido_materno: {
+            required: true,
+            minlength: 3
+        },
         correo: {
             required: true,
             email: true
         },
         rol: {
+            required: true
+        },
+        telefono: {
+            required: true
+        },
+        provincia: {
+            required: true
+        },
+        canton: {
+            required: true
+        },
+        parroquia: {
+            required: true
+        },
+        direccion: {
             required: true
         }
     },
@@ -144,12 +181,31 @@ $("#frm_usuario").validate({
             required: "Ingrese el apellido paterno",
             minlength: "Debe tener al menos 3 caracteres"
         },
+        apellido_materno: {
+            required: "Ingrese el apellido materno",
+            minlength: "Debe tener al menos 3 caracteres"
+        },
         correo: {
             required: "Ingrese el correo electrónico",
             email: "Ingrese un correo válido"
         },
         rol: {
             required: "Seleccione un rol"
+        },
+        telefono: {
+            required: "Ingrese su número de telefono"
+        },
+        provincia: {
+            required: "Ingrese la provincia"
+        },
+        canton: {
+            required: "Ingrese el cantón"
+        },
+        parroquia: {
+            required: "Ingrese la parroquia"
+        },
+        direccion: {
+            required: "Ingrese la dirección"
         }
     },
     errorElement: "div",

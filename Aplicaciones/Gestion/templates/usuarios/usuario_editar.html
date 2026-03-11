@@ -39,12 +39,27 @@
                 <input type="text" name="telefono" class="form-control" value="{{ usuario.telefono }}">
             </div>
 
-            <div class="col-md-6 mb-3">
-                <label>Dirección</label>
-                <input type="text" name="direccion" class="form-control" value="{{ usuario.direccion }}">
+            <div class="col-md-4 mb-3">
+                <label>Provincia</label>
+                <input type="text" name="provincia" class="form-control" value="{{ usuario.provincia }}">
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
+                <label>Cantón</label>
+                <input type="text" name="canton" class="form-control" value="{{ usuario.canton }}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label>Parroquia</label>
+                <input type="text" name="parroquia" class="form-control" value="{{ usuario.parroquia }}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label>Dirección</label>
+                <textarea name="direccion" class="form-control" rows="3">{{ usuario.direccion }}</textarea>
+            </div>
+
+            <div class="col-md-4 mb-3">
                 <label>Rol</label>
                 {% if usuario.rol == 'admin' %}
                     <input type="text" class="form-control" value="Administrador" disabled>
@@ -58,7 +73,9 @@
         </div>
 
         <div class="mt-3">
-            <a href="{% url 'usuarios_lista' %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url 'usuarios_lista' %}" class="btn btn-outline-secondary">
+                <i class="fa fa-arrow-left"></i> Cancelar
+            </a>
             <button type="submit" class="btn btn-primary">Guardar Cambios</button>
         </div>
     </form>
@@ -76,11 +93,30 @@ $("#frm_usuario").validate({
             required: true,
             minlength: 3
         },
+        apellido_materno: {
+            required: true,
+            minlength: 3
+        },
         correo: {
             required: true,
             email: true
         },
         rol: {
+            required: true
+        },
+        telefono: {
+            required: true
+        },
+        provincia: {
+            required: true
+        },
+        canton: {
+            required: true
+        },
+        parroquia: {
+            required: true
+        },
+        direccion: {
             required: true
         }
     },
@@ -93,12 +129,31 @@ $("#frm_usuario").validate({
             required: "Ingrese el apellido paterno",
             minlength: "Debe tener al menos 3 caracteres"
         },
+        apellido_materno: {
+            required: "Ingrese el apellido materno",
+            minlength: "Debe tener al menos 3 caracteres"
+        },
         correo: {
             required: "Ingrese el correo electrónico",
             email: "Ingrese un correo válido"
         },
         rol: {
             required: "Seleccione un rol"
+        },
+        telefono: {
+            required: "Ingrese su número de telefono"
+        },
+        provincia: {
+            required: "Ingrese la provincia"
+        },
+        canton: {
+            required: "Ingrese el cantón"
+        },
+        parroquia: {
+            required: "Ingrese la parroquia"
+        },
+        direccion: {
+            required: "Ingrese la dirección"
         }
     },
     errorElement: "div",

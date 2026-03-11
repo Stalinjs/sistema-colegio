@@ -204,7 +204,12 @@ def usuarios_crear(request):
         apellido_m = (request.POST.get("apellido_materno") or "").strip()
         correo = (request.POST.get("correo") or "").strip()
         telefono = (request.POST.get("telefono") or "").strip()
+
+        provincia = (request.POST.get("provincia") or "").strip()
+        canton = (request.POST.get("canton") or "").strip()
+        parroquia = (request.POST.get("parroquia") or "").strip()
         direccion = (request.POST.get("direccion") or "").strip()
+
         rol = (request.POST.get("rol") or "").strip()
 
         if rol == "admin":
@@ -229,6 +234,9 @@ def usuarios_crear(request):
             apellido_materno=apellido_m,
             correo=correo if correo else None,
             telefono=telefono if telefono else None,
+            provincia=provincia if provincia else None,
+            canton=canton if canton else None,
+            parroquia=parroquia if parroquia else None,
             direccion=direccion if direccion else None,
             rol=rol,
             password=make_password(cedula)
@@ -276,7 +284,6 @@ def usuarios_crear(request):
 
     return render(request, "usuarios/usuarios_crear.html")
 
-
 def activar_usuario(request, usuario_id):
     if request.session.get("usuario_rol") != "admin":
         return redirect("login")
@@ -321,26 +328,28 @@ def desactivar_usuario(request, usuario_id):
     messages.success(request, "Usuario desactivado correctamente.")
     return redirect("usuarios_lista")
 
-
 def editar_usuario(request, usuario_id):
     if request.session.get("usuario_rol") != "admin":
         return redirect("login")
+
     usuario = get_object_or_404(Usuario, id=usuario_id)
 
     if request.method == "POST":
-        
-        usuario.nombres = request.POST.get("nombres")
-        usuario.apellido_paterno = request.POST.get("apellido_paterno")
-        usuario.apellido_materno = request.POST.get("apellido_materno")
-        usuario.correo = request.POST.get("correo")
-        usuario.telefono = request.POST.get("telefono")
-        usuario.direccion = request.POST.get("direccion")
+        usuario.nombres = (request.POST.get("nombres") or "").strip()
+        usuario.apellido_paterno = (request.POST.get("apellido_paterno") or "").strip()
+        usuario.apellido_materno = (request.POST.get("apellido_materno") or "").strip()
+        usuario.correo = (request.POST.get("correo") or "").strip() or None
+        usuario.telefono = (request.POST.get("telefono") or "").strip() or None
 
-        rol_nuevo = usuario.rol  
+        usuario.provincia = (request.POST.get("provincia") or "").strip() or None
+        usuario.canton = (request.POST.get("canton") or "").strip() or None
+        usuario.parroquia = (request.POST.get("parroquia") or "").strip() or None
+        usuario.direccion = (request.POST.get("direccion") or "").strip() or None
+
+        rol_nuevo = usuario.rol
         if usuario.rol != "admin":
-            rol_nuevo = request.POST.get("rol")  
+            rol_nuevo = (request.POST.get("rol") or "").strip()
 
-        
         if Usuario.objects.exclude(id=usuario_id).filter(cedula=usuario.cedula).exists():
             messages.error(request, "La cédula ya está registrada por otro usuario.")
             return redirect("editar_usuario", usuario_id=usuario.id)
@@ -359,7 +368,6 @@ def editar_usuario(request, usuario_id):
                 )
                 return redirect("editar_usuario", usuario_id=usuario.id)
 
-        # aplicar el rol ya validado
         usuario.rol = rol_nuevo
 
         try:
@@ -383,6 +391,7 @@ def editar_usuario(request, usuario_id):
         return redirect("usuarios_lista")
 
     return render(request, "usuarios/usuario_editar.html", {"usuario": usuario})
+
 # ==================================================== Ver datos desde mi perfil ===============================================
 # MI PERFIL 
 def mi_perfil(request):

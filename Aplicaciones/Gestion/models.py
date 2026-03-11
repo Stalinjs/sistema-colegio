@@ -182,7 +182,6 @@ class AnioLectivo(UpperCaseMixin, models.Model):
     def __str__(self):
         return self.nombre
 
-
 # ============================================================
 # USUARIOS
 # ============================================================
@@ -193,7 +192,15 @@ class Usuario(UpperCaseMixin, models.Model):
         ('docente', 'Docente'),
     )
 
-    UPPERCASE_FIELDS = ["nombres", "apellido_paterno", "apellido_materno", "direccion"]
+    UPPERCASE_FIELDS = [
+        "nombres",
+        "apellido_paterno",
+        "apellido_materno",
+        "provincia",
+        "canton",
+        "parroquia",
+        "direccion"
+    ]
     LOWERCASE_FIELDS = ["correo"]  # correo en minúsculas
 
     cedula = models.CharField(max_length=10, unique=True)
@@ -202,7 +209,12 @@ class Usuario(UpperCaseMixin, models.Model):
     apellido_materno = models.CharField(max_length=200)
     correo = models.EmailField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
+
+    provincia = models.CharField(max_length=100, blank=True, null=True)
+    canton = models.CharField(max_length=100, blank=True, null=True)
+    parroquia = models.CharField(max_length=100, blank=True, null=True)
     direccion = models.CharField(max_length=250, blank=True, null=True)
+
     rol = models.CharField(max_length=20, choices=ROLES)
     password = models.CharField(max_length=255)
     activo = models.BooleanField(default=True)
@@ -228,8 +240,6 @@ class Usuario(UpperCaseMixin, models.Model):
     
     def __str__(self):
         return f"{self.cedula} - {self.nombres} {self.apellido_paterno}"
-
-
 # ============================================================
 # DOCENTES
 # ============================================================
