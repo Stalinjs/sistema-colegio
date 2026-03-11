@@ -253,7 +253,6 @@ class Docente(UpperCaseMixin, models.Model):
         nombres = f"{self.usuario.nombres} {self.usuario.apellido_paterno}"
         return f"Docente: {nombres}"
 
-
 # ============================================================
 # ESTUDIANTES
 # ============================================================
@@ -276,6 +275,9 @@ class Estudiante(UpperCaseMixin, models.Model):
         "nombres",
         "apellido_paterno",
         "apellido_materno",
+        "provincia",
+        "canton",
+        "parroquia",
         "direccion",
         "nacionalidad",
         "etnia",
@@ -296,7 +298,11 @@ class Estudiante(UpperCaseMixin, models.Model):
 
     fecha_nacimiento = models.DateField(null=True, blank=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
-    direccion = models.CharField(max_length=200, blank=True, null=True)
+
+    provincia = models.CharField(max_length=100, blank=True, null=True)
+    canton = models.CharField(max_length=100, blank=True, null=True)
+    parroquia = models.CharField(max_length=100, blank=True, null=True)
+    direccion = models.TextField(blank=True, null=True)
 
     sexo = models.CharField(max_length=10, choices=SEXO_CHOICES, null=True, blank=True)
     nacionalidad = models.CharField(max_length=100, null=True, blank=True)
@@ -313,14 +319,12 @@ class Estudiante(UpperCaseMixin, models.Model):
     def clean(self):
         errors = {}
 
-        # --- CÉDULA ---
         if self.cedula:
             self.cedula = self.cedula.strip()
 
         if not validar_cedula_ec(self.cedula):
             errors["cedula"] = _("Cédula inválida. Verifique que sea una cédula ecuatoriana real de 10 dígitos.")
 
-        # --- FECHA DE NACIMIENTO ---
         if self.fecha_nacimiento:
             hoy = date.today()
 
@@ -339,7 +343,6 @@ class Estudiante(UpperCaseMixin, models.Model):
             elif edad > EDAD_MAX:
                 errors["fecha_nacimiento"] = _(f"La edad del estudiante no puede superar {EDAD_MAX} años.")
 
-        # --- DISCAPACIDAD ---
         if self.porcentaje_discapacidad is not None:
             if self.porcentaje_discapacidad < 0 or self.porcentaje_discapacidad > 100:
                 errors["porcentaje_discapacidad"] = _("El porcentaje de discapacidad debe estar entre 0 y 100.")
@@ -482,8 +485,9 @@ class Matricula(UpperCaseMixin, models.Model):
             errors["paralelo"] = _("El curso seleccionado no tiene 'orden' configurado. Configúralo primero.")
         else:
             Promocion = apps.get_model(self._meta.app_label, "Promocion")
+            HistorialAcademicoIngreso = apps.get_model(self._meta.app_label, "HistorialAcademicoIngreso")
 
-            ult_aprob = (
+            ult_aprob_promocion = (
                 Promocion.objects
                 .filter(
                     estudiante_id=self.estudiante_id,
@@ -495,19 +499,46 @@ class Matricula(UpperCaseMixin, models.Model):
                 .first()
             )
 
-            if ult_aprob:
-                orden_max = ult_aprob.curso.orden
-                orden_nuevo = curso_nuevo.orden
+            historial_ingreso = (
+                HistorialAcademicoIngreso.objects
+                .filter(
+                    estudiante_id=self.estudiante_id,
+                    curso_aprobado__orden__isnull=False
+                )
+                .select_related("curso_aprobado")
+                .first()
+            )
 
+            orden_nuevo = curso_nuevo.orden
+            orden_max = None
+            nombre_ultimo_aprobado = None
+
+            if ult_aprob_promocion and historial_ingreso:
+                if ult_aprob_promocion.curso.orden >= historial_ingreso.curso_aprobado.orden:
+                    orden_max = ult_aprob_promocion.curso.orden
+                    nombre_ultimo_aprobado = ult_aprob_promocion.curso.nombre
+                else:
+                    orden_max = historial_ingreso.curso_aprobado.orden
+                    nombre_ultimo_aprobado = historial_ingreso.curso_aprobado.nombre
+
+            elif ult_aprob_promocion:
+                orden_max = ult_aprob_promocion.curso.orden
+                nombre_ultimo_aprobado = ult_aprob_promocion.curso.nombre
+
+            elif historial_ingreso:
+                orden_max = historial_ingreso.curso_aprobado.orden
+                nombre_ultimo_aprobado = historial_ingreso.curso_aprobado.nombre
+
+            if orden_max is not None:
                 if orden_nuevo <= orden_max:
                     errors["paralelo"] = _(
                         f"No se puede matricular en {curso_nuevo.nombre}. "
-                        f"El estudiante ya aprobó {ult_aprob.curso.nombre} (orden {orden_max})."
+                        f"El estudiante ya aprobó {nombre_ultimo_aprobado} (orden {orden_max})."
                     )
                 elif orden_nuevo > (orden_max + 1):
                     errors["paralelo"] = _(
                         f"No se puede saltar de nivel. "
-                        f"Último aprobado: {ult_aprob.curso.nombre}. "
+                        f"Último aprobado: {nombre_ultimo_aprobado}. "
                         f"Debe matricularse en el siguiente curso (orden {orden_max + 1})."
                     )
 
@@ -807,3 +838,36 @@ class PermisoEdicionNotas(UpperCaseMixin, models.Model):
             models.Index(fields=["asignacion", "campo", "activo"]),
             models.Index(fields=["matricula", "campo", "activo"]),
         ]
+
+# ============================================================
+# HISTORIAL ACADEMICO
+# ============================================================
+class HistorialAcademicoIngreso(UpperCaseMixin, models.Model):
+    UPPERCASE_FIELDS = ["institucion_procedencia", "observacion"]
+
+    estudiante = models.OneToOneField(
+        "Estudiante",
+        on_delete=models.CASCADE,
+        related_name="historial_ingreso"
+    )
+    curso_aprobado = models.ForeignKey("Curso", on_delete=models.PROTECT)
+    institucion_procedencia = models.CharField(max_length=200, blank=True, null=True)
+    observacion = models.CharField(max_length=255, blank=True, null=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        errors = {}
+
+        if self.curso_aprobado_id and self.curso_aprobado.orden is None:
+            errors["curso_aprobado"] = _("El curso seleccionado no tiene orden configurado.")
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.normalize_fields()
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.estudiante.cedula} - Último aprobado: {self.curso_aprobado.nombre}"

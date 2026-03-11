@@ -7,7 +7,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from .models import Usuario, Estudiante, Matricula, Paralelo, AnioLectivo, Curso, Sucursal, Nota, Docente, DocenteAsignacion, Especialidad, Asignatura, PeriodoNotas, PermisoEdicionNotas, Promocion, PromocionDetalle
+from .models import Usuario, Estudiante, Matricula, Paralelo, AnioLectivo, Curso, Sucursal, Nota, Docente, DocenteAsignacion, Especialidad, Asignatura, PeriodoNotas, PermisoEdicionNotas, Promocion, PromocionDetalle,HistorialAcademicoIngreso
 from django.utils import timezone
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
@@ -1604,6 +1604,7 @@ def estudiantes_crear(request):
 
     sucursal_id = (request.GET.get("sucursal") or "").strip()
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
+    cursos = Curso.objects.all().order_by("orden", "nombre")
 
     # Default: Latacunga (Matriz)
     if not sucursal_id:
@@ -1619,6 +1620,10 @@ def estudiantes_crear(request):
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
         fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
         telefono = (request.POST.get("telefono") or "").strip() or None
+
+        provincia = (request.POST.get("provincia") or "").strip() or None
+        canton = (request.POST.get("canton") or "").strip() or None
+        parroquia = (request.POST.get("parroquia") or "").strip() or None
         direccion = (request.POST.get("direccion") or "").strip() or None
 
         sexo = (request.POST.get("sexo") or "").strip() or None
@@ -1631,6 +1636,10 @@ def estudiantes_crear(request):
 
         porcentaje_discapacidad_raw = (request.POST.get("porcentaje_discapacidad") or "").strip()
         porcentaje_discapacidad = int(porcentaje_discapacidad_raw) if porcentaje_discapacidad_raw else None
+
+        curso_aprobado_ingreso_id = (request.POST.get("curso_aprobado_ingreso") or "").strip()
+        institucion_procedencia = (request.POST.get("institucion_procedencia") or "").strip() or None
+        observacion_ingreso = (request.POST.get("observacion_ingreso") or "").strip() or None
 
         sucursal_id_post = (request.POST.get("sucursal") or "").strip()
         sucursal_context = (request.POST.get("sucursal_context") or "").strip()
@@ -1646,7 +1655,7 @@ def estudiantes_crear(request):
         sucursal = get_object_or_404(Sucursal, id=sucursal_id_post)
 
         try:
-            Estudiante.objects.create(
+            estudiante = Estudiante.objects.create(
                 cedula=cedula,
                 tipo_documento=tipo_documento,
                 nombres=nombres,
@@ -1654,6 +1663,9 @@ def estudiantes_crear(request):
                 apellido_materno=apellido_materno,
                 fecha_nacimiento=fecha_nacimiento,
                 telefono=telefono,
+                provincia=provincia,
+                canton=canton,
+                parroquia=parroquia,
                 direccion=direccion,
                 sexo=sexo,
                 nacionalidad=nacionalidad,
@@ -1665,6 +1677,17 @@ def estudiantes_crear(request):
                 porcentaje_discapacidad=porcentaje_discapacidad,
                 sucursal=sucursal
             )
+
+            if curso_aprobado_ingreso_id:
+                curso_aprobado = get_object_or_404(Curso, id=curso_aprobado_ingreso_id)
+
+                HistorialAcademicoIngreso.objects.create(
+                    estudiante=estudiante,
+                    curso_aprobado=curso_aprobado,
+                    institucion_procedencia=institucion_procedencia,
+                    observacion=observacion_ingreso,
+                )
+
         except ValidationError as e:
             if hasattr(e, "message_dict"):
                 msg = (
@@ -1672,6 +1695,10 @@ def estudiantes_crear(request):
                     or e.message_dict.get("fecha_nacimiento")
                     or e.message_dict.get("tipo_discapacidad")
                     or e.message_dict.get("porcentaje_discapacidad")
+                    or e.message_dict.get("provincia")
+                    or e.message_dict.get("canton")
+                    or e.message_dict.get("parroquia")
+                    or e.message_dict.get("direccion")
                     or e.messages
                 )
             else:
@@ -1682,6 +1709,7 @@ def estudiantes_crear(request):
 
             messages.error(request, msg)
             return redirect(f"{request.path}?sucursal={sucursal_context}")
+
         except ValueError:
             messages.error(request, "El porcentaje de discapacidad debe ser numérico.")
             return redirect(f"{request.path}?sucursal={sucursal_context}")
@@ -1692,13 +1720,24 @@ def estudiantes_crear(request):
     return render(request, "estudiantes/estudiantes_crear.html", {
         "sucursales": sucursales,
         "sucursal_id": sucursal_id,
+        "cursos": cursos,
     })
 def estudiantes_editar(request, estudiante_id):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    estudiante = get_object_or_404(Estudiante.objects.select_related("sucursal"), id=estudiante_id)
+    estudiante = get_object_or_404(
+        Estudiante.objects.select_related("sucursal"),
+        id=estudiante_id
+    )
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
+    cursos = Curso.objects.all().order_by("orden", "nombre")
+
+    historial_ingreso = None
+    try:
+        historial_ingreso = estudiante.historial_ingreso
+    except HistorialAcademicoIngreso.DoesNotExist:
+        historial_ingreso = None
 
     if request.method == "POST":
         tipo_documento = (request.POST.get("tipo_documento") or "CEDULA").strip()
@@ -1707,6 +1746,10 @@ def estudiantes_editar(request, estudiante_id):
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
         fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
         telefono = (request.POST.get("telefono") or "").strip() or None
+
+        provincia = (request.POST.get("provincia") or "").strip() or None
+        canton = (request.POST.get("canton") or "").strip() or None
+        parroquia = (request.POST.get("parroquia") or "").strip() or None
         direccion = (request.POST.get("direccion") or "").strip() or None
 
         sexo = (request.POST.get("sexo") or "").strip() or None
@@ -1720,6 +1763,10 @@ def estudiantes_editar(request, estudiante_id):
         porcentaje_discapacidad_raw = (request.POST.get("porcentaje_discapacidad") or "").strip()
         porcentaje_discapacidad = int(porcentaje_discapacidad_raw) if porcentaje_discapacidad_raw else None
 
+        curso_aprobado_ingreso_id = (request.POST.get("curso_aprobado_ingreso") or "").strip()
+        institucion_procedencia = (request.POST.get("institucion_procedencia") or "").strip() or None
+        observacion_ingreso = (request.POST.get("observacion_ingreso") or "").strip() or None
+
         sucursal_id = (request.POST.get("sucursal") or "").strip()
 
         if not nombres or not apellido_paterno or not apellido_materno or not sucursal_id:
@@ -1732,6 +1779,9 @@ def estudiantes_editar(request, estudiante_id):
         estudiante.apellido_materno = apellido_materno
         estudiante.fecha_nacimiento = fecha_nacimiento
         estudiante.telefono = telefono
+        estudiante.provincia = provincia
+        estudiante.canton = canton
+        estudiante.parroquia = parroquia
         estudiante.direccion = direccion
         estudiante.sexo = sexo
         estudiante.nacionalidad = nacionalidad
@@ -1745,6 +1795,26 @@ def estudiantes_editar(request, estudiante_id):
 
         try:
             estudiante.save()
+
+            if curso_aprobado_ingreso_id:
+                curso_aprobado = get_object_or_404(Curso, id=curso_aprobado_ingreso_id)
+
+                if historial_ingreso:
+                    historial_ingreso.curso_aprobado = curso_aprobado
+                    historial_ingreso.institucion_procedencia = institucion_procedencia
+                    historial_ingreso.observacion = observacion_ingreso
+                    historial_ingreso.save()
+                else:
+                    HistorialAcademicoIngreso.objects.create(
+                        estudiante=estudiante,
+                        curso_aprobado=curso_aprobado,
+                        institucion_procedencia=institucion_procedencia,
+                        observacion=observacion_ingreso,
+                    )
+            else:
+                if historial_ingreso:
+                    historial_ingreso.delete()
+
         except ValidationError as e:
             if hasattr(e, "message_dict"):
                 msg = (
@@ -1752,6 +1822,10 @@ def estudiantes_editar(request, estudiante_id):
                     or e.message_dict.get("fecha_nacimiento")
                     or e.message_dict.get("tipo_discapacidad")
                     or e.message_dict.get("porcentaje_discapacidad")
+                    or e.message_dict.get("provincia")
+                    or e.message_dict.get("canton")
+                    or e.message_dict.get("parroquia")
+                    or e.message_dict.get("direccion")
                     or e.messages
                 )
             else:
@@ -1762,6 +1836,7 @@ def estudiantes_editar(request, estudiante_id):
 
             messages.error(request, msg)
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
+
         except ValueError:
             messages.error(request, "El porcentaje de discapacidad debe ser numérico.")
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
@@ -1772,6 +1847,8 @@ def estudiantes_editar(request, estudiante_id):
     return render(request, "estudiantes/estudiantes_editar.html", {
         "estudiante": estudiante,
         "sucursales": sucursales,
+        "cursos": cursos,
+        "historial_ingreso": historial_ingreso,
     })
 # ========================================================================= MATRICUAS =====================
 def matriculas_lista(request):

@@ -69,7 +69,7 @@
           </div>
 
           <div class="col-md-4 mb-3">
-            <label class="form-label">Fecha de nacimiento</label>
+            <label class="form-label">Fecha de nacimiento *</label>
             <input type="date" name="fecha_nacimiento" class="form-control">
           </div>
 
@@ -98,15 +98,6 @@
           </div>
 
           <div class="col-md-4 mb-3">
-            <label class="form-label">Posee discapacidad validada</label>
-            <select name="posee_discapacidad" id="posee_discapacidad" class="form-select">
-              <option value="">Seleccione...</option>
-              <option value="SI">Sí</option>
-              <option value="NO">No</option>
-            </select>
-          </div>
-
-          <div class="col-md-4 mb-3">
             <label class="form-label">Extensión *</label>
             <select name="sucursal" class="form-select">
               <option value="" disabled>Seleccione...</option>
@@ -118,30 +109,79 @@
             </select>
           </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Tipo de discapacidad</label>
-            <input type="text" name="tipo_discapacidad" id="tipo_discapacidad" class="form-control">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Provincia *</label>
+            <input type="text" name="provincia" class="form-control">
           </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Porcentaje de discapacidad</label>
-            <input type="number" name="porcentaje_discapacidad" id="porcentaje_discapacidad" class="form-control" min="0" max="100">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Cantón *</label>
+            <input type="text" name="canton" class="form-control">
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Parroquia *</label>
+            <input type="text" name="parroquia" class="form-control">
+          </div>
+
+          <div class="col-md-4 mb-3">
             <label class="form-label">Teléfono</label>
             <input type="text" name="telefono" class="form-control">
           </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Dirección</label>
-            <input type="text" name="direccion" class="form-control">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Dirección *</label>
+            <textarea name="direccion" class="form-control" rows="2"></textarea>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Posee discapacidad validada *</label>
+            <select name="posee_discapacidad" id="posee_discapacidad" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="SI">Sí</option>
+              <option value="NO">No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tipo de discapacidad</label>
+            <input type="text" name="tipo_discapacidad" id="tipo_discapacidad" class="form-control">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Porcentaje de discapacidad</label>
+            <input type="number" name="porcentaje_discapacidad" id="porcentaje_discapacidad" class="form-control" min="0" max="100">
+          </div>
+
+          <div class="col-md-12 mt-3">
+            <hr>
+            <h5 class="mb-3">Antecedente académico de ingreso</h5>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Último curso aprobado</label>
+            <select name="curso_aprobado_ingreso" class="form-select">
+              <option value="">Seleccione...</option>
+              {% for c in cursos %}
+                <option value="{{ c.id }}">{{ c.nombre }} - Orden {{ c.orden }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Institución de procedencia</label>
+            <input type="text" name="institucion_procedencia" class="form-control" placeholder="Ej: Unidad Educativa ...">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Observación de ingreso</label>
+            <input type="text" name="observacion_ingreso" class="form-control" placeholder="Opcional">
           </div>
 
         </div>
 
         <div class="text-end mt-3">
-          <a href="{% url 'estudiantes_lista' %}" class="btn btn-secondary">
+          <a href="{% url 'estudiantes_lista' %}" class="btn btn-outline-secondary">
             Cancelar
           </a>
           <button type="submit" class="btn btn-primary">
@@ -186,9 +226,15 @@ $(document).ready(function () {
             nombres: { required: true, minlength: 2 },
             apellido_paterno: { required: true, minlength: 2 },
             apellido_materno: { required: true, minlength: 2 },
+            fecha_nacimiento: { required: true },
             nacionalidad: { required: true, minlength: 3 },
             etnia: { required: true, minlength: 2 },
+            posee_discapacidad: { required: true },
             sucursal: { required: true },
+            provincia: { required: true, minlength: 2 },
+            canton: { required: true, minlength: 2 },
+            parroquia: { required: true, minlength: 2 },
+            direccion: { required: true, minlength: 5 },
             porcentaje_discapacidad: {
                 required: function() {
                     return $("#posee_discapacidad").val() === "SI";
@@ -216,9 +262,15 @@ $(document).ready(function () {
             nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
             apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
             apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
+            fecha_nacimiento: { required: "Ingrese la fecha de nacimiento" },
             nacionalidad: { required: "Ingrese la nacionalidad", minlength: "Mínimo 3 caracteres" },
             etnia: { required: "Ingrese la etnia", minlength: "Mínimo 2 caracteres" },
+            posee_discapacidad: { required: "Seleccione una opción" },
             sucursal: { required: "Seleccione la extensión" },
+            provincia: { required: "Ingrese la provincia", minlength: "Mínimo 2 caracteres" },
+            canton: { required: "Ingrese el cantón", minlength: "Mínimo 2 caracteres" },
+            parroquia: { required: "Ingrese la parroquia", minlength: "Mínimo 2 caracteres" },
+            direccion: { required: "Ingrese la dirección", minlength: "Mínimo 5 caracteres" },
             tipo_discapacidad: {
                 required: "Ingrese el tipo de discapacidad",
                 minlength: "Mínimo 2 caracteres"
