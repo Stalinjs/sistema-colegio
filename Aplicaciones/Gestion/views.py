@@ -1900,7 +1900,7 @@ def matriculas_crear(request):
 
         jornada = (request.POST.get("jornada") or "").strip() or None
         temporalidad = (request.POST.get("temporalidad") or "").strip() or None
-        estado_estudiante = (request.POST.get("estado_estudiante") or "").strip() or None
+        estado_estudiante = "MATRICULADO"
         observaciones = (request.POST.get("observaciones") or "").strip() or None
 
         sucursal_id_post = (request.POST.get("sucursal_context") or sucursal_id or "").strip()

@@ -162,20 +162,6 @@
               La temporalidad es obligatoria.
             </div>
           </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Estado del estudiante *</label>
-            <select id="estado_estudiante" name="estado_estudiante" class="form-select" required>
-              <option value="">Seleccione...</option>
-              <option value="MATRICULADO">Matriculado</option>
-              <option value="RENUNCIA">Renuncia voluntaria</option>
-              <option value="DESERTOR">Desertor</option>
-            </select>
-            <div class="invalid-feedback">
-              El estado del estudiante es obligatorio.
-            </div>
-          </div>
-
           <div class="col-md-12">
             <label class="form-label">Observaciones</label>
             <textarea name="observaciones" class="form-control" rows="3" placeholder="(Opcional)"></textarea>
@@ -213,7 +199,7 @@ $(document).ready(function () {
     box.style.display = "none";
     list.innerHTML = "";
 
-    $("#paralelo, #anio_lectivo, #oferta_educativa, #jornada, #temporalidad, #estado_estudiante").removeClass("is-invalid");
+    $("#paralelo, #anio_lectivo, #oferta_educativa, #jornada, #temporalidad").removeClass("is-invalid");
     $("#err_estudiante").hide();
     $(".bootstrap-select .dropdown-toggle").removeClass("is-invalid");
   }
@@ -243,7 +229,6 @@ $(document).ready(function () {
     const oferta = $("#oferta_educativa").val();
     const jornada = $("#jornada").val();
     const temporalidad = $("#temporalidad").val();
-    const estado = $("#estado_estudiante").val();
 
     if (!est) {
       errores.push("Debes seleccionar un estudiante.");
@@ -269,10 +254,6 @@ $(document).ready(function () {
       errores.push("La temporalidad es obligatoria.");
       $("#temporalidad").addClass("is-invalid");
     }
-    if (!estado) {
-      errores.push("El estado del estudiante es obligatorio.");
-      $("#estado_estudiante").addClass("is-invalid");
-    }
 
     if (errores.length) {
       box.style.display = "block";
@@ -296,7 +277,7 @@ $(document).ready(function () {
     }
   });
 
-  $("#paralelo, #anio_lectivo, #oferta_educativa, #jornada, #temporalidad, #estado_estudiante").on("change", function() {
+  $("#paralelo, #anio_lectivo, #oferta_educativa, #jornada, #temporalidad").on("change", function() {
     limpiarErroresUI();
   });
 
