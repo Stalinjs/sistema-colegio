@@ -162,46 +162,58 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+{{ sucursal_labels|json_script:"sucursal-labels" }}
+{{ sucursal_data|json_script:"sucursal-data" }}
+{{ anio_labels|json_script:"anio-labels" }}
+{{ anio_data|json_script:"anio-data" }}
+{{ curso_labels|json_script:"curso-labels" }}
+{{ curso_data|json_script:"curso-data" }}
 <script>
+  const sucursalLabels = JSON.parse(document.getElementById("sucursal-labels").textContent);
+  const sucursalData = JSON.parse(document.getElementById("sucursal-data").textContent);
 
-  new Chart(document.getElementById("chartSucursal"),{
-    type:"bar",
-    data:{
-      labels: {{ sucursal_labels|safe }},
-      datasets:[{
-        label:"Estudiantes",
-        data: {{ sucursal_data|safe }},
-        backgroundColor:"#1572E8"
+  const anioLabels = JSON.parse(document.getElementById("anio-labels").textContent);
+  const anioData = JSON.parse(document.getElementById("anio-data").textContent);
+
+  const cursoLabels = JSON.parse(document.getElementById("curso-labels").textContent);
+  const cursoData = JSON.parse(document.getElementById("curso-data").textContent);
+
+  new Chart(document.getElementById("chartSucursal"), {
+    type: "bar",
+    data: {
+      labels: sucursalLabels,
+      datasets: [{
+        label: "Estudiantes",
+        data: sucursalData,
+        backgroundColor: "#1572E8"
       }]
     }
-  })
+  });
 
-  new Chart(document.getElementById("chartAnio"),{
-    type:"line",
-    data:{
-      labels: {{ anio_labels|safe }},
-      datasets:[{
-        label:"Matrículas",
-        data: {{ anio_data|safe }},
-        borderColor:"#48ABF7",
-        backgroundColor:"rgba(72,171,247,0.3)"
+  new Chart(document.getElementById("chartAnio"), {
+    type: "line",
+    data: {
+      labels: anioLabels,
+      datasets: [{
+        label: "Matrículas",
+        data: anioData,
+        borderColor: "#48ABF7",
+        backgroundColor: "rgba(72,171,247,0.3)"
       }]
     }
-  })
+  });
 
-  new Chart(document.getElementById("chartCurso"),{
-    type:"bar",
-    data:{
-      labels: {{ curso_labels|safe }},
-      datasets:[{
-        label:"Estudiantes",
-        data: {{ curso_data|safe }},
-        backgroundColor:"#59d05d"
+  new Chart(document.getElementById("chartCurso"), {
+    type: "bar",
+    data: {
+      labels: cursoLabels,
+      datasets: [{
+        label: "Estudiantes",
+        data: cursoData,
+        backgroundColor: "#59d05d"
       }]
     }
-  })
-
+  });
 </script>
 
 {% endblock %}
