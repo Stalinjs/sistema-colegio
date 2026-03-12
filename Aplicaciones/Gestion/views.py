@@ -1598,6 +1598,7 @@ def estudiantes_lista(request):
         "sucursales": sucursales,
         "sucursal_id": sucursal_id,
     })
+
 def estudiantes_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
@@ -1618,7 +1619,7 @@ def estudiantes_crear(request):
         nombres = (request.POST.get("nombres") or "").strip()
         apellido_paterno = (request.POST.get("apellido_paterno") or "").strip()
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
-        fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
+        fecha_nacimiento = (request.POST.get("fecha_nacimiento") or "").strip() or None
         telefono = (request.POST.get("telefono") or "").strip() or None
 
         provincia = (request.POST.get("provincia") or "").strip() or None
@@ -1642,10 +1643,10 @@ def estudiantes_crear(request):
         observacion_ingreso = (request.POST.get("observacion_ingreso") or "").strip() or None
 
         sucursal_id_post = (request.POST.get("sucursal") or "").strip()
-        sucursal_context = (request.POST.get("sucursal_context") or "").strip()
+        sucursal_context = (request.POST.get("sucursal_context") or sucursal_id or "").strip()
 
         if not cedula or not nombres or not apellido_paterno or not apellido_materno or not sucursal_id_post:
-            messages.error(request, "Cédula, nombres, apellidos y sucursal son obligatorios.")
+            messages.error(request, "Cédula, nombres, apellidos y extensión son obligatorios.")
             return redirect(f"{request.path}?sucursal={sucursal_context}")
 
         if Estudiante.objects.filter(cedula=cedula).exists():
@@ -1693,6 +1694,7 @@ def estudiantes_crear(request):
                 msg = (
                     e.message_dict.get("cedula")
                     or e.message_dict.get("fecha_nacimiento")
+                    or e.message_dict.get("nacionalidad_indigena")
                     or e.message_dict.get("tipo_discapacidad")
                     or e.message_dict.get("porcentaje_discapacidad")
                     or e.message_dict.get("provincia")
@@ -1711,7 +1713,7 @@ def estudiantes_crear(request):
             return redirect(f"{request.path}?sucursal={sucursal_context}")
 
         except ValueError:
-            messages.error(request, "El porcentaje de discapacidad debe ser numérico.")
+            messages.error(request, "El porcentaje de discapacidad debe ser un número entero.")
             return redirect(f"{request.path}?sucursal={sucursal_context}")
 
         messages.success(request, "Estudiante creado correctamente.")
@@ -1722,6 +1724,7 @@ def estudiantes_crear(request):
         "sucursal_id": sucursal_id,
         "cursos": cursos,
     })
+
 def estudiantes_editar(request, estudiante_id):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
@@ -1744,7 +1747,7 @@ def estudiantes_editar(request, estudiante_id):
         nombres = (request.POST.get("nombres") or "").strip()
         apellido_paterno = (request.POST.get("apellido_paterno") or "").strip()
         apellido_materno = (request.POST.get("apellido_materno") or "").strip()
-        fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
+        fecha_nacimiento = (request.POST.get("fecha_nacimiento") or "").strip() or None
         telefono = (request.POST.get("telefono") or "").strip() or None
 
         provincia = (request.POST.get("provincia") or "").strip() or None
@@ -1770,7 +1773,7 @@ def estudiantes_editar(request, estudiante_id):
         sucursal_id = (request.POST.get("sucursal") or "").strip()
 
         if not nombres or not apellido_paterno or not apellido_materno or not sucursal_id:
-            messages.error(request, "Nombres, apellidos y sucursal son obligatorios.")
+            messages.error(request, "Nombres, apellidos y extensión son obligatorios.")
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
 
         estudiante.tipo_documento = tipo_documento
@@ -1820,6 +1823,7 @@ def estudiantes_editar(request, estudiante_id):
                 msg = (
                     e.message_dict.get("cedula")
                     or e.message_dict.get("fecha_nacimiento")
+                    or e.message_dict.get("nacionalidad_indigena")
                     or e.message_dict.get("tipo_discapacidad")
                     or e.message_dict.get("porcentaje_discapacidad")
                     or e.message_dict.get("provincia")
@@ -1838,7 +1842,7 @@ def estudiantes_editar(request, estudiante_id):
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
 
         except ValueError:
-            messages.error(request, "El porcentaje de discapacidad debe ser numérico.")
+            messages.error(request, "El porcentaje de discapacidad debe ser un número entero.")
             return redirect("estudiantes_editar", estudiante_id=estudiante.id)
 
         messages.success(request, "Estudiante actualizado correctamente.")

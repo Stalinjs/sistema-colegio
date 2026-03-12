@@ -271,6 +271,40 @@ class Estudiante(UpperCaseMixin, models.Model):
         ("NO", "No"),
     ]
 
+    ETNIA_CHOICES = [
+        ("INDIGENA", "Indígena"),
+        ("MESTIZA", "Mestiza"),
+        ("NEGRA", "Negra"),
+        ("BLANCA", "Blanca"),
+        ("MONTUBIA", "Montubia"),
+    ]
+
+    NACIONALIDAD_INDIGENA_CHOICES = [
+        ("ACHUAR", "Achuar"),
+        ("AI_KOFAN", "Ai Kofan"),
+        ("AWA_KWAIKER", "Awá-Kwaiker"),
+        ("CHACHI", "Chachi"),
+        ("EPERA", "Épera"),
+        ("KICHWA", "Kichwa"),
+        ("SECOYA", "Secoya"),
+        ("SHIWIAR", "Shiwiar"),
+        ("SHUAR", "Shuar"),
+        ("SIONA", "Siona"),
+        ("TSACHILA", "Tsáchila"),
+        ("WAORANI", "Waorani"),
+        ("ZAPARA", "Zápara"),
+        ("OTRA_NACIONALIDAD", "Otra Nacionalidad"),
+    ]
+
+    TIPO_DISCAPACIDAD_CHOICES = [
+        ("FISICA", "Física"),
+        ("INTELECTUAL", "Intelectual"),
+        ("AUDITIVA", "Auditiva"),
+        ("VISUAL", "Visual"),
+        ("PSICOSOCIAL", "Psicosocial"),
+        ("LENGUAJE", "Lenguaje"),
+    ]
+
     UPPERCASE_FIELDS = [
         "nombres",
         "apellido_paterno",
@@ -280,9 +314,6 @@ class Estudiante(UpperCaseMixin, models.Model):
         "parroquia",
         "direccion",
         "nacionalidad",
-        "etnia",
-        "nacionalidad_indigena",
-        "tipo_discapacidad",
     ]
 
     cedula = models.CharField(max_length=10, unique=True)
@@ -306,12 +337,22 @@ class Estudiante(UpperCaseMixin, models.Model):
 
     sexo = models.CharField(max_length=10, choices=SEXO_CHOICES, null=True, blank=True)
     nacionalidad = models.CharField(max_length=100, null=True, blank=True)
-    etnia = models.CharField(max_length=100, null=True, blank=True)
-    nacionalidad_indigena = models.CharField(max_length=100, null=True, blank=True)
+    etnia = models.CharField(max_length=20, choices=ETNIA_CHOICES, null=True, blank=True)
+    nacionalidad_indigena = models.CharField(
+        max_length=30,
+        choices=NACIONALIDAD_INDIGENA_CHOICES,
+        null=True,
+        blank=True
+    )
 
     lgbti = models.CharField(max_length=2, choices=SI_NO_CHOICES, null=True, blank=True)
     posee_discapacidad = models.CharField(max_length=2, choices=SI_NO_CHOICES, null=True, blank=True)
-    tipo_discapacidad = models.CharField(max_length=100, null=True, blank=True)
+    tipo_discapacidad = models.CharField(
+        max_length=20,
+        choices=TIPO_DISCAPACIDAD_CHOICES,
+        null=True,
+        blank=True
+    )
     porcentaje_discapacidad = models.PositiveSmallIntegerField(null=True, blank=True)
 
     sucursal = models.ForeignKey(Sucursal, on_delete=models.PROTECT)
@@ -343,6 +384,12 @@ class Estudiante(UpperCaseMixin, models.Model):
             elif edad > EDAD_MAX:
                 errors["fecha_nacimiento"] = _(f"La edad del estudiante no puede superar {EDAD_MAX} años.")
 
+        if self.etnia != "INDIGENA":
+            self.nacionalidad_indigena = None
+
+        if self.etnia == "INDIGENA" and not self.nacionalidad_indigena:
+            errors["nacionalidad_indigena"] = _("Debe seleccionar la nacionalidad indígena.")
+
         if self.porcentaje_discapacidad is not None:
             if self.porcentaje_discapacidad < 0 or self.porcentaje_discapacidad > 100:
                 errors["porcentaje_discapacidad"] = _("El porcentaje de discapacidad debe estar entre 0 y 100.")
@@ -353,7 +400,7 @@ class Estudiante(UpperCaseMixin, models.Model):
 
         if self.posee_discapacidad == "SI":
             if not self.tipo_discapacidad:
-                errors["tipo_discapacidad"] = _("Debe ingresar el tipo de discapacidad.")
+                errors["tipo_discapacidad"] = _("Debe seleccionar el tipo de discapacidad.")
             if self.porcentaje_discapacidad is None:
                 errors["porcentaje_discapacidad"] = _("Debe ingresar el porcentaje de discapacidad.")
 
@@ -397,7 +444,6 @@ class DocenteAsignacion(models.Model):
 
     def __str__(self):
         return f"{self.docente} - {self.asignatura} - {self.paralelo}"
-
 
 # ============================================================
 # MATRICULAS

@@ -80,12 +80,35 @@
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Etnia *</label>
-            <input type="text" name="etnia" class="form-control" placeholder="Ej: MESTIZA, INDÍGENA">
+            <select name="etnia" id="etnia" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="INDIGENA">Indígena</option>
+              <option value="MESTIZA">Mestiza</option>
+              <option value="NEGRA">Negra</option>
+              <option value="BLANCA">Blanca</option>
+              <option value="MONTUBIA">Montubia</option>
+            </select>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Nacionalidad indígena</label>
-            <input type="text" name="nacionalidad_indigena" class="form-control" placeholder="Ej: SHUAR">
+            <select name="nacionalidad_indigena" id="nacionalidad_indigena" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="ACHUAR">Achuar</option>
+              <option value="AI_KOFAN">Ai Kofan</option>
+              <option value="AWA_KWAIKER">Awá-Kwaiker</option>
+              <option value="CHACHI">Chachi</option>
+              <option value="EPERA">Épera</option>
+              <option value="KICHWA">Kichwa</option>
+              <option value="SECOYA">Secoya</option>
+              <option value="SHIWIAR">Shiwiar</option>
+              <option value="SHUAR">Shuar</option>
+              <option value="SIONA">Siona</option>
+              <option value="TSACHILA">Tsáchila</option>
+              <option value="WAORANI">Waorani</option>
+              <option value="ZAPARA">Zápara</option>
+              <option value="OTRA_NACIONALIDAD">Otra Nacionalidad</option>
+            </select>
           </div>
 
           <div class="col-md-4 mb-3">
@@ -145,12 +168,28 @@
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Tipo de discapacidad</label>
-            <input type="text" name="tipo_discapacidad" id="tipo_discapacidad" class="form-control">
+            <select name="tipo_discapacidad" id="tipo_discapacidad" class="form-select">
+              <option value="">Seleccione...</option>
+              <option value="FISICA">Física</option>
+              <option value="INTELECTUAL">Intelectual</option>
+              <option value="AUDITIVA">Auditiva</option>
+              <option value="VISUAL">Visual</option>
+              <option value="PSICOSOCIAL">Psicosocial</option>
+              <option value="LENGUAJE">Lenguaje</option>
+            </select>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Porcentaje de discapacidad</label>
-            <input type="number" name="porcentaje_discapacidad" id="porcentaje_discapacidad" class="form-control" min="0" max="100">
+            <input
+              type="number"
+              name="porcentaje_discapacidad"
+              id="porcentaje_discapacidad"
+              class="form-control"
+              min="0"
+              max="100"
+              step="1"
+            >
           </div>
 
           <div class="col-md-12 mt-3">
@@ -203,19 +242,35 @@ function toggleDiscapacidadFields() {
     const porcentaje = $("#porcentaje_discapacidad");
 
     if (posee === "SI") {
-        tipo.prop("readonly", false);
+        tipo.prop("disabled", false);
         porcentaje.prop("readonly", false);
     } else {
-        tipo.val("").prop("readonly", true);
-        porcentaje.val("").prop("readonly", true);
+        tipo.val("").prop("disabled", true);
+        porcentaje.val("").prop("readonly", true).val("");
+    }
+}
+
+function toggleNacionalidadIndigena() {
+    const etnia = $("#etnia").val();
+    const nacionalidad = $("#nacionalidad_indigena");
+
+    if (etnia === "INDIGENA") {
+        nacionalidad.prop("disabled", false);
+    } else {
+        nacionalidad.val("").prop("disabled", true);
     }
 }
 
 $(document).ready(function () {
     toggleDiscapacidadFields();
+    toggleNacionalidadIndigena();
 
     $("#posee_discapacidad").on("change", function () {
         toggleDiscapacidadFields();
+    });
+
+    $("#etnia").on("change", function () {
+        toggleNacionalidadIndigena();
     });
 
     $("#frm_estudiante").validate({
@@ -228,7 +283,12 @@ $(document).ready(function () {
             apellido_materno: { required: true, minlength: 2 },
             fecha_nacimiento: { required: true },
             nacionalidad: { required: true, minlength: 3 },
-            etnia: { required: true, minlength: 2 },
+            etnia: { required: true },
+            nacionalidad_indigena: {
+                required: function() {
+                    return $("#etnia").val() === "INDIGENA";
+                }
+            },
             posee_discapacidad: { required: true },
             sucursal: { required: true },
             provincia: { required: true, minlength: 2 },
@@ -239,15 +299,14 @@ $(document).ready(function () {
                 required: function() {
                     return $("#posee_discapacidad").val() === "SI";
                 },
-                number: true,
+                digits: true,
                 min: 0,
                 max: 100
             },
             tipo_discapacidad: {
                 required: function() {
                     return $("#posee_discapacidad").val() === "SI";
-                },
-                minlength: 2
+                }
             }
         },
         messages: {
@@ -264,20 +323,18 @@ $(document).ready(function () {
             apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
             fecha_nacimiento: { required: "Ingrese la fecha de nacimiento" },
             nacionalidad: { required: "Ingrese la nacionalidad", minlength: "Mínimo 3 caracteres" },
-            etnia: { required: "Ingrese la etnia", minlength: "Mínimo 2 caracteres" },
+            etnia: { required: "Seleccione la etnia" },
+            nacionalidad_indigena: { required: "Seleccione la nacionalidad indígena" },
             posee_discapacidad: { required: "Seleccione una opción" },
             sucursal: { required: "Seleccione la extensión" },
             provincia: { required: "Ingrese la provincia", minlength: "Mínimo 2 caracteres" },
             canton: { required: "Ingrese el cantón", minlength: "Mínimo 2 caracteres" },
             parroquia: { required: "Ingrese la parroquia", minlength: "Mínimo 2 caracteres" },
             direccion: { required: "Ingrese la dirección", minlength: "Mínimo 5 caracteres" },
-            tipo_discapacidad: {
-                required: "Ingrese el tipo de discapacidad",
-                minlength: "Mínimo 2 caracteres"
-            },
+            tipo_discapacidad: { required: "Seleccione el tipo de discapacidad" },
             porcentaje_discapacidad: {
                 required: "Ingrese el porcentaje de discapacidad",
-                number: "Debe ser un número",
+                digits: "Solo números enteros",
                 min: "No puede ser menor a 0",
                 max: "No puede ser mayor a 100"
             }
