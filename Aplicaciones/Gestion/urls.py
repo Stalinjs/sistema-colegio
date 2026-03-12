@@ -4,6 +4,9 @@ from . import views_reportes as vr
 
 urlpatterns = [
     path("", views.inicio, name="inicio"),
+
+    path("dashboard_reportes/", views.dashboard_reportes, name="dashboard_reportes"),
+
     # LOGIN
     path("login/", views.login_view, name="login"),
     path("login/validar/", views.login_validar, name="login_validar"),

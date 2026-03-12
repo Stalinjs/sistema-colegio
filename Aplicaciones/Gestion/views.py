@@ -5,6 +5,7 @@ from django.db import transaction
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from django.db.models import Q
+from django.db.models import Count
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from .models import Usuario, Estudiante, Matricula, Paralelo, AnioLectivo, Curso, Sucursal, Nota, Docente, DocenteAsignacion, Especialidad, Asignatura, PeriodoNotas, PermisoEdicionNotas, Promocion, PromocionDetalle,HistorialAcademicoIngreso
@@ -2959,3 +2960,63 @@ def mis_cursos_notas(request, asignacion_id):
         "hoy": hoy,
         "habil_global": habil,
     })
+
+
+def dashboard_reportes(request):
+
+    if request.session.get("usuario_rol") not in ["admin", "secretaria"]:
+        return redirect("login")
+
+    # Tarjetas
+    total_estudiantes = Estudiante.objects.count()
+    total_matriculas = Matricula.objects.count()
+    total_cursos = Curso.objects.count()
+    total_sucursales = Sucursal.objects.count()
+
+    # Estudiantes por sucursal
+    estudiantes_por_sucursal = (
+        Estudiante.objects.values("sucursal__nombre")
+        .annotate(total=Count("id"))
+        .order_by("sucursal__nombre")
+    )
+
+    sucursal_labels = [e["sucursal__nombre"] for e in estudiantes_por_sucursal]
+    sucursal_data = [e["total"] for e in estudiantes_por_sucursal]
+
+    # Matrículas por año lectivo
+    matriculas_anio = (
+        Matricula.objects.values("anio_lectivo__nombre")
+        .annotate(total=Count("id"))
+        .order_by("anio_lectivo__nombre")
+    )
+
+    anio_labels = [m["anio_lectivo__nombre"] for m in matriculas_anio]
+    anio_data = [m["total"] for m in matriculas_anio]
+
+    # Estudiantes por curso
+    estudiantes_curso = (
+        Matricula.objects.values("paralelo__curso__nombre")
+        .annotate(total=Count("id"))
+        .order_by("paralelo__curso__nombre")
+    )
+
+    curso_labels = [c["paralelo__curso__nombre"] for c in estudiantes_curso]
+    curso_data = [c["total"] for c in estudiantes_curso]
+
+    context = {
+        "total_estudiantes": total_estudiantes,
+        "total_matriculas": total_matriculas,
+        "total_cursos": total_cursos,
+        "total_sucursales": total_sucursales,
+
+        "sucursal_labels": sucursal_labels,
+        "sucursal_data": sucursal_data,
+
+        "anio_labels": anio_labels,
+        "anio_data": anio_data,
+
+        "curso_labels": curso_labels,
+        "curso_data": curso_data,
+    }
+
+    return render(request, "dashboard/dashboard_reportes.html", context)

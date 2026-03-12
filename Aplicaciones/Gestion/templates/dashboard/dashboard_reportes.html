@@ -1,0 +1,207 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">Dashboard Académico</h4>
+  </div>
+
+  <div class="row">
+
+    <!-- ESTUDIANTES -->
+    <div class="col-sm-6 col-md-3">
+      <div class="card card-stats card-round">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-icon">
+              <div class="icon-big text-center icon-primary bubble-shadow-small">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+            </div>
+            <div class="col col-stats ms-3">
+              <div class="numbers">
+                <p class="card-category">Estudiantes</p>
+                <h4 class="card-title">{{ total_estudiantes }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-icon">
+                <div class="icon-big text-center icon-warning bubble-shadow-small">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                </div>
+                <div class="col col-stats ms-3">
+                <div class="numbers">
+                    <p class="card-category">Docentes</p>
+                    <h4 class="card-title">{{ total_docentes }}</h4>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MATRICULAS -->
+    <div class="col-sm-6 col-md-3">
+      <div class="card card-stats card-round">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-icon">
+              <div class="icon-big text-center icon-info bubble-shadow-small">
+                <i class="fas fa-id-card"></i>
+              </div>
+            </div>
+            <div class="col col-stats ms-3">
+              <div class="numbers">
+                <p class="card-category">Matrículas</p>
+                <h4 class="card-title">{{ total_matriculas }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CURSOS -->
+    <div class="col-sm-6 col-md-3">
+      <div class="card card-stats card-round">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-icon">
+              <div class="icon-big text-center icon-success bubble-shadow-small">
+                <i class="fas fa-book"></i>
+              </div>
+            </div>
+            <div class="col col-stats ms-3">
+              <div class="numbers">
+                <p class="card-category">Cursos</p>
+                <h4 class="card-title">{{ total_cursos }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCURSALES -->
+    <div class="col-sm-6 col-md-3">
+      <div class="card card-stats card-round">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-icon">
+              <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                <i class="fas fa-school"></i>
+              </div>
+            </div>
+            <div class="col col-stats ms-3">
+              <div class="numbers">
+                <p class="card-category">Extensiones</p>
+                <h4 class="card-title">{{ total_sucursales }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row">
+
+    <!-- ESTUDIANTES POR EXTENSION -->
+    <div class="col-md-6">
+      <div class="card card-round">
+        <div class="card-header">
+          <div class="card-title">Estudiantes por Extensión</div>
+        </div>
+        <div class="card-body">
+          <canvas id="chartSucursal"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATRICULAS POR AÑO -->
+    <div class="col-md-6">
+      <div class="card card-round">
+        <div class="card-header">
+          <div class="card-title">Matrículas por Año Lectivo</div>
+        </div>
+        <div class="card-body">
+          <canvas id="chartAnio"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row">
+
+    <!-- ESTUDIANTES POR CURSO -->
+    <div class="col-md-12">
+      <div class="card card-round">
+        <div class="card-header">
+          <div class="card-title">Estudiantes por Curso</div>
+        </div>
+        <div class="card-body">
+          <canvas id="chartCurso"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+  new Chart(document.getElementById("chartSucursal"),{
+    type:"bar",
+    data:{
+      labels: {{ sucursal_labels|safe }},
+      datasets:[{
+        label:"Estudiantes",
+        data: {{ sucursal_data|safe }},
+        backgroundColor:"#1572E8"
+      }]
+    }
+  })
+
+  new Chart(document.getElementById("chartAnio"),{
+    type:"line",
+    data:{
+      labels: {{ anio_labels|safe }},
+      datasets:[{
+        label:"Matrículas",
+        data: {{ anio_data|safe }},
+        borderColor:"#48ABF7",
+        backgroundColor:"rgba(72,171,247,0.3)"
+      }]
+    }
+  })
+
+  new Chart(document.getElementById("chartCurso"),{
+    type:"bar",
+    data:{
+      labels: {{ curso_labels|safe }},
+      datasets:[{
+        label:"Estudiantes",
+        data: {{ curso_data|safe }},
+        backgroundColor:"#59d05d"
+      }]
+    }
+  })
+
+</script>
+
+{% endblock %}
