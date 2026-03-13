@@ -27,7 +27,6 @@ def importar_estudiantes_excel(request):
         return redirect("estudiantes_crear")
 
     archivo = request.FILES.get("archivo_excel")
-
     if not archivo:
         messages.error(request, "Debes seleccionar un archivo Excel.")
         return redirect("estudiantes_crear")
@@ -41,7 +40,8 @@ def importar_estudiantes_excel(request):
             "nombres", "fecha_nacimiento", "sexo", "nacionalidad", "etnia",
             "nacionalidad_indigena", "lgbti", "posee_discapacidad",
             "tipo_discapacidad", "porcentaje_discapacidad", "telefono",
-            "provincia", "canton", "parroquia", "direccion", "sucursal"
+            "provincia", "canton", "parroquia", "direccion", "sucursal",
+            "curso_aprobado", "institucion_procedencia", "observacion_ingreso"
         ]
 
         for col in requeridas:
@@ -68,6 +68,20 @@ def importar_estudiantes_excel(request):
                 if cedula:
                     cedula = cedula.zfill(10)
 
+                # Campos obligatorios de importación
+                if not cedula:
+                    raise ValidationError({"cedula": ["La cédula es obligatoria."]})
+                if not limpio(fila["apellido_paterno"]):
+                    raise ValidationError({"apellido_paterno": ["El apellido paterno es obligatorio."]})
+                if not limpio(fila["apellido_materno"]):
+                    raise ValidationError({"apellido_materno": ["El apellido materno es obligatorio."]})
+                if not limpio(fila["nombres"]):
+                    raise ValidationError({"nombres": ["Los nombres son obligatorios."]})
+                if not limpio(fila["curso_aprobado"]):
+                    raise ValidationError({"curso_aprobado": ["El último curso aprobado es obligatorio."]})
+                if not limpio(fila["institucion_procedencia"]):
+                    raise ValidationError({"institucion_procedencia": ["La institución de procedencia es obligatoria."]})
+
                 fecha_nacimiento = None
                 fecha_texto = limpio(fila["fecha_nacimiento"])
                 if fecha_texto:
@@ -78,6 +92,9 @@ def importar_estudiantes_excel(request):
                     porcentaje_discapacidad = int(porcentaje_discapacidad)
                 else:
                     porcentaje_discapacidad = None
+
+                curso_aprobado_nombre = limpio(fila["curso_aprobado"])
+                curso_aprobado = Curso.objects.get(nombre=curso_aprobado_nombre)
 
                 estudiante = Estudiante(
                     cedula=cedula,
@@ -101,13 +118,24 @@ def importar_estudiantes_excel(request):
                     direccion=limpio(fila["direccion"]),
                     sucursal=sucursal,
                 )
-
                 estudiante.save()
+
+                HistorialAcademicoIngreso.objects.create(
+                    estudiante=estudiante,
+                    curso_aprobado=curso_aprobado,
+                    institucion_procedencia=limpio(fila["institucion_procedencia"]),
+                    observacion=limpio(fila["observacion_ingreso"]),
+                )
+
                 total_ok += 1
 
             except Sucursal.DoesNotExist:
                 total_error += 1
                 errores_detalle.append(f"Fila {i+2}: la sucursal '{fila['sucursal']}' no existe.")
+
+            except Curso.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: el curso_aprobado '{fila['curso_aprobado']}' no existe.")
 
             except ValidationError as e:
                 total_error += 1
@@ -146,7 +174,7 @@ def importar_estudiantes_excel(request):
     except Exception as e:
         messages.error(request, f"No se pudo procesar el archivo: {e}")
         return redirect("estudiantes_crear")
-
+    
 def descargar_plantilla_estudiantes(request):
     ruta_archivo = os.path.join(
         settings.BASE_DIR,
@@ -167,6 +195,183 @@ def descargar_plantilla_estudiantes(request):
         as_attachment=True,
         filename="plantilla_estudiantes.xlsx"
     )
+#===========================================================================================
+
+def descargar_plantilla_matriculas(request):
+
+    ruta_archivo = os.path.join(
+        settings.BASE_DIR,
+        "Aplicaciones",
+        "Gestion",
+        "plantillas_excel",
+        "plantilla_matriculas.xlsx"
+    )
+
+    if not os.path.exists(ruta_archivo):
+        messages.error(request, "No se encontró la plantilla de matrículas.")
+        return redirect("matriculas_crear")  
+
+    return FileResponse(
+        open(ruta_archivo, "rb"),
+        as_attachment=True,
+        filename="plantilla_matriculas.xlsx"
+    )
+
+def importar_matriculas_excel(request):
+    if request.method != "POST":
+        return redirect("matriculas_crear")
+
+    archivo = request.FILES.get("archivo_excel")
+
+    if not archivo:
+        messages.error(request, "Debes seleccionar un archivo Excel.")
+        return redirect("matriculas_crear")
+    try:
+        df = pd.read_excel(archivo, dtype=str)
+        df.columns = df.columns.str.strip()
+
+        requeridas = [
+            "cedula_estudiante",
+            "anio_lectivo",
+            "sucursal",
+            "curso",
+            "paralelo",
+            "oferta_educativa",
+            "jornada",
+            "temporalidad",
+            "estado_estudiante",
+            "observaciones",
+        ]
+
+        for col in requeridas:
+            if col not in df.columns:
+                messages.error(request, f"Falta la columna obligatoria en el Excel: {col}")
+                return redirect("matriculas_crear")
+
+        total_ok = 0
+        total_error = 0
+        errores_detalle = []
+
+        def limpio(valor):
+            if pd.isna(valor):
+                return None
+            valor = str(valor).strip()
+            return valor if valor != "" else None
+
+        for i, fila in df.iterrows():
+            try:
+                cedula = limpio(fila["cedula_estudiante"])
+                if cedula:
+                    cedula = cedula.zfill(10)
+
+                if not cedula:
+                    raise ValidationError({"cedula_estudiante": ["La cédula del estudiante es obligatoria."]})
+                if not limpio(fila["anio_lectivo"]):
+                    raise ValidationError({"anio_lectivo": ["El año lectivo es obligatorio."]})
+                if not limpio(fila["sucursal"]):
+                    raise ValidationError({"sucursal": ["La sucursal es obligatoria."]})
+                if not limpio(fila["curso"]):
+                    raise ValidationError({"curso": ["El curso es obligatorio."]})
+                if not limpio(fila["paralelo"]):
+                    raise ValidationError({"paralelo": ["El paralelo es obligatorio."]})
+                if not limpio(fila["oferta_educativa"]):
+                    raise ValidationError({"oferta_educativa": ["La oferta educativa es obligatoria."]})
+                if not limpio(fila["jornada"]):
+                    raise ValidationError({"jornada": ["La jornada es obligatoria."]})
+                if not limpio(fila["temporalidad"]):
+                    raise ValidationError({"temporalidad": ["La temporalidad es obligatoria."]})
+                if not limpio(fila["estado_estudiante"]):
+                    raise ValidationError({"estado_estudiante": ["El estado del estudiante es obligatorio."]})
+
+                estudiante = Estudiante.objects.get(cedula=cedula)
+
+                sucursal_nombre = limpio(fila["sucursal"])
+                sucursal = Sucursal.objects.get(nombre=sucursal_nombre)
+
+                anio_nombre = limpio(fila["anio_lectivo"])
+                anio_lectivo = AnioLectivo.objects.get(nombre=anio_nombre)
+
+                curso_nombre = limpio(fila["curso"])
+                curso = Curso.objects.get(nombre=curso_nombre, sucursal=sucursal)
+
+                paralelo_nombre = limpio(fila["paralelo"])
+                paralelo = Paralelo.objects.get(nombre=paralelo_nombre, curso=curso)
+
+                matricula = Matricula(
+                    estudiante=estudiante,
+                    paralelo=paralelo,
+                    anio_lectivo=anio_lectivo,
+                    oferta_educativa=limpio(fila["oferta_educativa"]),
+                    jornada=limpio(fila["jornada"]),
+                    temporalidad=limpio(fila["temporalidad"]),
+                    estado_estudiante=limpio(fila["estado_estudiante"]),
+                    observaciones=limpio(fila["observaciones"]),
+                )
+
+                matricula.save()
+                total_ok += 1
+
+            except Estudiante.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: no existe estudiante con cédula '{fila['cedula_estudiante']}'.")
+
+            except Sucursal.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: la sucursal '{fila['sucursal']}' no existe.")
+
+            except AnioLectivo.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: el año lectivo '{fila['anio_lectivo']}' no existe.")
+
+            except Curso.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(
+                    f"Fila {i+2}: no existe el curso '{fila['curso']}' en la sucursal '{fila['sucursal']}'."
+                )
+
+            except Paralelo.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(
+                    f"Fila {i+2}: no existe el paralelo '{fila['paralelo']}' para el curso '{fila['curso']}'."
+                )
+
+            except ValidationError as e:
+                total_error += 1
+                if hasattr(e, "message_dict"):
+                    texto = "; ".join(
+                        [f"{campo}: {', '.join(msgs)}" for campo, msgs in e.message_dict.items()]
+                    )
+                    texto = html.unescape(texto)
+                else:
+                    texto = html.unescape(str(e))
+
+                errores_detalle.append(f"Fila {i+2}: {texto}")
+
+            except Exception as e:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: error inesperado -> {e}")
+
+        resumen = []
+
+        if total_ok > 0:
+            resumen.append(f"Filas registradas correctamente: {total_ok}")
+
+        if total_error > 0:
+            resumen.append(f"Filas con error: {total_error}")
+            resumen.append("")
+            resumen.append("Detalle de errores:")
+            resumen.extend(errores_detalle)
+
+        if total_error > 0:
+            messages.error(request, "\n".join(resumen))
+        else:
+            messages.success(request, "\n".join(resumen))
+
+        return redirect("matriculas_crear")
+
+    except Exception as e:
+        messages.error(request, f"No se pudo procesar el archivo: {e}")
+        return redirect("matriculas_crear")
 
 def inicio(request):
     return render(request, 'inicio.html')

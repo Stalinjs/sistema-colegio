@@ -111,6 +111,9 @@ urlpatterns = [
 
     path("estudiantes/descargar-plantilla/", views.descargar_plantilla_estudiantes, name="descargar_plantilla_estudiantes"),
     path("estudiantes/importar-excel/", views.importar_estudiantes_excel, name="importar_estudiantes_excel"),
+
+    path("matriculas/descargar-plantilla/", views.descargar_plantilla_matriculas, name="descargar_plantilla_matriculas"),
+    path("matriculas/importar-excel/", views.importar_matriculas_excel, name="importar_matriculas_excel"),
 ]
 
 
