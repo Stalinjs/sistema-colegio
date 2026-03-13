@@ -557,9 +557,9 @@
       {% for message in messages %}
         <script>
           Swal.fire({
-            title: "{% if message.tags == 'error' %}Error{% else %}Información{% endif %}",
-            text: "{{ message }}",
-            icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+            title: "{% if message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Advertencia{% else %}Información{% endif %}",
+            html: "{{ message|linebreaksbr|escapejs }}",
+            icon: "{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}",
             confirmButtonText: "OK"
           });
         </script>

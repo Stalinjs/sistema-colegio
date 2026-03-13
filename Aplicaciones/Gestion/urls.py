@@ -109,6 +109,8 @@ urlpatterns = [
     path("secretaria/permisos-notas/nuevo/", views.permisos_edicion_crear, name="permisos_edicion_crear"),
     path("secretaria/permisos-notas/<int:permiso_id>/anular/", views.permisos_edicion_anular, name="permisos_edicion_anular"),
 
+    path("estudiantes/descargar-plantilla/", views.descargar_plantilla_estudiantes, name="descargar_plantilla_estudiantes"),
+    path("estudiantes/importar-excel/", views.importar_estudiantes_excel, name="importar_estudiantes_excel"),
 ]
 
 

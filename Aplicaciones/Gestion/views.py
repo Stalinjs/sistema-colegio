@@ -16,6 +16,157 @@ from django.urls import reverse
 import random
 import string
 from django.core.mail import send_mail
+import pandas as pd
+import os
+from django.conf import settings
+from django.http import FileResponse
+import html
+
+def importar_estudiantes_excel(request):
+    if request.method != "POST":
+        return redirect("estudiantes_crear")
+
+    archivo = request.FILES.get("archivo_excel")
+
+    if not archivo:
+        messages.error(request, "Debes seleccionar un archivo Excel.")
+        return redirect("estudiantes_crear")
+
+    try:
+        df = pd.read_excel(archivo, dtype=str)
+        df.columns = df.columns.str.strip()
+
+        requeridas = [
+            "cedula", "tipo_documento", "apellido_paterno", "apellido_materno",
+            "nombres", "fecha_nacimiento", "sexo", "nacionalidad", "etnia",
+            "nacionalidad_indigena", "lgbti", "posee_discapacidad",
+            "tipo_discapacidad", "porcentaje_discapacidad", "telefono",
+            "provincia", "canton", "parroquia", "direccion", "sucursal"
+        ]
+
+        for col in requeridas:
+            if col not in df.columns:
+                messages.error(request, f"Falta la columna obligatoria en el Excel: {col}")
+                return redirect("estudiantes_crear")
+
+        total_ok = 0
+        total_error = 0
+        errores_detalle = []
+
+        def limpio(valor):
+            if pd.isna(valor):
+                return None
+            valor = str(valor).strip()
+            return valor if valor != "" else None
+
+        for i, fila in df.iterrows():
+            try:
+                sucursal_nombre = limpio(fila["sucursal"])
+                sucursal = Sucursal.objects.get(nombre=sucursal_nombre)
+
+                cedula = limpio(fila["cedula"])
+                if cedula:
+                    cedula = cedula.zfill(10)
+
+                fecha_nacimiento = None
+                fecha_texto = limpio(fila["fecha_nacimiento"])
+                if fecha_texto:
+                    fecha_nacimiento = pd.to_datetime(fecha_texto).date()
+
+                porcentaje_discapacidad = limpio(fila["porcentaje_discapacidad"])
+                if porcentaje_discapacidad:
+                    porcentaje_discapacidad = int(porcentaje_discapacidad)
+                else:
+                    porcentaje_discapacidad = None
+
+                estudiante = Estudiante(
+                    cedula=cedula,
+                    tipo_documento=limpio(fila["tipo_documento"]) or "CEDULA",
+                    apellido_paterno=limpio(fila["apellido_paterno"]),
+                    apellido_materno=limpio(fila["apellido_materno"]),
+                    nombres=limpio(fila["nombres"]),
+                    fecha_nacimiento=fecha_nacimiento,
+                    sexo=limpio(fila["sexo"]),
+                    nacionalidad=limpio(fila["nacionalidad"]),
+                    etnia=limpio(fila["etnia"]),
+                    nacionalidad_indigena=limpio(fila["nacionalidad_indigena"]),
+                    lgbti=limpio(fila["lgbti"]),
+                    posee_discapacidad=limpio(fila["posee_discapacidad"]),
+                    tipo_discapacidad=limpio(fila["tipo_discapacidad"]),
+                    porcentaje_discapacidad=porcentaje_discapacidad,
+                    telefono=limpio(fila["telefono"]),
+                    provincia=limpio(fila["provincia"]),
+                    canton=limpio(fila["canton"]),
+                    parroquia=limpio(fila["parroquia"]),
+                    direccion=limpio(fila["direccion"]),
+                    sucursal=sucursal,
+                )
+
+                estudiante.save()
+                total_ok += 1
+
+            except Sucursal.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: la sucursal '{fila['sucursal']}' no existe.")
+
+            except ValidationError as e:
+                total_error += 1
+                if hasattr(e, "message_dict"):
+                    texto = "; ".join(
+                        [f"{campo}: {', '.join(msgs)}" for campo, msgs in e.message_dict.items()]
+                    )
+                    texto = html.unescape(texto)
+                else:
+                    texto = html.unescape(str(e))
+
+                errores_detalle.append(f"Fila {i+2}: {texto}")
+
+            except Exception as e:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: error inesperado -> {e}")
+
+        resumen = []
+
+        if total_ok > 0:
+            resumen.append(f"Filas registradas correctamente: {total_ok}")
+
+        if total_error > 0:
+            resumen.append(f"Filas con error: {total_error}")
+            resumen.append("")
+            resumen.append("Detalle de errores:")
+            resumen.extend(errores_detalle)
+
+        if total_error > 0:
+            messages.error(request, "\n".join(resumen))
+        else:
+            messages.success(request, "\n".join(resumen))
+
+        return redirect("estudiantes_crear")
+
+    except Exception as e:
+        messages.error(request, f"No se pudo procesar el archivo: {e}")
+        return redirect("estudiantes_crear")
+
+def descargar_plantilla_estudiantes(request):
+    ruta_archivo = os.path.join(
+        settings.BASE_DIR,
+        "Aplicaciones",
+        "Gestion",
+        "plantillas_excel",
+        "plantilla_estudiantes.xlsx"
+    )
+
+    # Validar si existe el archivo
+    if not os.path.exists(ruta_archivo):
+        messages.error(request, "No se encontró la plantilla de estudiantes.")
+        return redirect("estudiantes_lista") 
+
+    # Si existe, se descarga
+    return FileResponse(
+        open(ruta_archivo, "rb"),
+        as_attachment=True,
+        filename="plantilla_estudiantes.xlsx"
+    )
 
 def inicio(request):
     return render(request, 'inicio.html')
@@ -2972,7 +3123,8 @@ def dashboard_reportes(request):
     total_matriculas = Matricula.objects.count()
     total_cursos = Curso.objects.count()
     total_sucursales = Sucursal.objects.count()
-
+    total_docentes = Docente.objects.count()
+    
     # Estudiantes por sucursal
     estudiantes_por_sucursal = (
         Estudiante.objects.values("sucursal__nombre")
@@ -3008,6 +3160,7 @@ def dashboard_reportes(request):
         "total_matriculas": total_matriculas,
         "total_cursos": total_cursos,
         "total_sucursales": total_sucursales,
+        "total_docentes": total_docentes,
 
         "sucursal_labels": sucursal_labels,
         "sucursal_data": sucursal_data,
