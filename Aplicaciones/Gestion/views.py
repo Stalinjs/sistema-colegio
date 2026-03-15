@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.db import transaction
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
@@ -94,7 +94,13 @@ def importar_estudiantes_excel(request):
                     porcentaje_discapacidad = None
 
                 curso_aprobado_nombre = limpio(fila["curso_aprobado"])
-                curso_aprobado = Curso.objects.get(nombre=curso_aprobado_nombre)
+                if curso_aprobado_nombre:
+                    curso_aprobado_nombre = curso_aprobado_nombre.upper()
+
+                curso_aprobado = Curso.objects.get(
+                    nombre=curso_aprobado_nombre,
+                    sucursal=sucursal
+                )
 
                 estudiante = Estudiante(
                     cedula=cedula,
@@ -148,10 +154,6 @@ def importar_estudiantes_excel(request):
                     texto = html.unescape(str(e))
 
                 errores_detalle.append(f"Fila {i+2}: {texto}")
-
-            except Exception as e:
-                total_error += 1
-                errores_detalle.append(f"Fila {i+2}: error inesperado -> {e}")
 
         resumen = []
 
@@ -333,6 +335,12 @@ def importar_matriculas_excel(request):
                 total_error += 1
                 errores_detalle.append(
                     f"Fila {i+2}: no existe el paralelo '{fila['paralelo']}' para el curso '{fila['curso']}'."
+                )
+            
+            except MultipleObjectsReturned:
+                total_error += 1
+                errores_detalle.append(
+                    f"Fila {i+2}: existe más de un curso con el nombre '{fila['curso_aprobado']}' en la sucursal '{fila['sucursal']}'. Verifica los datos cargados."
                 )
 
             except ValidationError as e:
