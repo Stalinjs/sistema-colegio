@@ -340,7 +340,7 @@ def importar_matriculas_excel(request):
             except MultipleObjectsReturned:
                 total_error += 1
                 errores_detalle.append(
-                    f"Fila {i+2}: existe más de un curso con el nombre '{fila['curso_aprobado']}' en la sucursal '{fila['sucursal']}'. Verifica los datos cargados."
+                    f"Fila {i+2}: existe más de un curso con el nombre '{fila['curso']}' en la sucursal '{fila['sucursal']}'."
                 )
 
             except ValidationError as e:
