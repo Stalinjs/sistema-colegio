@@ -237,6 +237,7 @@ def importar_matriculas_excel(request):
             "anio_lectivo",
             "sucursal",
             "curso",
+            "especialidad",
             "paralelo",
             "oferta_educativa",
             "jornada",
@@ -294,7 +295,31 @@ def importar_matriculas_excel(request):
                 anio_lectivo = AnioLectivo.objects.get(nombre=anio_nombre)
 
                 curso_nombre = limpio(fila["curso"])
-                curso = Curso.objects.get(nombre=curso_nombre, sucursal=sucursal)
+                especialidad_nombre = limpio(fila["especialidad"])
+
+                if especialidad_nombre:
+                    especialidad = Especialidad.objects.get(nombre=especialidad_nombre)
+                    curso = Curso.objects.get(
+                        nombre=curso_nombre,
+                        sucursal=sucursal,
+                        especialidad=especialidad
+                    )
+                else:
+                    cursos = Curso.objects.filter(
+                        nombre=curso_nombre,
+                        sucursal=sucursal,
+                        especialidad__isnull=True
+                    )
+
+                    if cursos.count() == 0:
+                        raise Curso.DoesNotExist
+
+                    if cursos.count() > 1:
+                        raise MultipleObjectsReturned(
+                            f"Existe más de un curso '{curso_nombre}' sin especialidad en la sucursal '{sucursal_nombre}'."
+                        )
+
+                    curso = cursos.first()
 
                 paralelo_nombre = limpio(fila["paralelo"])
                 paralelo = Paralelo.objects.get(nombre=paralelo_nombre, curso=curso)
@@ -324,6 +349,12 @@ def importar_matriculas_excel(request):
             except AnioLectivo.DoesNotExist:
                 total_error += 1
                 errores_detalle.append(f"Fila {i+2}: el año lectivo '{fila['anio_lectivo']}' no existe.")
+            
+            except Especialidad.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(
+                    f"Fila {i+2}: la especialidad '{fila['especialidad']}' no existe."
+                )
 
             except Curso.DoesNotExist:
                 total_error += 1
@@ -337,11 +368,9 @@ def importar_matriculas_excel(request):
                     f"Fila {i+2}: no existe el paralelo '{fila['paralelo']}' para el curso '{fila['curso']}'."
                 )
             
-            except MultipleObjectsReturned:
+            except MultipleObjectsReturned as e:
                 total_error += 1
-                errores_detalle.append(
-                    f"Fila {i+2}: existe más de un curso con el nombre '{fila['curso']}' en la sucursal '{fila['sucursal']}'."
-                )
+                errores_detalle.append(f"Fila {i+2}: {str(e)}")
 
             except ValidationError as e:
                 total_error += 1
@@ -1053,7 +1082,7 @@ def cursos_lista(request):
     q = request.GET.get("q", "").strip()
 
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1108,8 +1137,8 @@ def cursos_crear(request):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     especialidades = Especialidad.objects.filter(activa=True).order_by("nombre")
 
-    # default: Latacunga (Matriz)
-    sucursal_default = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+    # default: LATACUNGA (MATRIZ)
+    sucursal_default = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
 
     niveles = [
         ("EGB", "EGB"),
@@ -1245,9 +1274,9 @@ def paralelos_lista(request):
     curso_id = request.GET.get("curso", "").strip()
     q = request.GET.get("q", "").strip()
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1301,9 +1330,9 @@ def paralelos_crear(request):
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1513,9 +1542,9 @@ def asignaturas_lista(request):
     curso_id = request.GET.get("curso", "").strip()
     q = request.GET.get("q", "").strip()
 
-    # ✅ Default: Latacunga (Matriz)
+    # ✅ Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1568,9 +1597,9 @@ def asignaturas_crear(request):
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
-    # ✅ Default: Latacunga (Matriz)
+    # ✅ Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1660,9 +1689,9 @@ def docente_asignacion_lista(request):
     paralelo_id = request.GET.get("paralelo", "")
     q = request.GET.get("q", "").strip()
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1741,9 +1770,9 @@ def docente_asignacion_crear(request):
     paralelo_id = request.GET.get("paralelo", "")
     anio_id = request.GET.get("anio", "")
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1932,9 +1961,9 @@ def estudiantes_lista(request):
     q = (request.GET.get("q") or "").strip()
     sucursal_id = (request.GET.get("sucursal") or "").strip()
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -1972,9 +2001,9 @@ def estudiantes_crear(request):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     cursos = Curso.objects.all().order_by("orden", "nombre")
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -2233,7 +2262,7 @@ def matriculas_lista(request):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     anios = AnioLectivo.objects.all().order_by("-activo", "-id")  # activo primero
 
-    # Default: Latacunga (Matriz)
+    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre__iexact="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -2498,9 +2527,9 @@ def promociones_lista(request):
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
-    # Default: Latacunga (Matriz) (igual que matrículas)
+    # Default: LATACUNGA (MATRIZ) (igual que matrículas)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
@@ -2549,9 +2578,9 @@ def promociones_crear(request):
     # ✅ Sucursal por GET (para filtrar estudiantes/cursos)
     sucursal_id = (request.GET.get("sucursal") or "").strip()
 
-    # ✅ Default: Latacunga (Matriz)
+    # ✅ Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
-        s_lat = Sucursal.objects.filter(nombre="Latacunga (Matriz)").first()
+        s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
