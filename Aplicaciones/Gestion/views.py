@@ -41,7 +41,7 @@ def importar_estudiantes_excel(request):
             "nacionalidad_indigena", "lgbti", "posee_discapacidad",
             "tipo_discapacidad", "porcentaje_discapacidad", "telefono",
             "provincia", "canton", "parroquia", "direccion", "sucursal",
-            "curso_aprobado", "institucion_procedencia", "observacion_ingreso"
+            "curso_aprobado", "especialidad", "institucion_procedencia", "observacion_ingreso"
         ]
 
         for col in requeridas:
@@ -94,13 +94,36 @@ def importar_estudiantes_excel(request):
                     porcentaje_discapacidad = None
 
                 curso_aprobado_nombre = limpio(fila["curso_aprobado"])
+                especialidad_nombre = limpio(fila["especialidad"])
+
                 if curso_aprobado_nombre:
                     curso_aprobado_nombre = curso_aprobado_nombre.upper()
 
-                curso_aprobado = Curso.objects.get(
-                    nombre=curso_aprobado_nombre,
-                    sucursal=sucursal
-                )
+                if especialidad_nombre:
+                    especialidad_nombre = especialidad_nombre.upper()
+                    especialidad = Especialidad.objects.get(nombre=especialidad_nombre)
+
+                    curso_aprobado = Curso.objects.get(
+                        nombre=curso_aprobado_nombre,
+                        sucursal=sucursal,
+                        especialidad=especialidad
+                    )
+                else:
+                    cursos = Curso.objects.filter(
+                        nombre=curso_aprobado_nombre,
+                        sucursal=sucursal,
+                        especialidad__isnull=True
+                    )
+
+                    if cursos.count() == 0:
+                        raise Curso.DoesNotExist
+
+                    if cursos.count() > 1:
+                        raise MultipleObjectsReturned(
+                            f"Existe más de un curso '{curso_aprobado_nombre}' sin especialidad en la sucursal '{sucursal_nombre}'."
+                        )
+
+                    curso_aprobado = cursos.first()
 
                 estudiante = Estudiante(
                     cedula=cedula,
@@ -139,9 +162,19 @@ def importar_estudiantes_excel(request):
                 total_error += 1
                 errores_detalle.append(f"Fila {i+2}: la sucursal '{fila['sucursal']}' no existe.")
 
+            except Especialidad.DoesNotExist:
+                total_error += 1
+                errores_detalle.append(
+                    f"Fila {i+2}: la especialidad '{fila['especialidad']}' no existe."
+                )
+
             except Curso.DoesNotExist:
                 total_error += 1
                 errores_detalle.append(f"Fila {i+2}: el curso_aprobado '{fila['curso_aprobado']}' no existe.")
+
+            except MultipleObjectsReturned as e:
+                total_error += 1
+                errores_detalle.append(f"Fila {i+2}: {str(e)}")
 
             except ValidationError as e:
                 total_error += 1
