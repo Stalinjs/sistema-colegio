@@ -2289,13 +2289,11 @@ def matriculas_lista(request):
     q = request.GET.get("q", "").strip()
     sucursal_id = request.GET.get("sucursal", "").strip()
     anio_id = request.GET.get("anio_lectivo", "").strip()
-    curso_id = request.GET.get("curso", "").strip()
-    especialidad_id = request.GET.get("especialidad", "").strip()
     paralelo_id = request.GET.get("paralelo", "").strip()
 
     # combos
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
-    anios = AnioLectivo.objects.all().order_by("-activo", "-id")
+    anios = AnioLectivo.objects.all().order_by("-activo", "-id")  # activo primero
 
     # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
@@ -2309,10 +2307,7 @@ def matriculas_lista(request):
         anio_id = str(anio_activo.id)
 
     matriculas = Matricula.objects.select_related(
-        "estudiante",
-        "paralelo__curso__sucursal",
-        "paralelo__curso__especialidad",
-        "anio_lectivo"
+        "estudiante", "paralelo__curso__sucursal", "anio_lectivo"
     ).all()
 
     # filtros
@@ -2321,12 +2316,6 @@ def matriculas_lista(request):
 
     if sucursal_id:
         matriculas = matriculas.filter(paralelo__curso__sucursal_id=sucursal_id)
-
-    if curso_id:
-        matriculas = matriculas.filter(paralelo__curso_id=curso_id)
-
-    if especialidad_id:
-        matriculas = matriculas.filter(paralelo__curso__especialidad_id=especialidad_id)
 
     if paralelo_id:
         matriculas = matriculas.filter(paralelo_id=paralelo_id)
@@ -2338,58 +2327,32 @@ def matriculas_lista(request):
             Q(estudiante__apellido_paterno__icontains=q) |
             Q(estudiante__apellido_materno__icontains=q) |
             Q(paralelo__curso__nombre__icontains=q) |
-            Q(paralelo__curso__especialidad__nombre__icontains=q) |
             Q(paralelo__nombre__icontains=q)
         )
 
     matriculas = matriculas.order_by(
         "-anio_lectivo__activo",
         "-anio_lectivo__id",
-        "paralelo__curso__orden",
         "paralelo__curso__nombre",
-        "paralelo__curso__especialidad__nombre",
         "paralelo__nombre",
         "estudiante__apellido_paterno",
         "estudiante__nombres",
     )
 
-    cursos = Curso.objects.select_related("sucursal", "especialidad").order_by(
-        "orden", "nombre", "especialidad__nombre"
+    paralelos = Paralelo.objects.select_related("curso__sucursal").order_by(
+        "curso__nombre", "nombre"
     )
-    if sucursal_id:
-        cursos = cursos.filter(sucursal_id=sucursal_id)
-
-    especialidades = Especialidad.objects.filter(activa=True).order_by("nombre")
-    if curso_id:
-        especialidades = especialidades.filter(curso__id=curso_id).distinct()
-    elif sucursal_id:
-        especialidades = especialidades.filter(curso__sucursal_id=sucursal_id).distinct()
-
-    paralelos = Paralelo.objects.select_related("curso__sucursal", "curso__especialidad").order_by(
-        "curso__orden", "curso__nombre", "curso__especialidad__nombre", "nombre"
-    )
-
     if sucursal_id:
         paralelos = paralelos.filter(curso__sucursal_id=sucursal_id)
-
-    if curso_id:
-        paralelos = paralelos.filter(curso_id=curso_id)
-
-    if especialidad_id:
-        paralelos = paralelos.filter(curso__especialidad_id=especialidad_id)
 
     context = {
         "matriculas": matriculas,
         "q": q,
         "sucursales": sucursales,
         "anios": anios,
-        "cursos": cursos,
-        "especialidades": especialidades,
         "paralelos": paralelos,
         "sucursal_id": sucursal_id,
         "anio_id": anio_id,
-        "curso_id": curso_id,
-        "especialidad_id": especialidad_id,
         "paralelo_id": paralelo_id,
         "anio_activo": anio_activo,
     }

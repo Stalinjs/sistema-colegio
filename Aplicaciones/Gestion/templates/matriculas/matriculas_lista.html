@@ -21,7 +21,7 @@
     <div class="card-body">
       <form method="get" class="row g-2 align-items-end">
 
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label mb-1">Extensión</label>
           <select name="sucursal" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="">Todas</option>
@@ -33,7 +33,7 @@
           </select>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label mb-1">Año lectivo</label>
           <select name="anio_lectivo" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="">Todos</option>
@@ -45,50 +45,31 @@
           </select>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label mb-1">Curso</label>
-          <select name="curso" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="paralelo" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="">Todos</option>
-            {% for c in cursos %}
-              <option value="{{ c.id }}" {% if curso_id == c.id|stringformat:"s" %}selected{% endif %}>
-                {{ c.nombre }}
+            {% for p in paralelos %}
+              <option value="{{ p.id }}" {% if paralelo_id == p.id|stringformat:"s" %}selected{% endif %}>
+                {{ p.curso.nombre }}
+                {% if p.curso.especialidad %}
+                  - {{ p.curso.especialidad.nombre }}
+                {% endif %}
+                - {{ p.nombre }}
               </option>
             {% endfor %}
           </select>
         </div>
 
         <div class="col-md-3">
-          <label class="form-label mb-1">Especialidad</label>
-          <select name="especialidad" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">Todas</option>
-            {% for e in especialidades %}
-              <option value="{{ e.id }}" {% if especialidad_id == e.id|stringformat:"s" %}selected{% endif %}>
-                {{ e.nombre }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="col-md-1">
-          <label class="form-label mb-1">Paralelo</label>
-          <select name="paralelo" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">Todos</option>
-            {% for p in paralelos %}
-              <option value="{{ p.id }}" {% if paralelo_id == p.id|stringformat:"s" %}selected{% endif %}>
-                {{ p.nombre }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="col-md-2">
           <label class="form-label mb-1">Buscar</label>
           <div class="input-group input-group-sm">
             <span class="input-group-text"><i class="fa fa-search"></i></span>
-            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="CI, apellidos...">
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="CI, apellidos, curso...">
             <button class="btn btn-primary" type="submit">Buscar</button>
           </div>
         </div>
+
         <div class="col-12 mt-2 d-flex gap-2 justify-content-end">
           <a href="{% url 'matriculas_crear' %}?sucursal={{ sucursal_id }}" class="btn btn-success btn-sm">
             <i class="fa fa-plus"></i> Nueva matrícula
@@ -97,6 +78,7 @@
             <i class="fa fa-rotate-left"></i> Limpiar filtros
           </a>
         </div>
+
       </form>
     </div>
   </div>
