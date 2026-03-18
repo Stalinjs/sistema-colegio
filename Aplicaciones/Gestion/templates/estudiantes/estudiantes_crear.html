@@ -39,65 +39,118 @@
       <form method="post" id="frm_estudiante">
         {% csrf_token %}
 
-        <input type="hidden" name="sucursal_context" value="{{ sucursal_id }}">
+        <input type="hidden" name="sucursal_context" value="{{ form_data.sucursal|default:sucursal_id }}">
 
         <div class="row">
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Tipo de documento *</label>
             <select name="tipo_documento" class="form-select">
-              <option value="CEDULA" selected>Cédula</option>
+              <option value="CEDULA" {% if form_data.tipo_documento|default:"CEDULA" == "CEDULA" %}selected{% endif %}>Cédula</option>
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
-            <label class="form-label">Cédula *</label>
-            <input type="text" name="cedula" class="form-control" maxlength="10" placeholder="10 dígitos">
+            <label class="form-label">Documento de identidad *</label>
+            <input type="text" name="cedula" class="form-control"
+                  value="{{ form_data.cedula|default:'' }}" maxlength="10" placeholder="10 dígitos">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Sexo *</label>
             <select name="sexo" class="form-select">
               <option value="">Seleccione...</option>
-              <option value="HOMBRE">Hombre</option>
-              <option value="MUJER">Mujer</option>
+              <option value="HOMBRE" {% if form_data.sexo == "HOMBRE" %}selected{% endif %}>Hombre</option>
+              <option value="MUJER" {% if form_data.sexo == "MUJER" %}selected{% endif %}>Mujer</option>
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
+            <label class="form-label">Nacionalidad *</label>
+            <select name="nacionalidad" id="nacionalidad" class="form-select">
+              <option value="">Seleccione...</option>
+              {% for n in nacionalidades %}
+                <option value="{{ n }}" {% if form_data.nacionalidad|default:'ECUATORIANA' == n %}selected{% endif %}>
+                  {{ n }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- ECUADOR -->
+          <div class="col-md-4 mb-3" id="grupo_provincia_ec">
+            <label class="form-label">Provincia *</label>
+            <select name="provincia" id="provincia" class="form-select">
+              <option value="">Seleccione...</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3" id="grupo_canton_ec">
+            <label class="form-label">Cantón *</label>
+            <select name="canton" id="canton" class="form-select">
+              <option value="">Seleccione...</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3" id="grupo_parroquia_ec">
+            <label class="form-label">Parroquia *</label>
+            <select name="parroquia" id="parroquia" class="form-select">
+              <option value="">Seleccione...</option>
+            </select>
+          </div>
+
+          <!-- OTRAS NACIONALIDADES -->
+          <div class="col-md-4 mb-3 d-none" id="grupo_provincia_manual">
+            <label class="form-label">Provincia / Estado *</label>
+            <input type="text" name="provincia_manual" id="provincia_manual" class="form-control"
+                  value="{{ form_data.provincia|default:'' }}">
+          </div>
+
+          <div class="col-md-4 mb-3 d-none" id="grupo_canton_manual">
+            <label class="form-label">Cantón / Ciudad *</label>
+            <input type="text" name="canton_manual" id="canton_manual" class="form-control"
+                  value="{{ form_data.canton|default:'' }}">
+          </div>
+
+          <div class="col-md-4 mb-3 d-none" id="grupo_parroquia_manual">
+            <label class="form-label">Parroquia / Sector</label>
+            <input type="text" name="parroquia_manual" id="parroquia_manual" class="form-control"
+                  value="{{ form_data.parroquia|default:'' }}">
+          </div>
+
+          <div class="col-md-4 mb-3">
             <label class="form-label">Nombres *</label>
-            <input type="text" name="nombres" class="form-control">
+            <input type="text" name="nombres" class="form-control"
+                  value="{{ form_data.nombres|default:'' }}">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Apellido paterno *</label>
-            <input type="text" name="apellido_paterno" class="form-control">
+            <input type="text" name="apellido_paterno" class="form-control"
+                  value="{{ form_data.apellido_paterno|default:'' }}">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Apellido materno *</label>
-            <input type="text" name="apellido_materno" class="form-control">
+            <input type="text" name="apellido_materno" class="form-control"
+                  value="{{ form_data.apellido_materno|default:'' }}">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Fecha de nacimiento *</label>
-            <input type="date" name="fecha_nacimiento" class="form-control">
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Nacionalidad *</label>
-            <input type="text" name="nacionalidad" class="form-control" value="ECUATORIANA">
+            <input type="date" name="fecha_nacimiento" class="form-control"
+                  value="{{ form_data.fecha_nacimiento|default:'' }}">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Etnia *</label>
             <select name="etnia" id="etnia" class="form-select">
               <option value="">Seleccione...</option>
-              <option value="INDIGENA">Indígena</option>
-              <option value="MESTIZA">Mestiza</option>
-              <option value="NEGRA">Negra</option>
-              <option value="BLANCA">Blanca</option>
-              <option value="MONTUBIA">Montubia</option>
+              <option value="INDIGENA" {% if form_data.etnia == "INDIGENA" %}selected{% endif %}>Indígena</option>
+              <option value="MESTIZA" {% if form_data.etnia == "MESTIZA" %}selected{% endif %}>Mestiza</option>
+              <option value="NEGRA" {% if form_data.etnia == "NEGRA" %}selected{% endif %}>Negra</option>
+              <option value="BLANCA" {% if form_data.etnia == "BLANCA" %}selected{% endif %}>Blanca</option>
+              <option value="MONTUBIA" {% if form_data.etnia == "MONTUBIA" %}selected{% endif %}>Montubia</option>
             </select>
           </div>
 
@@ -105,20 +158,20 @@
             <label class="form-label">Nacionalidad indígena</label>
             <select name="nacionalidad_indigena" id="nacionalidad_indigena" class="form-select">
               <option value="">Seleccione...</option>
-              <option value="ACHUAR">Achuar</option>
-              <option value="AI_KOFAN">Ai Kofan</option>
-              <option value="AWA_KWAIKER">Awá-Kwaiker</option>
-              <option value="CHACHI">Chachi</option>
-              <option value="EPERA">Épera</option>
-              <option value="KICHWA">Kichwa</option>
-              <option value="SECOYA">Secoya</option>
-              <option value="SHIWIAR">Shiwiar</option>
-              <option value="SHUAR">Shuar</option>
-              <option value="SIONA">Siona</option>
-              <option value="TSACHILA">Tsáchila</option>
-              <option value="WAORANI">Waorani</option>
-              <option value="ZAPARA">Zápara</option>
-              <option value="OTRA_NACIONALIDAD">Otra Nacionalidad</option>
+              <option value="ACHUAR" {% if form_data.nacionalidad_indigena == "ACHUAR" %}selected{% endif %}>Achuar</option>
+              <option value="AI_KOFAN" {% if form_data.nacionalidad_indigena == "AI_KOFAN" %}selected{% endif %}>Ai Kofan</option>
+              <option value="AWA_KWAIKER" {% if form_data.nacionalidad_indigena == "AWA_KWAIKER" %}selected{% endif %}>Awá-Kwaiker</option>
+              <option value="CHACHI" {% if form_data.nacionalidad_indigena == "CHACHI" %}selected{% endif %}>Chachi</option>
+              <option value="EPERA" {% if form_data.nacionalidad_indigena == "EPERA" %}selected{% endif %}>Épera</option>
+              <option value="KICHWA" {% if form_data.nacionalidad_indigena == "KICHWA" %}selected{% endif %}>Kichwa</option>
+              <option value="SECOYA" {% if form_data.nacionalidad_indigena == "SECOYA" %}selected{% endif %}>Secoya</option>
+              <option value="SHIWIAR" {% if form_data.nacionalidad_indigena == "SHIWIAR" %}selected{% endif %}>Shiwiar</option>
+              <option value="SHUAR" {% if form_data.nacionalidad_indigena == "SHUAR" %}selected{% endif %}>Shuar</option>
+              <option value="SIONA" {% if form_data.nacionalidad_indigena == "SIONA" %}selected{% endif %}>Siona</option>
+              <option value="TSACHILA" {% if form_data.nacionalidad_indigena == "TSACHILA" %}selected{% endif %}>Tsáchila</option>
+              <option value="WAORANI" {% if form_data.nacionalidad_indigena == "WAORANI" %}selected{% endif %}>Waorani</option>
+              <option value="ZAPARA" {% if form_data.nacionalidad_indigena == "ZAPARA" %}selected{% endif %}>Zápara</option>
+              <option value="OTRA_NACIONALIDAD" {% if form_data.nacionalidad_indigena == "OTRA_NACIONALIDAD" %}selected{% endif %}>Otra Nacionalidad</option>
             </select>
           </div>
 
@@ -126,17 +179,20 @@
             <label class="form-label">LGBTI</label>
             <select name="lgbti" class="form-select">
               <option value="">Seleccione...</option>
-              <option value="SI">Sí</option>
-              <option value="NO">No</option>
+              <option value="SI" {% if form_data.lgbti == "SI" %}selected{% endif %}>Sí</option>
+              <option value="NO" {% if form_data.lgbti == "NO" %}selected{% endif %}>No</option>
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Extensión *</label>
             <select name="sucursal" class="form-select">
-              <option value="" disabled>Seleccione...</option>
+              <option value="">Seleccione...</option>
               {% for s in sucursales %}
-                <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                <option value="{{ s.id }}"
+                  {% if form_data.sucursal == s.id|stringformat:"s" or not form_data.sucursal and sucursal_id == s.id|stringformat:"s" %}
+                    selected
+                  {% endif %}>
                   {{ s.nombre }}
                 </option>
               {% endfor %}
@@ -144,36 +200,22 @@
           </div>
 
           <div class="col-md-4 mb-3">
-            <label class="form-label">Provincia *</label>
-            <input type="text" name="provincia" class="form-control">
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Cantón *</label>
-            <input type="text" name="canton" class="form-control">
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Parroquia *</label>
-            <input type="text" name="parroquia" class="form-control">
-          </div>
-
-          <div class="col-md-4 mb-3">
             <label class="form-label">Teléfono</label>
-            <input type="text" name="telefono" class="form-control">
+            <input type="text" name="telefono" class="form-control"
+                  value="{{ form_data.telefono|default:'' }}">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Dirección *</label>
-            <textarea name="direccion" class="form-control" rows="2"></textarea>
+            <textarea name="direccion" class="form-control" rows="2">{{ form_data.direccion|default:'' }}</textarea>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Posee discapacidad validada *</label>
             <select name="posee_discapacidad" id="posee_discapacidad" class="form-select">
               <option value="">Seleccione...</option>
-              <option value="SI">Sí</option>
-              <option value="NO">No</option>
+              <option value="SI" {% if form_data.posee_discapacidad == "SI" %}selected{% endif %}>Sí</option>
+              <option value="NO" {% if form_data.posee_discapacidad == "NO" %}selected{% endif %}>No</option>
             </select>
           </div>
 
@@ -181,26 +223,20 @@
             <label class="form-label">Tipo de discapacidad</label>
             <select name="tipo_discapacidad" id="tipo_discapacidad" class="form-select">
               <option value="">Seleccione...</option>
-              <option value="FISICA">Física</option>
-              <option value="INTELECTUAL">Intelectual</option>
-              <option value="AUDITIVA">Auditiva</option>
-              <option value="VISUAL">Visual</option>
-              <option value="PSICOSOCIAL">Psicosocial</option>
-              <option value="LENGUAJE">Lenguaje</option>
+              <option value="FISICA" {% if form_data.tipo_discapacidad == "FISICA" %}selected{% endif %}>Física</option>
+              <option value="INTELECTUAL" {% if form_data.tipo_discapacidad == "INTELECTUAL" %}selected{% endif %}>Intelectual</option>
+              <option value="AUDITIVA" {% if form_data.tipo_discapacidad == "AUDITIVA" %}selected{% endif %}>Auditiva</option>
+              <option value="VISUAL" {% if form_data.tipo_discapacidad == "VISUAL" %}selected{% endif %}>Visual</option>
+              <option value="PSICOSOCIAL" {% if form_data.tipo_discapacidad == "PSICOSOCIAL" %}selected{% endif %}>Psicosocial</option>
+              <option value="LENGUAJE" {% if form_data.tipo_discapacidad == "LENGUAJE" %}selected{% endif %}>Lenguaje</option>
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Porcentaje de discapacidad</label>
-            <input
-              type="number"
-              name="porcentaje_discapacidad"
-              id="porcentaje_discapacidad"
-              class="form-control"
-              min="0"
-              max="100"
-              step="1"
-            >
+            <input type="number" name="porcentaje_discapacidad" id="porcentaje_discapacidad"
+                  class="form-control" min="0" max="100" step="1"
+                  value="{{ form_data.porcentaje_discapacidad|default:'' }}">
           </div>
 
           <div class="col-md-12 mt-3">
@@ -213,19 +249,25 @@
             <select name="curso_aprobado_ingreso" class="form-select">
               <option value="">Seleccione...</option>
               {% for c in cursos %}
-                <option value="{{ c.id }}">{{ c.nombre }} - Orden {{ c.orden }}</option>
+                <option value="{{ c.id }}" {% if form_data.curso_aprobado_ingreso == c.id|stringformat:"s" %}selected{% endif %}>
+                  {{ c.nombre }} - Orden {{ c.orden }}
+                </option>
               {% endfor %}
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Institución de procedencia</label>
-            <input type="text" name="institucion_procedencia" class="form-control" placeholder="Ej: Unidad Educativa ...">
+            <input type="text" name="institucion_procedencia" class="form-control"
+                  value="{{ form_data.institucion_procedencia|default:'' }}"
+                  placeholder="Ej: Unidad Educativa ...">
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Observación de ingreso</label>
-            <input type="text" name="observacion_ingreso" class="form-control" placeholder="Opcional">
+            <input type="text" name="observacion_ingreso" class="form-control"
+                  value="{{ form_data.observacion_ingreso|default:'' }}"
+                  placeholder="Opcional">
           </div>
 
         </div>
@@ -238,7 +280,6 @@
             <i class="fa fa-save"></i> Guardar
           </button>
         </div>
-
       </form>
       <div class="modal fade" id="modalImportarExcel" tabindex="-1" aria-labelledby="modalImportarExcelLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -275,6 +316,90 @@
 
 {% block scripts %}
 <script>
+const ubicacionesJsonUrl = "{{ ubicaciones_json_url }}";
+const provinciaSeleccionadaInicial = "{{ form_data.provincia|default:''|escapejs }}";
+const cantonSeleccionadoInicial = "{{ form_data.canton|default:''|escapejs }}";
+const parroquiaSeleccionadaInicial = "{{ form_data.parroquia|default:''|escapejs }}";
+
+let UBICACIONES_EC = {};
+
+function llenarSelect($select, items, selectedValue = "") {
+    $select.empty();
+    $select.append('<option value="">Seleccione...</option>');
+    items.forEach(item => {
+        const selected = item === selectedValue ? "selected" : "";
+        $select.append(`<option value="${item}" ${selected}>${item}</option>`);
+    });
+}
+
+function mostrarModoUbicacion() {
+    const nacionalidad = $("#nacionalidad").val();
+
+    if (nacionalidad === "ECUATORIANA") {
+        $("#grupo_provincia_ec, #grupo_canton_ec, #grupo_parroquia_ec").removeClass("d-none");
+        $("#grupo_provincia_manual, #grupo_canton_manual, #grupo_parroquia_manual").addClass("d-none");
+
+        $("#provincia, #canton, #parroquia").prop("disabled", false);
+        $("#provincia_manual, #canton_manual, #parroquia_manual").prop("disabled", true);
+
+        const provincias = Object.values(UBICACIONES_EC).map(p => p.provincia).sort();
+        llenarSelect($("#provincia"), provincias, provinciaSeleccionadaInicial);
+
+        if (provinciaSeleccionadaInicial) {
+            cargarCantones(provinciaSeleccionadaInicial, false);
+        } else {
+            llenarSelect($("#canton"), []);
+            llenarSelect($("#parroquia"), []);
+        }
+
+    } else {
+        $("#grupo_provincia_ec, #grupo_canton_ec, #grupo_parroquia_ec").addClass("d-none");
+        $("#grupo_provincia_manual, #grupo_canton_manual, #grupo_parroquia_manual").removeClass("d-none");
+
+        $("#provincia, #canton, #parroquia").prop("disabled", true);
+        $("#provincia_manual, #canton_manual, #parroquia_manual").prop("disabled", false);
+    }
+}
+
+function obtenerProvinciaObj(nombreProvincia) {
+    return Object.values(UBICACIONES_EC).find(p => p.provincia === nombreProvincia);
+}
+
+function cargarCantones(nombreProvincia, reset = true) {
+    const provinciaObj = obtenerProvinciaObj(nombreProvincia);
+    if (!provinciaObj) {
+        llenarSelect($("#canton"), []);
+        llenarSelect($("#parroquia"), []);
+        return;
+    }
+
+    const cantones = Object.values(provinciaObj.cantones).map(c => c.canton).sort();
+    llenarSelect($("#canton"), cantones, reset ? "" : cantonSeleccionadoInicial);
+
+    if (!reset && cantonSeleccionadoInicial) {
+        cargarParroquias(nombreProvincia, cantonSeleccionadoInicial, false);
+    } else {
+        llenarSelect($("#parroquia"), []);
+    }
+}
+
+function obtenerCantonObj(nombreProvincia, nombreCanton) {
+    const provinciaObj = obtenerProvinciaObj(nombreProvincia);
+    if (!provinciaObj) return null;
+    return Object.values(provinciaObj.cantones).find(c => c.canton === nombreCanton);
+}
+
+function cargarParroquias(nombreProvincia, nombreCanton, reset = true) {
+    const cantonObj = obtenerCantonObj(nombreProvincia, nombreCanton);
+    if (!cantonObj) {
+        llenarSelect($("#parroquia"), []);
+        return;
+    }
+
+    const parroquias = Object.values(cantonObj.parroquias).sort();
+    llenarSelect($("#parroquia"), parroquias, reset ? "" : parroquiaSeleccionadaInicial);
+}
+
 function toggleDiscapacidadFields() {
     const posee = $("#posee_discapacidad").val();
     const tipo = $("#tipo_discapacidad");
@@ -304,6 +429,23 @@ $(document).ready(function () {
     toggleDiscapacidadFields();
     toggleNacionalidadIndigena();
 
+    $.getJSON(ubicacionesJsonUrl, function(data) {
+        UBICACIONES_EC = data;
+        mostrarModoUbicacion();
+    });
+
+    $("#nacionalidad").on("change", function () {
+        mostrarModoUbicacion();
+    });
+
+    $("#provincia").on("change", function () {
+        cargarCantones($(this).val(), true);
+    });
+
+    $("#canton").on("change", function () {
+        cargarParroquias($("#provincia").val(), $(this).val(), true);
+    });
+
     $("#posee_discapacidad").on("change", function () {
         toggleDiscapacidadFields();
     });
@@ -313,6 +455,7 @@ $(document).ready(function () {
     });
 
     $("#frm_estudiante").validate({
+        ignore: [],
         rules: {
             tipo_documento: { required: true },
             cedula: { required: true, minlength: 10, maxlength: 10, digits: true },
@@ -321,19 +464,44 @@ $(document).ready(function () {
             apellido_paterno: { required: true, minlength: 2 },
             apellido_materno: { required: true, minlength: 2 },
             fecha_nacimiento: { required: true },
-            nacionalidad: { required: true, minlength: 3 },
+            nacionalidad: { required: true },
             etnia: { required: true },
             nacionalidad_indigena: {
                 required: function() {
                     return $("#etnia").val() === "INDIGENA";
                 }
             },
-            posee_discapacidad: { required: true },
             sucursal: { required: true },
-            provincia: { required: true, minlength: 2 },
-            canton: { required: true, minlength: 2 },
-            parroquia: { required: true, minlength: 2 },
+
+            provincia: {
+                required: function() {
+                    return $("#nacionalidad").val() === "ECUATORIANA";
+                }
+            },
+            canton: {
+                required: function() {
+                    return $("#nacionalidad").val() === "ECUATORIANA";
+                }
+            },
+            parroquia: {
+                required: function() {
+                    return $("#nacionalidad").val() === "ECUATORIANA";
+                }
+            },
+
+            provincia_manual: {
+                required: function() {
+                    return $("#nacionalidad").val() !== "ECUATORIANA";
+                }
+            },
+            canton_manual: {
+                required: function() {
+                    return $("#nacionalidad").val() !== "ECUATORIANA";
+                }
+            },
+
             direccion: { required: true, minlength: 5 },
+            posee_discapacidad: { required: true },
             porcentaje_discapacidad: {
                 required: function() {
                     return $("#posee_discapacidad").val() === "SI";
@@ -361,15 +529,17 @@ $(document).ready(function () {
             apellido_paterno: { required: "Ingrese el apellido paterno", minlength: "Mínimo 2 caracteres" },
             apellido_materno: { required: "Ingrese el apellido materno", minlength: "Mínimo 2 caracteres" },
             fecha_nacimiento: { required: "Ingrese la fecha de nacimiento" },
-            nacionalidad: { required: "Ingrese la nacionalidad", minlength: "Mínimo 3 caracteres" },
+            nacionalidad: { required: "Seleccione la nacionalidad" },
             etnia: { required: "Seleccione la etnia" },
             nacionalidad_indigena: { required: "Seleccione la nacionalidad indígena" },
-            posee_discapacidad: { required: "Seleccione una opción" },
             sucursal: { required: "Seleccione la extensión" },
-            provincia: { required: "Ingrese la provincia", minlength: "Mínimo 2 caracteres" },
-            canton: { required: "Ingrese el cantón", minlength: "Mínimo 2 caracteres" },
-            parroquia: { required: "Ingrese la parroquia", minlength: "Mínimo 2 caracteres" },
+            provincia: { required: "Seleccione la provincia" },
+            canton: { required: "Seleccione el cantón" },
+            parroquia: { required: "Seleccione la parroquia" },
+            provincia_manual: { required: "Ingrese la provincia o estado" },
+            canton_manual: { required: "Ingrese el cantón o ciudad" },
             direccion: { required: "Ingrese la dirección", minlength: "Mínimo 5 caracteres" },
+            posee_discapacidad: { required: "Seleccione una opción" },
             tipo_discapacidad: { required: "Seleccione el tipo de discapacidad" },
             porcentaje_discapacidad: {
                 required: "Ingrese el porcentaje de discapacidad",
@@ -383,6 +553,7 @@ $(document).ready(function () {
     });
 });
 </script>
+
 {% endblock %}
 
 {% endblock %}

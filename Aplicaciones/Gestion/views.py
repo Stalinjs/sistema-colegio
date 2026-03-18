@@ -21,6 +21,7 @@ import os
 from django.conf import settings
 from django.http import FileResponse
 import html
+from django.templatetags.static import static
 
 def importar_estudiantes_excel(request):
     if request.method != "POST":
@@ -2025,22 +2026,40 @@ def estudiantes_lista(request):
         "sucursales": sucursales,
         "sucursal_id": sucursal_id,
     })
-
 def estudiantes_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    sucursal_id = (request.GET.get("sucursal") or "").strip()
+    sucursal_id = (request.GET.get("sucursal") or request.POST.get("sucursal_context") or "").strip()
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     cursos = Curso.objects.all().order_by("orden", "nombre")
 
-    # Default: LATACUNGA (MATRIZ)
+    nacionalidades = [
+        "ECUATORIANA",
+        "COLOMBIANA",
+        "VENEZOLANA",
+        "PERUANA",
+        "ARGENTINA",
+        "BOLIVIANA",
+        "CHILENA",
+        "BRASILEÑA",
+        "MEXICANA",
+        "ESTADOUNIDENSE",
+        "ESPAÑOLA",
+        "ITALIANA",
+        "OTRA"
+    ]
+
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
+    form_data = {}
+
     if request.method == "POST":
+        form_data = request.POST.copy()
+
         cedula = (request.POST.get("cedula") or "").strip()
         tipo_documento = (request.POST.get("tipo_documento") or "CEDULA").strip()
         nombres = (request.POST.get("nombres") or "").strip()
@@ -2063,8 +2082,6 @@ def estudiantes_crear(request):
         tipo_discapacidad = (request.POST.get("tipo_discapacidad") or "").strip() or None
 
         porcentaje_discapacidad_raw = (request.POST.get("porcentaje_discapacidad") or "").strip()
-        porcentaje_discapacidad = int(porcentaje_discapacidad_raw) if porcentaje_discapacidad_raw else None
-
         curso_aprobado_ingreso_id = (request.POST.get("curso_aprobado_ingreso") or "").strip()
         institucion_procedencia = (request.POST.get("institucion_procedencia") or "").strip() or None
         observacion_ingreso = (request.POST.get("observacion_ingreso") or "").strip() or None
@@ -2074,15 +2091,65 @@ def estudiantes_crear(request):
 
         if not cedula or not nombres or not apellido_paterno or not apellido_materno or not sucursal_id_post:
             messages.error(request, "Cédula, nombres, apellidos y extensión son obligatorios.")
-            return redirect(f"{request.path}?sucursal={sucursal_context}")
+            return render(request, "estudiantes/estudiantes_crear.html", {
+                "sucursales": sucursales,
+                "sucursal_id": sucursal_context,
+                "cursos": cursos,
+                "nacionalidades": nacionalidades,
+                "form_data": form_data,
+                "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
+            })
 
         if Estudiante.objects.filter(cedula=cedula).exists():
             messages.error(request, "La cédula ya está registrada.")
-            return redirect(f"{request.path}?sucursal={sucursal_context}")
-
-        sucursal = get_object_or_404(Sucursal, id=sucursal_id_post)
+            return render(request, "estudiantes/estudiantes_crear.html", {
+                "sucursales": sucursales,
+                "sucursal_id": sucursal_context,
+                "cursos": cursos,
+                "nacionalidades": nacionalidades,
+                "form_data": form_data,
+                "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
+            })
 
         try:
+            porcentaje_discapacidad = int(porcentaje_discapacidad_raw) if porcentaje_discapacidad_raw else None
+        except ValueError:
+            messages.error(request, "El porcentaje de discapacidad debe ser un número entero.")
+            return render(request, "estudiantes/estudiantes_crear.html", {
+                "sucursales": sucursales,
+                "sucursal_id": sucursal_context,
+                "cursos": cursos,
+                "nacionalidades": nacionalidades,
+                "form_data": form_data,
+                "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
+            })
+
+        try:
+            if nacionalidad == "ECUATORIANA":
+                if not provincia or not canton or not parroquia:
+                    messages.error(request, "Para estudiantes ecuatorianos debe seleccionar provincia, cantón y parroquia.")
+                    return render(request, "estudiantes/estudiantes_crear.html", {
+                        "sucursales": sucursales,
+                        "sucursal_id": sucursal_context,
+                        "cursos": cursos,
+                        "nacionalidades": nacionalidades,
+                        "form_data": form_data,
+                        "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
+                    })
+            else:
+                if not provincia or not canton:
+                    messages.error(request, "Para otras nacionalidades debe ingresar provincia/estado y cantón/ciudad.")
+                    return render(request, "estudiantes/estudiantes_crear.html", {
+                        "sucursales": sucursales,
+                        "sucursal_id": sucursal_context,
+                        "cursos": cursos,
+                        "nacionalidades": nacionalidades,
+                        "form_data": form_data,
+                        "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
+                    })
+
+            sucursal = get_object_or_404(Sucursal, id=sucursal_id_post)
+
             estudiante = Estudiante.objects.create(
                 cedula=cedula,
                 tipo_documento=tipo_documento,
@@ -2118,30 +2185,21 @@ def estudiantes_crear(request):
 
         except ValidationError as e:
             if hasattr(e, "message_dict"):
-                msg = (
-                    e.message_dict.get("cedula")
-                    or e.message_dict.get("fecha_nacimiento")
-                    or e.message_dict.get("nacionalidad_indigena")
-                    or e.message_dict.get("tipo_discapacidad")
-                    or e.message_dict.get("porcentaje_discapacidad")
-                    or e.message_dict.get("provincia")
-                    or e.message_dict.get("canton")
-                    or e.message_dict.get("parroquia")
-                    or e.message_dict.get("direccion")
-                    or e.messages
-                )
+                for campo, errores in e.message_dict.items():
+                    for err in errores:
+                        messages.error(request, f"{campo}: {err}")
             else:
-                msg = e.messages
+                for err in e.messages:
+                    messages.error(request, err)
 
-            if isinstance(msg, list):
-                msg = " ".join(msg)
-
-            messages.error(request, msg)
-            return redirect(f"{request.path}?sucursal={sucursal_context}")
-
-        except ValueError:
-            messages.error(request, "El porcentaje de discapacidad debe ser un número entero.")
-            return redirect(f"{request.path}?sucursal={sucursal_context}")
+            return render(request, "estudiantes/estudiantes_crear.html", {
+                "sucursales": sucursales,
+                "sucursal_id": sucursal_context,
+                "cursos": cursos,
+                "nacionalidades": nacionalidades,
+                "form_data": form_data,
+                "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
+            })
 
         messages.success(request, "Estudiante creado correctamente.")
         return redirect("estudiantes_lista")
@@ -2150,8 +2208,10 @@ def estudiantes_crear(request):
         "sucursales": sucursales,
         "sucursal_id": sucursal_id,
         "cursos": cursos,
+        "nacionalidades": nacionalidades,
+        "form_data": {},
+        "ubicaciones_json_url": static("json/ecuador_ubicaciones.json"),
     })
-
 def estudiantes_editar(request, estudiante_id):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
