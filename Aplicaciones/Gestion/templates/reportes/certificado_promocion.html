@@ -89,7 +89,13 @@
     </p>
 
     <div class="estudiante">
-      {{ estudiante.apellido_paterno }} {{ estudiante.apellido_materno }} {{ estudiante.nombres }}
+      {% if estudiante %}
+        {{ estudiante.apellido_paterno }} {{ estudiante.apellido_materno }} {{ estudiante.nombres }}
+      {% elif matricula and matricula.estudiante %}
+        {{ matricula.estudiante.apellido_paterno }} {{ matricula.estudiante.apellido_materno }} {{ matricula.estudiante.nombres }}
+      {% else %}
+        ESTUDIANTE NO DISPONIBLE
+      {% endif %}
     </div>
 
     <div class="curso-linea">

@@ -145,10 +145,6 @@ def promocion_buscar(request):
 # =========================
 
 def promocion_certificado(request, matricula_id: int):
-    """
-    Certificado cuando existe matrícula (normalmente año activo).
-    Si las notas no están completas (promedio NULL), intenta caer a Promocion histórica (si existe).
-    """
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
@@ -161,61 +157,29 @@ def promocion_certificado(request, matricula_id: int):
         id=matricula_id
     )
 
-    # comportamiento por GET: ?comp=A/B/C...
-    comp_get = (request.GET.get("comp") or "").upper().strip()
+    estudiante = matricula.estudiante
+    curso = matricula.paralelo.curso
+    anio_lectivo = matricula.anio_lectivo
 
-    # si no viene por GET, usa el guardado en la promo
-    comportamiento = comp_get  # en año actual se elige por GET
+    # =========================
+    # COMPORTAMIENTO
+    # =========================
+    comp_get = (request.GET.get("comp") or "").upper().strip()
+    comportamiento = comp_get
     puede_emitir = bool(comportamiento)
 
-    comportamiento_texto = (
-        _comportamiento_texto(comportamiento)
-        if puede_emitir
-        else "Debe seleccionar un comportamiento para emitir el certificado."
-    )
-
-
-    promo = None  # la usamos luego si toca histórico
-
-    # 1) Intentamos sacar por NOTAS (año actual)
-    notas = (
-        Nota.objects.select_related("asignacion__asignatura")
-        .filter(matricula=matricula)
-        .order_by("asignacion__asignatura__nombre")
-    )
-
-    if notas.exists():
-        # Año actual: si no viene comp por GET, que lo seleccione en pantalla (como ya lo haces)
-        if not comportamiento:
-            puede_emitir = False
-
-    else:
-        # Histórico
-        promo = Promocion.objects.filter(
-            estudiante=matricula.estudiante,
-            anio_lectivo=matricula.anio_lectivo,
-        ).first()
-
-        # ✅ si NO viene comp por GET, usa el comportamiento guardado en promoción histórica
-        if (not comportamiento) and promo and promo.comportamiento:
-            comportamiento = promo.comportamiento
-            puede_emitir = True
-
-    comportamiento_texto = (
-        _comportamiento_texto(comportamiento)
-        if puede_emitir
-        else "Debe seleccionar un comportamiento para emitir el certificado."
-    )
-
-    filas = []
-    promedios = []
-
-    # ✅ Solo usamos notas que ya tengan PROMEDIO FINAL calculado
+    # =========================
+    # INTENTAR POR NOTAS
+    # =========================
     notas = (
         Nota.objects.select_related("asignacion__asignatura")
         .filter(matricula=matricula, promedio__isnull=False)
         .order_by("asignacion__asignatura__nombre")
     )
+
+    filas = []
+    promedios = []
+    origen = "SIN_DATOS"
 
     if notas.exists():
         for n in notas:
@@ -232,57 +196,95 @@ def promocion_certificado(request, matricula_id: int):
         origen = "NOTAS"
 
     else:
-        # fallback a histórico si existe promoción cargada para ese estudiante+año
+        # =========================
+        # FALLBACK A HISTÓRICO
+        # =========================
         promo = Promocion.objects.filter(
-            estudiante=matricula.estudiante,
-            anio_lectivo=matricula.anio_lectivo,
+            estudiante=estudiante,
+            anio_lectivo=anio_lectivo,
         ).prefetch_related("detalles").first()
 
         if promo:
             detalles = promo.detalles.all().order_by("asignatura_nombre")
+
             for d in detalles:
                 filas.append({
                     "asignatura": d.asignatura_nombre,
                     "cuantitativa": d.calificacion,
                     "cualitativa": _cualitativa(Decimal(d.calificacion)) if d.calificacion is not None else "—",
                 })
+
             promedio_general = promo.promedio_final
             origen = "HISTORICO"
+
+            # Si no viene comportamiento por GET, usar el guardado
+            if not comportamiento and promo.comportamiento:
+                comportamiento = promo.comportamiento
+                puede_emitir = True
+
         else:
             promedio_general = None
-            origen = "SIN_DATOS"
             messages.warning(
                 request,
-                "Este estudiante no tiene promedios finales calculados en notas y tampoco tiene promoción histórica cargada."
+                "Este estudiante no tiene promedios en notas ni promoción histórica."
             )
 
-    promedio_cualitativo = _cualitativa(Decimal(promedio_general)) if promedio_general is not None else "—"
-    promovido = (promedio_general is not None and Decimal(promedio_general) >= Decimal("7.00"))
+    # =========================
+    # POST-PROCESAMIENTO
+    # =========================
+    comportamiento_texto = (
+        _comportamiento_texto(comportamiento)
+        if puede_emitir
+        else "Debe seleccionar un comportamiento para emitir el certificado."
+    )
 
-    siguiente_grado = _siguiente_curso_por_orden(matricula.paralelo.curso) if promovido else "—"
+    promedio_cualitativo = (
+        _cualitativa(Decimal(promedio_general))
+        if promedio_general is not None else "—"
+    )
 
-    regimen, extension = _get_regimen_extension_desde_curso(matricula.paralelo.curso)
+    promovido = (
+        promedio_general is not None and Decimal(promedio_general) >= Decimal("7.00")
+    )
 
+    siguiente_grado = (
+        _siguiente_curso_por_orden(curso) if promovido else "—"
+    )
+
+    regimen, extension = _get_regimen_extension_desde_curso(curso)
+
+    # =========================
+    # CONTEXTO (UNIFICADO)
+    # =========================
     context = {
-        "matricula": matricula,  # tu template ya lo usa
+        "matricula": matricula,
+        "estudiante": estudiante,
+        "anio_lectivo": anio_lectivo,
+        "curso": curso,
+
         "filas": filas,
         "promedio_general": promedio_general,
         "promedio_cualitativo": promedio_cualitativo,
-        "anio_lectivo_nombre": matricula.anio_lectivo.nombre,
-        "curso_nombre": matricula.paralelo.curso.nombre,
+
+        "anio_lectivo_nombre": anio_lectivo.nombre,
+        "curso_nombre": curso.nombre,
+
         "comportamiento": comportamiento if puede_emitir else "—",
         "comportamiento_texto": comportamiento_texto,
         "puede_emitir": puede_emitir,
+
         "promovido": promovido,
         "siguiente_grado": siguiente_grado,
+
         "hoy": timezone.localdate(),
         "regimen": regimen,
         "extension": extension,
-        "origen": origen,  # por si quieres mostrar una muestra: NOTAS/HISTORICO
-        "es_historico": False,
-    }
-    return render(request, "reportes/certificado_promocion.html", context)
 
+        "origen": origen,
+        "es_historico": (origen == "HISTORICO"),
+    }
+
+    return render(request, "reportes/certificado_promocion.html", context)
 
 # =========================
 # CERTIFICADO HISTÓRICO (SIN MATRÍCULA)
