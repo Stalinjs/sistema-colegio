@@ -263,6 +263,8 @@ class Docente(UpperCaseMixin, models.Model):
 class Estudiante(UpperCaseMixin, models.Model):
     TIPO_DOCUMENTO_CHOICES = [
         ("CEDULA", "Cédula"),
+        ("PASAPORTE", "Pasaporte"),
+        ("DNI", "Documento extranjero"),
     ]
 
     SEXO_CHOICES = [
@@ -364,11 +366,19 @@ class Estudiante(UpperCaseMixin, models.Model):
     def clean(self):
         errors = {}
 
-        if self.cedula:
-            self.cedula = self.cedula.strip()
+        if self.tipo_documento == "CEDULA":
+            if self.nacionalidad != "ECUATORIANA":
+                errors["cedula"] = _("La cédula solo aplica para ecuatorianos.")
+            elif not validar_cedula_ec(self.cedula):
+                errors["cedula"] = _("Cédula ecuatoriana inválida.")
 
-        if not validar_cedula_ec(self.cedula):
-            errors["cedula"] = _("Cédula inválida. Verifique que sea una cédula ecuatoriana real de 10 dígitos.")
+        elif self.tipo_documento == "PASAPORTE":
+            if not self.cedula or len(self.cedula) < 5:
+                errors["cedula"] = _("Ingrese un pasaporte válido.")
+
+        elif self.tipo_documento == "DNI":
+            if not self.cedula or len(self.cedula) < 5:
+                errors["cedula"] = _("Ingrese un documento válido.")
 
         if self.fecha_nacimiento:
             hoy = date.today()

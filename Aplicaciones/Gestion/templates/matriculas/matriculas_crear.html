@@ -19,7 +19,6 @@
 
   <div class="card mb-3">
     <div class="card-header d-flex justify-content-between align-items-center">
-
       <h5 class="card-title mb-0">Paso 1: Seleccionar Extensión</h5>
 
       <div>
@@ -31,8 +30,8 @@
           <i class="fa fa-upload"></i> Importar archivo
         </button>
       </div>
-
     </div>
+
     <div class="card-body">
       <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
@@ -66,7 +65,7 @@
     <div class="card-body">
       <form method="post" id="frm_matricula" novalidate>
         {% csrf_token %}
-        <input type="hidden" name="sucursal_context" value="{{ sucursal_id }}">
+        <input type="hidden" name="sucursal_context" value="{{ form_data.sucursal_context|default:sucursal_id }}">
 
         <div id="frontendErrors" class="alert alert-danger" style="display:none;">
           <b>Revisa lo siguiente:</b>
@@ -88,7 +87,7 @@
               required
             >
               {% for e in estudiantes %}
-                <option value="{{ e.id }}">
+                <option value="{{ e.id }}" {% if form_data.estudiante == e.id|stringformat:"s" %}selected{% endif %}>
                   {{ e.apellido_paterno }} {{ e.apellido_materno }} {{ e.nombres }} ({{ e.cedula }})
                 </option>
               {% endfor %}
@@ -108,7 +107,9 @@
             <select id="paralelo" name="paralelo" class="form-select" required>
               <option value="">Seleccione...</option>
               {% for p in paralelos %}
-                <option value="{{ p.id }}">{{ p.curso.nombre }} - {{ p.nombre }}</option>
+                <option value="{{ p.id }}" {% if form_data.paralelo == p.id|stringformat:"s" %}selected{% endif %}>
+                  {{ p.curso.nombre }} - {{ p.nombre }}
+                </option>
               {% endfor %}
             </select>
             <div class="invalid-feedback">
@@ -124,7 +125,12 @@
             <select id="anio_lectivo" name="anio_lectivo" class="form-select" required>
               <option value="">Seleccione...</option>
               {% for a in anios %}
-                <option value="{{ a.id }}" {% if anio_activo and a.id == anio_activo.id %}selected{% endif %}>
+                <option value="{{ a.id }}"
+                  {% if form_data.anio_lectivo == a.id|stringformat:"s" %}
+                    selected
+                  {% elif not form_data.anio_lectivo and anio_activo and a.id == anio_activo.id %}
+                    selected
+                  {% endif %}>
                   {{ a.nombre }}{% if a.activo %} (Activo){% endif %}
                 </option>
               {% endfor %}
@@ -138,10 +144,10 @@
             <label class="form-label">Oferta educativa *</label>
             <select id="oferta_educativa" name="oferta_educativa" class="form-select" required>
               <option value="">Seleccione...</option>
-              <option value="JOVENES_ADULTOS">
+              <option value="JOVENES_ADULTOS" {% if form_data.oferta_educativa == "JOVENES_ADULTOS" %}selected{% endif %}>
                 PARA PERSONAS JÓVENES, ADULTAS Y ADULTAS MAYORES CON ESCOLARIDAD INCONCLUSA
               </option>
-              <option value="NNA_ESCOLARIDAD_INCONCLUSA">
+              <option value="NNA_ESCOLARIDAD_INCONCLUSA" {% if form_data.oferta_educativa == "NNA_ESCOLARIDAD_INCONCLUSA" %}selected{% endif %}>
                 PARA NIÑAS, NIÑOS Y ADOLESCENTES EN EDAD ESCOLAR CON ESCOLARIDAD INCONCLUSA
               </option>
             </select>
@@ -154,9 +160,9 @@
             <label class="form-label">Jornada *</label>
             <select id="jornada" name="jornada" class="form-select" required>
               <option value="">Seleccione...</option>
-              <option value="MATUTINA">Matutina</option>
-              <option value="VESPERTINA">Vespertina</option>
-              <option value="NOCTURNA">Nocturna</option>
+              <option value="MATUTINA" {% if form_data.jornada == "MATUTINA" %}selected{% endif %}>Matutina</option>
+              <option value="VESPERTINA" {% if form_data.jornada == "VESPERTINA" %}selected{% endif %}>Vespertina</option>
+              <option value="NOCTURNA" {% if form_data.jornada == "NOCTURNA" %}selected{% endif %}>Nocturna</option>
             </select>
             <div class="invalid-feedback">
               La jornada es obligatoria.
@@ -167,16 +173,17 @@
             <label class="form-label">Temporalidad *</label>
             <select id="temporalidad" name="temporalidad" class="form-select" required>
               <option value="">Seleccione...</option>
-              <option value="INTENSIVA">Intensiva</option>
-              <option value="NO_INTENSIVA">No intensiva</option>
+              <option value="INTENSIVA" {% if form_data.temporalidad == "INTENSIVA" %}selected{% endif %}>Intensiva</option>
+              <option value="NO_INTENSIVA" {% if form_data.temporalidad == "NO_INTENSIVA" %}selected{% endif %}>No intensiva</option>
             </select>
             <div class="invalid-feedback">
               La temporalidad es obligatoria.
             </div>
           </div>
+
           <div class="col-md-12">
             <label class="form-label">Observaciones</label>
-            <textarea name="observaciones" class="form-control" rows="3" placeholder="(Opcional)"></textarea>
+            <textarea name="observaciones" class="form-control" rows="3" placeholder="(Opcional)">{{ form_data.observaciones|default:'' }}</textarea>
           </div>
 
         </div>
@@ -192,6 +199,7 @@
         </div>
 
       </form>
+
       <div class="modal fade" id="modalImportarExcelMatriculas" tabindex="-1" aria-labelledby="modalImportarExcelMatriculasLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -220,6 +228,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
@@ -229,6 +238,7 @@
 <script>
 $(document).ready(function () {
   $('.selectpicker').selectpicker();
+  $('.selectpicker').selectpicker('refresh');
 
   const form = document.getElementById("frm_matricula");
   const box = document.getElementById("frontendErrors");

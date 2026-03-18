@@ -45,15 +45,19 @@
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Tipo de documento *</label>
-            <select name="tipo_documento" class="form-select">
+            <select name="tipo_documento" id="tipo_documento" class="form-select">
               <option value="CEDULA" {% if form_data.tipo_documento|default:"CEDULA" == "CEDULA" %}selected{% endif %}>Cédula</option>
+              <option value="PASAPORTE" {% if form_data.tipo_documento == "PASAPORTE" %}selected{% endif %}>Pasaporte</option>
+              <option value="DNI" {% if form_data.tipo_documento == "DNI" %}selected{% endif %}>Documento extranjero</option>
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
             <label class="form-label">Documento de identidad *</label>
             <input type="text" name="cedula" class="form-control"
-                  value="{{ form_data.cedula|default:'' }}" maxlength="10" placeholder="10 dígitos">
+                  value="{{ form_data.cedula|default:'' }}"
+                  maxlength="20"
+                  placeholder="Ingrese documento">
           </div>
 
           <div class="col-md-4 mb-3">
@@ -332,6 +336,16 @@ function llenarSelect($select, items, selectedValue = "") {
     });
 }
 
+function autoTipoDocumento() {
+    const nacionalidad = $("#nacionalidad").val();
+
+    if (nacionalidad === "ECUATORIANA") {
+        $("#tipo_documento").val("CEDULA");
+    } else if ($("#tipo_documento").val() === "CEDULA") {
+        $("#tipo_documento").val("PASAPORTE");
+    }
+}
+
 function mostrarModoUbicacion() {
     const nacionalidad = $("#nacionalidad").val();
 
@@ -432,10 +446,12 @@ $(document).ready(function () {
     $.getJSON(ubicacionesJsonUrl, function(data) {
         UBICACIONES_EC = data;
         mostrarModoUbicacion();
+        autoTipoDocumento();
     });
 
     $("#nacionalidad").on("change", function () {
         mostrarModoUbicacion();
+        autoTipoDocumento();
     });
 
     $("#provincia").on("change", function () {
@@ -458,7 +474,7 @@ $(document).ready(function () {
         ignore: [],
         rules: {
             tipo_documento: { required: true },
-            cedula: { required: true, minlength: 10, maxlength: 10, digits: true },
+            cedula: { required: true, minlength: 5, maxlength: 20 },
             sexo: { required: true },
             nombres: { required: true, minlength: 2 },
             apellido_paterno: { required: true, minlength: 2 },
@@ -519,10 +535,9 @@ $(document).ready(function () {
         messages: {
             tipo_documento: { required: "Seleccione el tipo de documento" },
             cedula: {
-                required: "Ingrese la cédula",
-                minlength: "Debe tener 10 dígitos",
-                maxlength: "Debe tener 10 dígitos",
-                digits: "Solo números"
+                required: "Ingrese el documento de identidad",
+                minlength: "Debe tener al menos 5 caracteres",
+                maxlength: "No puede superar 20 caracteres"
             },
             sexo: { required: "Seleccione el sexo" },
             nombres: { required: "Ingrese los nombres", minlength: "Mínimo 2 caracteres" },
@@ -553,7 +568,6 @@ $(document).ready(function () {
     });
 });
 </script>
-
 {% endblock %}
 
 {% endblock %}

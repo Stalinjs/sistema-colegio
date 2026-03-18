@@ -2437,7 +2437,7 @@ def matriculas_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    sucursal_id = (request.GET.get("sucursal") or "").strip()
+    sucursal_id = (request.GET.get("sucursal") or request.POST.get("sucursal_context") or "").strip()
 
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre__iexact="LATACUNGA (MATRIZ)").first()
@@ -2445,7 +2445,6 @@ def matriculas_crear(request):
             sucursal_id = str(s_lat.id)
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
-
     anios = AnioLectivo.objects.all().order_by("-activo", "-id")
     anio_activo = AnioLectivo.objects.filter(activo=True).first()
 
@@ -2460,12 +2459,15 @@ def matriculas_crear(request):
             curso__sucursal_id=sucursal_id
         ).order_by("curso__nombre", "nombre")
 
+    form_data = {}
+
     if request.method == "POST":
+        form_data = request.POST.copy()
+
         estudiante_id = (request.POST.get("estudiante") or "").strip()
         paralelo_id = (request.POST.get("paralelo") or "").strip()
         anio_id = (request.POST.get("anio_lectivo") or "").strip()
         oferta_educativa = (request.POST.get("oferta_educativa") or "").strip()
-
         jornada = (request.POST.get("jornada") or "").strip() or None
         temporalidad = (request.POST.get("temporalidad") or "").strip() or None
         estado_estudiante = "MATRICULADO"
@@ -2473,9 +2475,28 @@ def matriculas_crear(request):
 
         sucursal_id_post = (request.POST.get("sucursal_context") or sucursal_id or "").strip()
 
-        if not (estudiante_id and paralelo_id and anio_id and oferta_educativa):
+        # Recargar combos según la sucursal enviada en POST
+        if sucursal_id_post:
+            estudiantes = Estudiante.objects.filter(sucursal_id=sucursal_id_post).order_by(
+                "apellido_paterno", "apellido_materno", "nombres"
+            )
+            paralelos = Paralelo.objects.select_related("curso__sucursal").filter(
+                curso__sucursal_id=sucursal_id_post
+            ).order_by("curso__nombre", "nombre")
+
+        context = {
+            "sucursales": sucursales,
+            "sucursal_id": sucursal_id_post,
+            "estudiantes": estudiantes,
+            "paralelos": paralelos,
+            "anio_activo": anio_activo,
+            "anios": anios,
+            "form_data": form_data,
+        }
+
+        if not (estudiante_id and paralelo_id and anio_id and oferta_educativa and jornada and temporalidad):
             messages.error(request, "Complete los campos obligatorios.")
-            return redirect(f"{request.path}?sucursal={sucursal_id_post}")
+            return render(request, "matriculas/matriculas_crear.html", context)
 
         estudiante = get_object_or_404(Estudiante, id=estudiante_id)
         paralelo = get_object_or_404(
@@ -2498,12 +2519,19 @@ def matriculas_crear(request):
             matricula.save()
 
         except ValidationError as e:
-            _flash_validation_error(request, e)
-            return redirect(f"{request.path}?sucursal={sucursal_id_post}")
+            if hasattr(e, "message_dict"):
+                for campo, errores in e.message_dict.items():
+                    for err in errores:
+                        messages.error(request, f"{campo}: {err}")
+            else:
+                for err in e.messages:
+                    messages.error(request, err)
+
+            return render(request, "matriculas/matriculas_crear.html", context)
 
         except IntegrityError:
             messages.error(request, "Ya existe una matrícula para este estudiante en el año lectivo seleccionado.")
-            return redirect(f"{request.path}?sucursal={sucursal_id_post}")
+            return render(request, "matriculas/matriculas_crear.html", context)
 
         messages.success(request, "Matrícula registrada correctamente.")
         return redirect("matriculas_lista")
@@ -2515,6 +2543,7 @@ def matriculas_crear(request):
         "paralelos": paralelos,
         "anio_activo": anio_activo,
         "anios": anios,
+        "form_data": {},
     }
     return render(request, "matriculas/matriculas_crear.html", context)
 
