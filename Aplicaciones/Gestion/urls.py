@@ -76,6 +76,9 @@ urlpatterns = [
     path("mis_cursos/", views.mis_cursos, name="mis_cursos"),
     # DOCENTE - Estudiantes matriculados - Registarr notas
     path("mis_cursos/<int:asignacion_id>/notas/", views.mis_cursos_notas, name="mis_cursos_notas"),
+    path('tutor/asignar/', views.asignar_tutor, name='asignar_tutor'),
+    path("tutor/", views.tutor_lista, name="tutor_lista"),
+    path("tutor/editar/<int:pk>/", views.tutor_editar, name="tutor_editar"),
 
     # ESTUDIANTES
     path("estudiantes_lista/", views.estudiantes_lista, name="estudiantes_lista"),

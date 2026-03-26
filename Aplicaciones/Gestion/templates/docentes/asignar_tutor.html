@@ -1,0 +1,152 @@
+{% extends "plantilla.html" %}
+{% block contenido %}
+
+<div class="page-inner">
+
+  <div class="page-header">
+    <h4 class="page-title">
+      {% if modo_edicion %}Editar Tutor{% else %}Asignar Tutor{% endif %}
+    </h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="{% url 'dashboard_secretaria' %}"><i class="fa fa-home"></i></a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        <a href="{% url 'tutor_lista' %}">Tutores</a>
+      </li>
+      <li class="separator"><i class="fa fa-angle-right"></i></li>
+      <li class="nav-item">
+        {% if modo_edicion %}Editar{% else %}Crear{% endif %}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Paso 1: Seleccionar sucursal -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 1: Seleccionar Extensión</h5>
+      <small class="text-muted">Se listarán solo los paralelos de la extensión elegida.</small>
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+
+        <div class="col-md-6">
+          <label class="form-label">Extensión</label>
+          <select name="sucursal" class="form-select" onchange="this.form.submit()">
+            <option value="">Seleccione...</option>
+            {% for s in sucursales %}
+              <option value="{{ s.id }}" {% if sucursal_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <a href="{% url 'tutor_lista' %}" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i> Volver
+          </a>
+          <a href="{% if modo_edicion %}{% url 'tutor_editar' tutor.id %}{% else %}{% url 'asignar_tutor' %}{% endif %}" class="btn btn-outline-secondary">
+            <i class="fa fa-rotate-left"></i> Reiniciar
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Paso 2: Datos del tutor -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Paso 2: Datos del Tutor</h5>
+      <small class="text-muted">Docente, paralelo y año lectivo son obligatorios.</small>
+    </div>
+
+    <div class="card-body">
+      <form method="post" id="frm_tutor">
+        {% csrf_token %}
+
+        <input type="hidden" name="sucursal_context" value="{{ sucursal_id }}">
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Docente *</label>
+            <select name="docente" class="form-select" required>
+              <option value="" disabled {% if not modo_edicion %}selected{% endif %}>Seleccione...</option>
+              {% for d in docentes %}
+                <option value="{{ d.id }}" {% if modo_edicion and tutor.docente_id == d.id %}selected{% endif %}>
+                  {{ d }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Año Lectivo *</label>
+            <select name="anio_lectivo" class="form-select" required>
+              <option value="" disabled {% if not modo_edicion %}selected{% endif %}>Seleccione...</option>
+              {% for a in anios %}
+                <option value="{{ a.id }}" {% if modo_edicion and tutor.anio_lectivo_id == a.id %}selected{% endif %}>
+                  {{ a.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Paralelo *</label>
+            <select name="paralelo" class="form-select" required>
+              <option value="" disabled {% if not modo_edicion %}selected{% endif %}>Seleccione...</option>
+              {% for p in paralelos %}
+                <option value="{{ p.id }}" {% if modo_edicion and tutor.paralelo_id == p.id %}selected{% endif %}>
+                  {{ p.curso.nombre }} - Paralelo {{ p.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+
+            {% if not paralelos %}
+              <div class="form-text text-danger">
+                Seleccione una extensión para listar los paralelos.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="text-end mt-3">
+          <a href="{% url 'tutor_lista' %}" class="btn btn-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i>
+            {% if modo_edicion %}Actualizar{% else %}Guardar{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script>
+$("#frm_tutor").validate({
+    rules: {
+        docente: { required: true },
+        anio_lectivo: { required: true },
+        paralelo: { required: true }
+    },
+    messages: {
+        docente: { required: "Seleccione un docente" },
+        anio_lectivo: { required: "Seleccione un año lectivo" },
+        paralelo: { required: "Seleccione un paralelo" }
+    },
+    errorElement: "div",
+    errorClass: "text-danger mt-1"
+});
+</script>
+{% endblock %}
+
+{% endblock %}

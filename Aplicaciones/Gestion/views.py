@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.db.models import Count
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from .models import Usuario, Estudiante, Matricula, Paralelo, AnioLectivo, Curso, Sucursal, Nota, Docente, DocenteAsignacion, Especialidad, Asignatura, PeriodoNotas, PermisoEdicionNotas, Promocion, PromocionDetalle,HistorialAcademicoIngreso
+from .models import Usuario, Estudiante, Matricula, Paralelo, AnioLectivo, Curso, Sucursal, Nota, Docente, DocenteAsignacion, Especialidad, Asignatura, PeriodoNotas, PermisoEdicionNotas, Promocion, PromocionDetalle,HistorialAcademicoIngreso,TutorParalelo
 from django.utils import timezone
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
@@ -1984,6 +1984,176 @@ def mis_cursos_notas(request, asignacion_id):
     return render(request, "docentes/mis_cursos_notas.html", {
         "asignacion": asignacion,
         "filas": filas
+    })
+
+def tutor_lista(request):
+    if request.session.get("usuario_rol") != "secretaria":
+        return redirect("login")
+
+    q = request.GET.get("q", "").strip()
+    sucursal_id = request.GET.get("sucursal", "").strip()
+    anio_id = request.GET.get("anio_lectivo", "").strip()
+
+    tutores = TutorParalelo.objects.select_related(
+        "docente__usuario",
+        "paralelo__curso",
+        "anio_lectivo",
+    ).all()
+
+    if sucursal_id:
+        tutores = tutores.filter(paralelo__curso__sucursal_id=sucursal_id)
+
+    if anio_id:
+        tutores = tutores.filter(anio_lectivo_id=anio_id)
+
+    if q:
+        tutores = tutores.filter(
+            Q(docente__usuario__nombres__icontains=q) |
+            Q(docente__usuario__apellido_paterno__icontains=q) |
+            Q(docente__usuario__apellido_materno__icontains=q) |
+            Q(paralelo__nombre__icontains=q) |
+            Q(paralelo__curso__nombre__icontains=q)
+        )
+
+    tutores = tutores.order_by(
+        "-anio_lectivo_id",
+        "paralelo__curso__orden",
+        "paralelo__nombre"
+    )
+
+    context = {
+        "tutores": tutores,
+        "q": q,
+        "sucursal_id": sucursal_id,
+        "anio_id": anio_id,
+        "sucursales": Sucursal.objects.all().order_by("nombre"),
+        "anios": AnioLectivo.objects.all().order_by("-id"),
+    }
+    return render(request, "docentes/tutor_lista.html", context)
+def asignar_tutor(request):
+    if request.session.get("usuario_rol") != "secretaria":
+        return redirect("login")
+
+    sucursales = Sucursal.objects.all().order_by("nombre")
+    docentes = Docente.objects.all().select_related("usuario").order_by(
+        "usuario__apellido_paterno",
+        "usuario__apellido_materno",
+        "usuario__nombres"
+    )
+    anios = AnioLectivo.objects.filter(activo=True).order_by("-id")
+
+    sucursal_id = request.GET.get("sucursal") or request.POST.get("sucursal_context")
+    paralelos = Paralelo.objects.none()
+
+    if sucursal_id:
+        paralelos = Paralelo.objects.filter(
+            curso__sucursal_id=sucursal_id
+        ).select_related("curso").order_by("curso__orden", "nombre")
+
+    if request.method == "POST":
+        docente_id = request.POST.get("docente")
+        paralelo_id = request.POST.get("paralelo")
+        anio_id = request.POST.get("anio_lectivo")
+
+        if not docente_id or not paralelo_id or not anio_id:
+            messages.error(request, "Todos los campos son obligatorios.")
+        else:
+            existe_paralelo = TutorParalelo.objects.filter(
+                paralelo_id=paralelo_id,
+                anio_lectivo_id=anio_id
+            ).exists()
+
+            existe_docente = TutorParalelo.objects.filter(
+                docente_id=docente_id,
+                anio_lectivo_id=anio_id
+            ).exists()
+
+            if existe_paralelo:
+                messages.error(request, "Ese paralelo ya tiene un tutor asignado en ese año lectivo.")
+            elif existe_docente:
+                messages.error(request, "Ese docente ya está asignado como tutor en otro curso de ese año lectivo.")
+            else:
+                TutorParalelo.objects.create(
+                    docente_id=docente_id,
+                    paralelo_id=paralelo_id,
+                    anio_lectivo_id=anio_id
+                )
+                messages.success(request, "Tutor asignado correctamente.")
+                return redirect(f"{reverse('asignar_tutor')}?sucursal={sucursal_id}")
+
+    return render(request, "docentes/asignar_tutor.html", {
+        "sucursales": sucursales,
+        "sucursal_id": sucursal_id,
+        "docentes": docentes,
+        "paralelos": paralelos,
+        "anios": anios,
+    })
+
+def tutor_editar(request, pk):
+    if request.session.get("usuario_rol") != "secretaria":
+        return redirect("login")
+
+    tutor = get_object_or_404(
+        TutorParalelo.objects.select_related("paralelo__curso", "anio_lectivo", "docente__usuario"),
+        pk=pk
+    )
+
+    sucursales = Sucursal.objects.all().order_by("nombre")
+    docentes = Docente.objects.all().select_related("usuario").order_by(
+        "usuario__apellido_paterno",
+        "usuario__apellido_materno",
+        "usuario__nombres"
+    )
+    anios = AnioLectivo.objects.filter(activo=True).order_by("-id")
+
+    sucursal_id = request.GET.get("sucursal") or request.POST.get("sucursal_context")
+    if not sucursal_id:
+        sucursal_id = str(tutor.paralelo.curso.sucursal_id)
+
+    paralelos = Paralelo.objects.none()
+    if sucursal_id:
+        paralelos = Paralelo.objects.filter(
+            curso__sucursal_id=sucursal_id
+        ).select_related("curso").order_by("curso__orden", "nombre")
+
+    if request.method == "POST":
+        docente_id = request.POST.get("docente")
+        paralelo_id = request.POST.get("paralelo")
+        anio_id = request.POST.get("anio_lectivo")
+
+        if not docente_id or not paralelo_id or not anio_id:
+            messages.error(request, "Todos los campos son obligatorios.")
+        else:
+            existe_paralelo = TutorParalelo.objects.filter(
+                paralelo_id=paralelo_id,
+                anio_lectivo_id=anio_id
+            ).exclude(pk=tutor.pk).exists()
+
+            existe_docente = TutorParalelo.objects.filter(
+                docente_id=docente_id,
+                anio_lectivo_id=anio_id
+            ).exclude(pk=tutor.pk).exists()
+
+            if existe_paralelo:
+                messages.error(request, "Ese paralelo ya tiene un tutor asignado en ese año lectivo.")
+            elif existe_docente:
+                messages.error(request, "Ese docente ya está asignado como tutor en otro curso de ese año lectivo.")
+            else:
+                tutor.docente_id = docente_id
+                tutor.paralelo_id = paralelo_id
+                tutor.anio_lectivo_id = anio_id
+                tutor.save()
+                messages.success(request, "Tutor actualizado correctamente.")
+                return redirect("tutor_lista")
+
+    return render(request, "docentes/asignar_tutor.html", {
+        "modo_edicion": True,
+        "tutor": tutor,
+        "sucursales": sucursales,
+        "sucursal_id": sucursal_id,
+        "docentes": docentes,
+        "paralelos": paralelos,
+        "anios": anios,
     })
 
 # ========================================================================= ESTUDIANTES =====================

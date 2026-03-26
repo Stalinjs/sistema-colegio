@@ -256,6 +256,23 @@ class Docente(UpperCaseMixin, models.Model):
     def __str__(self):
         nombres = f"{self.usuario.nombres} {self.usuario.apellido_paterno}"
         return f"Docente: {nombres}"
+    
+# ============================================================
+# TUTOR DE PARALELO
+# ============================================================
+class TutorParalelo(models.Model):
+    docente = models.ForeignKey(Docente, on_delete=models.CASCADE)
+    paralelo = models.ForeignKey(Paralelo, on_delete=models.CASCADE)
+    anio_lectivo = models.ForeignKey(AnioLectivo, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = (
+            ('paralelo', 'anio_lectivo'),
+            ('docente', 'anio_lectivo'),
+        )
+
+    def __str__(self):
+        return f"{self.paralelo} - Tutor: {self.docente} - {self.anio_lectivo}"
 
 # ============================================================
 # ESTUDIANTES
