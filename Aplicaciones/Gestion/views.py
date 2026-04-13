@@ -219,8 +219,6 @@ def descargar_plantilla_estudiantes(request):
         "plantillas_excel",
         "plantilla_estudiantes.xlsx"
     )
-
-    # Validar si existe el archivo
     if not os.path.exists(ruta_archivo):
         messages.error(request, "No se encontró la plantilla de estudiantes.")
         return redirect("estudiantes_lista") 
@@ -450,7 +448,6 @@ def inicio(request):
 def login_view(request):
     return render(request, 'usuarios/login.html')
 
-#  FUNCION PARA VALIDAR LOGIN
 def login_validar(request):
     
     if request.method == "POST":
@@ -467,17 +464,14 @@ def login_validar(request):
             messages.error(request, "Tu cuenta está desactivada.")
             return redirect("login")
 
-        # Validar contraseña (hasheada)
         if not check_password(password, usuario.password):
             messages.error(request, "Contraseña incorrecta.")
             return redirect("login")
 
-        # Guardar datos en sesión
         request.session["usuario_id"] = usuario.id
         request.session["usuario_rol"] = usuario.rol
         request.session["usuario_nombre"] = usuario.nombres
 
-        # Redirigir según rol
         if usuario.rol == "admin":
             return redirect("dashboard_admin")
 
@@ -489,7 +483,7 @@ def login_validar(request):
 
     return redirect("login")
 
-# LOGOUT
+# ========================================================= LOGOUT ================================================
 def logout_view(request):
     request.session.flush()
     return redirect("/")
@@ -508,10 +502,7 @@ def recuperar_password(request):
             messages.error(request, "No existe un usuario activo con ese correo.")
             return redirect("recuperar_password")
 
-        # Generar contraseña temporal
         nueva_password = ''.join(random.choices(string.digits, k=8))
-
-        # Guardar contraseña hasheada
         usuario.password = make_password(nueva_password)
         usuario.save()
 
@@ -538,7 +529,7 @@ def recuperar_password(request):
 
     return render(request, "usuarios/recuperar_password.html")
 
-# CAMBIAR CONTRASEÑA (después de validar cédula)
+# =========================================================== CABIAR CONTRASEÑA ============================================0
 def cambiar_password(request):
     usuario_id = request.session.get("usuario_id")
 
@@ -594,7 +585,6 @@ def dashboard_docente(request):
 
 # ========================================================================= USUARIOS =====================
 
-# MÓDULO USUARIOS (solo admin)
 def usuarios_lista(request):
     if request.session.get("usuario_rol") != "admin":
         return redirect("login")
@@ -604,13 +594,11 @@ def usuarios_lista(request):
 
     usuarios = Usuario.objects.all()
 
-    # Filtro por estado
     if estado == "activos":
         usuarios = usuarios.filter(activo=True)
     elif estado == "inactivos":
         usuarios = usuarios.filter(activo=False)
 
-    # Filtro por rol
     if rol != "todos":
         usuarios = usuarios.filter(rol=rol)
 
@@ -649,8 +637,6 @@ def usuarios_crear(request):
             if Usuario.objects.filter(rol="secretaria", activo=True).exists():
                 messages.error(request, "Ya existe una Secretaría activa. Desactive la actual para registrar otra.")
                 return redirect("usuarios_crear")
-
-        # Validaciones básicas
         if Usuario.objects.filter(cedula=cedula).exists():
             messages.error(request, "La cédula ya está registrada.")
             return redirect("usuarios_crear")
@@ -718,7 +704,6 @@ def activar_usuario(request, usuario_id):
 
     usuario = get_object_or_404(Usuario, id=usuario_id)
 
-    # Evitar activar una secretaria si ya existe otra activa
     if usuario.rol == "secretaria":
         existe_secretaria_activa = Usuario.objects.filter(
             rol="secretaria",
@@ -744,7 +729,6 @@ def desactivar_usuario(request, usuario_id):
 
     usuario = get_object_or_404(Usuario, id=usuario_id)
 
-    # (Opcional) evitar desactivar al único admin
     if usuario.rol == "admin":
         total_admins_activos = Usuario.objects.filter(rol="admin", activo=True).count()
         if total_admins_activos <= 1:
@@ -782,7 +766,6 @@ def editar_usuario(request, usuario_id):
             messages.error(request, "La cédula ya está registrada por otro usuario.")
             return redirect("editar_usuario", usuario_id=usuario.id)
 
-        # VALIDACIÓN: evitar 2 secretarias activas al editar
         if rol_nuevo == "secretaria":
             existe_otra_secretaria_activa = Usuario.objects.filter(
                 rol="secretaria",
@@ -807,11 +790,9 @@ def editar_usuario(request, usuario_id):
             messages.error(request, msg)
             return redirect("editar_usuario", usuario_id=usuario.id)
 
-        # Si ahora es docente y no existe en tabla docente -> crear
         if usuario.rol == "docente" and not hasattr(usuario, "docente"):
             Docente.objects.create(usuario=usuario)
 
-        # Si dejó de ser docente y existe en tabla docente -> eliminar
         if usuario.rol != "docente" and hasattr(usuario, "docente"):
             usuario.docente.delete()
 
@@ -821,7 +802,7 @@ def editar_usuario(request, usuario_id):
     return render(request, "usuarios/usuario_editar.html", {"usuario": usuario})
 
 # ==================================================== Ver datos desde mi perfil ===============================================
-# MI PERFIL 
+
 def mi_perfil(request):
     usuario_id = request.session.get("usuario_id")
 
@@ -831,8 +812,6 @@ def mi_perfil(request):
     usuario = Usuario.objects.get(id=usuario_id)
     return render(request, "usuarios/mi_perfil.html", {"usuario": usuario})
 
-
-# CAMBIAR CONTRASEÑA DESDE EL PERFIL
 def cambiar_password_perfil(request):
     usuario_id = request.session.get("usuario_id")
 
@@ -846,17 +825,13 @@ def cambiar_password_perfil(request):
         nueva = request.POST.get("nueva")
         confirmar = request.POST.get("confirmar")
 
-        # Validar contraseña actual
         if not check_password(actual, usuario.password):
             messages.error(request, "La contraseña actual es incorrecta.")
             return redirect("cambiar_password_perfil")
 
-        # Validar coincidencia
         if nueva != confirmar:
             messages.error(request, "Las nuevas contraseñas no coinciden.")
             return redirect("cambiar_password_perfil")
-
-        # Guardar nueva contraseña
         usuario.password = make_password(nueva)
         usuario.save()
 
@@ -871,7 +846,7 @@ def sucursales_lista(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    estado = request.GET.get("estado", "activas")  # activas | inactivas | todas
+    estado = request.GET.get("estado", "activas")  
     q = request.GET.get("q", "").strip()
     regimen = request.GET.get("regimen", "").strip()
 
@@ -1139,8 +1114,6 @@ def cursos_lista(request):
         )
 
     cursos = cursos.order_by("sucursal__nombre", "nivel", "nombre")
-
-    # combos
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     especialidades = Especialidad.objects.filter(activa=True).order_by("nombre")
 
@@ -1170,8 +1143,6 @@ def cursos_crear(request):
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     especialidades = Especialidad.objects.filter(activa=True).order_by("nombre")
-
-    # default: LATACUNGA (MATRIZ)
     sucursal_default = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
 
     niveles = [
@@ -1219,7 +1190,7 @@ def cursos_crear(request):
             nivel=nivel,
             sucursal=sucursal,
             especialidad=especialidad,
-            orden=orden,   # ✅ guardar orden
+            orden=orden,   
         )
         messages.success(request, "Curso creado correctamente.")
         return redirect("cursos_lista")
@@ -1257,7 +1228,6 @@ def cursos_editar(request, curso_id):
             messages.error(request, "Nombre, nivel y sucursal son obligatorios.")
             return redirect("cursos_editar", curso_id=curso.id)
 
-        # ✅ validar orden
         if not orden_raw:
             messages.error(request, "El orden es obligatorio (ej: 8, 9, 10...).")
             return redirect("cursos_editar", curso_id=curso.id)
@@ -1308,7 +1278,6 @@ def paralelos_lista(request):
     curso_id = request.GET.get("curso", "").strip()
     q = request.GET.get("q", "").strip()
 
-    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -1334,12 +1303,9 @@ def paralelos_lista(request):
         "curso__nombre",
         "nombre"
     )
-
-    # combos (para filtros)
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     cursos = Curso.objects.select_related("sucursal").all().order_by("sucursal__nombre", "nombre")
 
-    # si hay sucursal elegida, mostrar solo cursos de esa sucursal
     if sucursal_id:
         cursos = cursos.filter(sucursal_id=sucursal_id)
 
@@ -1359,12 +1325,9 @@ def paralelos_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    # GET para filtrar cursos por sucursal
     sucursal_id = request.GET.get("sucursal", "").strip()
-
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
-    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -1384,8 +1347,6 @@ def paralelos_crear(request):
             return redirect(f"{request.path}?sucursal={sucursal_context}")
 
         curso = get_object_or_404(Curso.objects.select_related("sucursal"), id=curso_id)
-
-        # Validación duplicado
         if Paralelo.objects.filter(curso=curso, nombre=nombre).exists():
             messages.error(request, "Ese paralelo ya existe para el curso seleccionado.")
             return redirect(f"{request.path}?sucursal={curso.sucursal_id}")
@@ -1425,7 +1386,6 @@ def paralelos_editar(request, paralelo_id):
 
         curso = get_object_or_404(Curso.objects.select_related("sucursal"), id=curso_id)
 
-        # Validar duplicado excepto el actual
         if Paralelo.objects.exclude(id=paralelo.id).filter(curso=curso, nombre=nombre).exists():
             messages.error(request, "Ese paralelo ya existe en ese curso.")
             return redirect("paralelos_editar", paralelo_id=paralelo.id)
@@ -1466,12 +1426,10 @@ def anios_crear(request):
         fecha_fin = request.POST.get("fecha_fin") or None
         activo = (request.POST.get("activo") == "on")
 
-        # Validaciones básicas
         if not nombre or not fecha_inicio or not fecha_fin:
             messages.error(request, "Nombre, fecha inicio y fecha fin son obligatorios.")
             return redirect("anios_crear")
 
-        # validar formato/orden de fechas
         try:
             fi = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
             ff = datetime.strptime(fecha_fin, "%Y-%m-%d").date()
@@ -1482,12 +1440,10 @@ def anios_crear(request):
             messages.error(request, "Formato de fechas inválido.")
             return redirect("anios_crear")
 
-        # Validar año repetido (nombre)
         if AnioLectivo.objects.filter(nombre__iexact=nombre).exists():
             messages.error(request, "Ese año lectivo ya existe.")
             return redirect("anios_crear")
 
-        # Guardado seguro: si activo=True, desactiva los demás en una transacción
         with transaction.atomic():
             if activo:
                 AnioLectivo.objects.update(activo=False)
@@ -1567,7 +1523,6 @@ def anios_activar(request, anio_id):
     return redirect("anios_lista")
 # ========================================================================= ASIGNATURAS =====================
 
-
 def asignaturas_lista(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
@@ -1576,7 +1531,6 @@ def asignaturas_lista(request):
     curso_id = request.GET.get("curso", "").strip()
     q = request.GET.get("q", "").strip()
 
-    # ✅ Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -1607,7 +1561,6 @@ def asignaturas_lista(request):
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     cursos = Curso.objects.select_related("sucursal").all().order_by("sucursal__nombre", "nombre")
 
-    # si hay sucursal elegida, cursos solo de esa sucursal
     if sucursal_id:
         cursos = cursos.filter(sucursal_id=sucursal_id)
 
@@ -1626,12 +1579,10 @@ def asignaturas_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    # GET para filtrar cursos por sucursal
     sucursal_id = request.GET.get("sucursal", "").strip()
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
 
-    # ✅ Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -1652,7 +1603,6 @@ def asignaturas_crear(request):
 
         curso = get_object_or_404(Curso.objects.select_related("sucursal"), id=curso_id)
 
-        # ✅ Validación duplicado
         if Asignatura.objects.filter(nombre=nombre, curso=curso).exists():
             messages.error(request, "Ya existe esta asignatura para este curso.")
             return redirect(f"{request.path}?sucursal={curso.sucursal_id}")
@@ -1693,7 +1643,6 @@ def asignaturas_editar(request, asignatura_id):
 
         curso = get_object_or_404(Curso.objects.select_related("sucursal"), id=curso_id)
 
-        # ✅ duplicado excepto el actual
         if Asignatura.objects.exclude(id=asignatura.id).filter(nombre=nombre, curso=curso).exists():
             messages.error(request, "Esta asignatura ya existe para este curso.")
             return redirect("asignaturas_editar", asignatura_id=asignatura.id)
@@ -1723,13 +1672,11 @@ def docente_asignacion_lista(request):
     paralelo_id = request.GET.get("paralelo", "")
     q = request.GET.get("q", "").strip()
 
-    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
-    # Default: Año lectivo activo 
     if not anio_id:
         anio_activo = AnioLectivo.objects.filter(activo=True).first()
         if anio_activo:
@@ -1742,7 +1689,6 @@ def docente_asignacion_lista(request):
         "anio_lectivo"
     )
 
-    # filtros
     if sucursal_id:
         asignaciones = asignaciones.filter(paralelo__curso__sucursal_id=sucursal_id)
 
@@ -1769,16 +1715,12 @@ def docente_asignacion_lista(request):
         "paralelo__nombre",
         "asignatura__nombre"
     )
-
-    # combos
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
     anios = AnioLectivo.objects.order_by("-activo", "-id")
-
     paralelos = Paralelo.objects.select_related("curso__sucursal").order_by(
         "curso__sucursal__nombre", "curso__nombre", "nombre"
     )
 
-    # mostrar en combo solo paralelos de la sucursal elegida
     if sucursal_id:
         paralelos = paralelos.filter(curso__sucursal_id=sucursal_id)
 
@@ -1799,12 +1741,10 @@ def docente_asignacion_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
 
-    # GET para filtrar
     sucursal_id = request.GET.get("sucursal", "")
     paralelo_id = request.GET.get("paralelo", "")
     anio_id = request.GET.get("anio", "")
 
-    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -1823,8 +1763,6 @@ def docente_asignacion_crear(request):
     if sucursal_id:
         paralelos = paralelos.filter(curso__sucursal_id=sucursal_id)
     paralelos = paralelos.order_by("curso__nombre", "nombre")
-
-    # asignaturas dependen del paralelo seleccionado
     asignaturas = Asignatura.objects.select_related("curso").none()
     paralelo_sel = None
     if paralelo_id:
@@ -1843,17 +1781,13 @@ def docente_asignacion_crear(request):
         asignatura = get_object_or_404(Asignatura, id=asignatura_id)
         paralelo = get_object_or_404(Paralelo, id=paralelo_id_post)
         anio = get_object_or_404(AnioLectivo, id=anio_id_post)
-
-        # URL base para volver al formulario con filtros
         url = reverse("docente_asignacion_crear")
         back = f"{url}?sucursal={paralelo.curso.sucursal_id}&paralelo={paralelo.id}&anio={anio.id}"
 
-        # Validación: asignatura pertenece al curso del paralelo
         if asignatura.curso_id != paralelo.curso_id:
             messages.error(request, "Error: la asignatura seleccionada no pertenece al curso/paralelo elegido.")
             return HttpResponseRedirect(back)
 
-        # Evita duplicados
         if DocenteAsignacion.objects.filter(
             docente=docente,
             asignatura=asignatura,
@@ -1881,7 +1815,7 @@ def docente_asignacion_crear(request):
         "sucursal_id": sucursal_id,
         "paralelo_id": paralelo_id,
         "paralelo_sel": paralelo_sel,
-        "anio_id": anio_id,  # opcional para dejar seleccionado
+        "anio_id": anio_id, 
     }
     return render(request, "docentes/asignacion_crear.html", context)
 
@@ -1892,11 +1826,7 @@ def docente_cursos(request):
         return redirect("login")
 
     usuario_id = request.session.get("usuario_id")
-
-    # obtener el objeto Docente
     docente = get_object_or_404(Docente, usuario_id=usuario_id)
-
-    # asignaciones del docente
     asignaciones = DocenteAsignacion.objects.filter(docente=docente).select_related(
         "asignatura", "paralelo", "anio_lectivo"
     )
@@ -1913,33 +1843,22 @@ def mis_cursos(request):
         return redirect("login")
 
     docente = get_object_or_404(Docente, usuario_id=request.session.get("usuario_id"))
-
-    # Lista de años lectivos (para el filtro)
     anios = AnioLectivo.objects.all().order_by("-nombre")
-
-    # Año seleccionado por GET
     anio_id = request.GET.get("anio", "").strip()
-
-    # Si no viene anio por GET -> usar el año activo
     anio_activo = AnioLectivo.objects.filter(activo=True).first()
 
     if not anio_id:
-        # por defecto: año activo
         if anio_activo:
             anio_id = str(anio_activo.id)
 
-    # Query base
     asignaciones_qs = DocenteAsignacion.objects.filter(docente=docente).select_related(
         "asignatura",
         "paralelo__curso__sucursal",
         "anio_lectivo"
     )
 
-    # Filtrar por año si existe
     if anio_id:
         asignaciones_qs = asignaciones_qs.filter(anio_lectivo_id=anio_id)
-
-    # Orden bonito
     asignaciones_qs = asignaciones_qs.order_by(
         "anio_lectivo__nombre",
         "paralelo__curso__nombre",
@@ -1947,7 +1866,6 @@ def mis_cursos(request):
         "asignatura__nombre"
     )
 
-    # Aviso si no hay año activo y no seleccionó ninguno
     if not AnioLectivo.objects.filter(activo=True).exists() and not request.GET.get("anio"):
         messages.warning(request, "No existe un año lectivo activo. Selecciona uno para ver tus cursos.")
 
@@ -1964,14 +1882,10 @@ def mis_cursos_notas(request, asignacion_id):
         return redirect("login")
     docente = get_object_or_404(Docente, usuario_id=request.session.get("usuario_id"))
     asignacion = get_object_or_404(DocenteAsignacion, id=asignacion_id, docente=docente)
-
-    # alumnos de este curso
     matriculas = Matricula.objects.filter(
         paralelo=asignacion.paralelo,
         anio_lectivo=asignacion.anio_lectivo
     ).select_related("estudiante")
-
-    # buscar notas
     filas = []
     for m in matriculas:
         n = Nota.objects.filter(matricula=m, asignacion=asignacion).first()
@@ -2164,8 +2078,6 @@ def estudiantes_lista(request):
 
     q = (request.GET.get("q") or "").strip()
     sucursal_id = (request.GET.get("sucursal") or "").strip()
-
-    # Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -2818,8 +2730,6 @@ def promociones_lista(request):
     sucursal_id = (request.GET.get("sucursal") or "").strip()
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
-
-    # Default: LATACUNGA (MATRIZ) (igual que matrículas)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
@@ -2866,46 +2776,31 @@ def promociones_lista(request):
 def promociones_crear(request):
     if request.session.get("usuario_rol") != "secretaria":
         return redirect("login")
-
-    # ✅ Sucursal por GET (para filtrar estudiantes/cursos)
     sucursal_id = (request.GET.get("sucursal") or "").strip()
-
-    # ✅ Default: LATACUNGA (MATRIZ)
     if not sucursal_id:
         s_lat = Sucursal.objects.filter(nombre="LATACUNGA (MATRIZ)").first()
         if s_lat:
             sucursal_id = str(s_lat.id)
 
     sucursales = Sucursal.objects.filter(activa=True).order_by("nombre")
-
-    # combos
     estudiantes = Estudiante.objects.all().order_by("apellido_paterno", "apellido_materno", "nombres")
     cursos = Curso.objects.all().order_by("orden", "nombre")
     anios = AnioLectivo.objects.all().order_by("-id")
 
-    # ✅ filtrar por sucursal
     if sucursal_id:
         estudiantes = estudiantes.filter(sucursal_id=sucursal_id)
         cursos = cursos.filter(sucursal_id=sucursal_id)
 
     if request.method == "POST":
-        # ✅ mantener sucursal al validar/redirect
         sucursal_id_post = (request.POST.get("sucursal_context") or sucursal_id or "").strip()
-
         estudiante_id = (request.POST.get("estudiante") or "").strip()
         anio_id = (request.POST.get("anio_lectivo") or "").strip()
         curso_id = (request.POST.get("curso") or "").strip()
-
-        # En histórico: SOLO AUTO o RETIRADO
         resultado_input = (request.POST.get("resultado") or "").strip()
-
         comportamiento = (request.POST.get("comportamiento") or "").strip() or None
         observacion = (request.POST.get("observacion") or "").strip() or None
-
         asignaturas = request.POST.getlist("asignatura_nombre[]")
         califs = request.POST.getlist("calificacion[]")
-
-        # 1) Validación mínima
         if not (estudiante_id and anio_id and curso_id and resultado_input):
             messages.error(request, "Completa los campos obligatorios.")
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
@@ -2917,8 +2812,6 @@ def promociones_crear(request):
         estudiante = get_object_or_404(Estudiante, id=estudiante_id)
         anio = get_object_or_404(AnioLectivo, id=anio_id)
         curso = get_object_or_404(Curso, id=curso_id)
-
-        # ✅ Importante: bloquear año activo (histórico NO)
         if anio.activo:
             messages.error(
                 request,
@@ -2926,18 +2819,12 @@ def promociones_crear(request):
                 "Para el año activo usa Matrículas/Notas."
             )
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
-
-        # 2) Curso debe tener orden
         if curso.orden is None:
             messages.error(request, "Este curso no tiene 'orden'. Configúralo antes.")
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
-
-        # 3) No duplicar el mismo año lectivo
         if Promocion.objects.filter(estudiante=estudiante, anio_lectivo=anio).exists():
             messages.error(request, "Ya existe una promoción registrada para este estudiante en ese año lectivo.")
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
-
-        # 4) No repetir curso si YA lo aprobó alguna vez
         if Promocion.objects.filter(estudiante=estudiante, curso=curso, resultado="APROBADO").exists():
             messages.error(
                 request,
@@ -2945,7 +2832,6 @@ def promociones_crear(request):
             )
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
 
-        # 5) Detalles (materias)
         filas_detalle = []
         vistos = set()
 
@@ -2953,7 +2839,6 @@ def promociones_crear(request):
             nom = (nom or "").strip()
             cal = (cal or "").strip()
 
-            # ignorar fila completamente vacía
             if not nom and not cal:
                 continue
 
@@ -2979,12 +2864,10 @@ def promociones_crear(request):
 
             filas_detalle.append((nom, dcal))
 
-        # 6) Regla: mínimo 1 materia si no es RETIRADO
         if resultado_input != "RETIRADO" and not filas_detalle:
             messages.error(request, "Debes ingresar al menos 1 materia con calificación (excepto si es RETIRADO).")
             return redirect(f"{request.path}?sucursal={sucursal_id_post}")
 
-        # 7) Cálculo automático (histórico)
         promedio_final = None
         resultado_final = "RETIRADO"
 
@@ -2992,12 +2875,10 @@ def promociones_crear(request):
             promedio_final = None
             resultado_final = "RETIRADO"
         else:
-            # AUTO: promedio y aprobado/reprobado por MÍNIMO de materia (si una < 7 reprueba)
             promedio_final = _round2(sum([c for _, c in filas_detalle]) / Decimal(len(filas_detalle)))
             min_materia = min([c for _, c in filas_detalle])
             resultado_final = "APROBADO" if min_materia >= Decimal("7.00") else "REPROBADO"
 
-        # 8) Guardar todo
         try:
             with transaction.atomic():
                 promo = Promocion.objects.create(
@@ -3005,7 +2886,7 @@ def promociones_crear(request):
                     anio_lectivo=anio,
                     curso=curso,
                     resultado=resultado_final,
-                    promedio_final=promedio_final,  # ✅ calculado
+                    promedio_final=promedio_final,  
                     comportamiento=comportamiento,
                     observacion=observacion,
                     matricula=None,  # histórico manual
@@ -3049,7 +2930,6 @@ def promociones_editar(request, promocion_id: int):
         id=promocion_id
     )
 
-    # Si fue generada por matrícula (año actual), NO se edita aquí
     if promo.matricula_id:
         messages.error(request, "Esta promoción fue generada automáticamente por notas. No se edita como histórica.")
         return redirect("promociones_lista")
@@ -3070,20 +2950,14 @@ def promociones_editar(request, promocion_id: int):
         estudiante_id = (request.POST.get("estudiante") or "").strip()
         anio_id = (request.POST.get("anio_lectivo") or "").strip()
         curso_id = (request.POST.get("curso") or "").strip()
-
-        # SOLO: AUTO o RETIRADO
         resultado_input = (request.POST.get("resultado") or "").strip()
-
         comportamiento = (request.POST.get("comportamiento") or "").strip() or None
         observacion = (request.POST.get("observacion") or "").strip() or None
-
         asignaturas = request.POST.getlist("asignatura_nombre[]")
         califs = request.POST.getlist("calificacion[]")
-
         detalle_ids = request.POST.getlist("detalle_id[]")  # puede venir vacío en filas nuevas
         delete_ids = set(request.POST.getlist("delete_detalle[]"))  # ids a borrar
 
-        # 1) Validación mínima
         if not (estudiante_id and anio_id and curso_id and resultado_input):
             messages.error(request, "Completa los campos obligatorios.")
             return redirect("promociones_editar", promocion_id=promo.id)
@@ -3104,17 +2978,14 @@ def promociones_editar(request, promocion_id: int):
             messages.error(request, "Este curso no tiene 'orden'. Configúralo antes.")
             return redirect("promociones_editar", promocion_id=promo.id)
 
-        # 2) No duplicar (estudiante + año) excluyendo esta promo
         if Promocion.objects.filter(estudiante=estudiante, anio_lectivo=anio).exclude(id=promo.id).exists():
             messages.error(request, "Ya existe otra promoción para este estudiante en ese año lectivo.")
             return redirect("promociones_editar", promocion_id=promo.id)
 
-        # 3) No repetir curso si ya existe APROBADO en ese curso (excluyendo esta promo)
         if Promocion.objects.filter(estudiante=estudiante, curso=curso, resultado="APROBADO").exclude(id=promo.id).exists():
             messages.error(request, f"El estudiante ya tiene {curso.nombre} como APROBADO. No se puede repetir.")
             return redirect("promociones_editar", promocion_id=promo.id)
 
-        # 4) Procesar filas finales (vivas)
         filas_vivas = []
         vistos = set()
 
@@ -3151,17 +3022,14 @@ def promociones_editar(request, promocion_id: int):
                     messages.error(request, f"Calificación inválida en: {nom}. Debe ser 0 a 10.")
                     return redirect("promociones_editar", promocion_id=promo.id)
             else:
-                # RETIRADO: no guardamos detalles
                 dcal = None
 
             filas_vivas.append((det_id, nom, dcal))
 
-        # 5) Regla: si AUTO -> mínimo 1 materia
         if resultado_input == "AUTO" and len(filas_vivas) == 0:
             messages.error(request, "Debes ingresar al menos 1 materia con calificación (AUTO).")
             return redirect("promociones_editar", promocion_id=promo.id)
 
-        # 6) Calcular automático
         if resultado_input == "RETIRADO":
             promedio_final = None
             resultado_final = "RETIRADO"
@@ -3171,7 +3039,6 @@ def promociones_editar(request, promocion_id: int):
             min_materia = min(califs_validas)
             resultado_final = "APROBADO" if min_materia >= Decimal("7.00") else "REPROBADO"
 
-        # 7) Guardar
         try:
             with transaction.atomic():
                 promo.estudiante = estudiante
@@ -3183,15 +3050,12 @@ def promociones_editar(request, promocion_id: int):
                 promo.observacion = observacion
                 promo.save()
 
-                # si RETIRADO, limpiamos todo detalle
                 if resultado_input == "RETIRADO":
                     promo.detalles.all().delete()
                 else:
-                    # borrar marcados
                     if delete_ids:
                         promo.detalles.filter(id__in=list(delete_ids)).delete()
 
-                    # update/create
                     for det_id, nom, dcal in filas_vivas:
                         if det_id:
                             d = promo.detalles.filter(id=det_id).first()
@@ -3231,8 +3095,6 @@ def _solo_secretaria(request):
 
 def _solo_docente(request):
     return request.session.get("usuario_rol") == "docente"
-
-# Helpers de fechas
 
 def _en_rango(hoy, ini, fin):
     if not ini or not fin:
@@ -3287,13 +3149,10 @@ def _tiene_permiso_extra(hoy, asignacion, campo, matricula=None):
         fin__gte=hoy,
     )
     if matricula is not None:
-        # permiso específico para ese estudiante O permiso masivo (matricula null)
         return qs.filter(Q(matricula=matricula) | Q(matricula__isnull=True)).exists()
 
-    # permiso masivo
     return qs.filter(matricula__isnull=True).exists()
 
-# SECRETARÍA: Configurar Períodos de Notas (año activo)
 def periodos_notas_config(request):
     if not _solo_secretaria(request):
         return redirect("login")
@@ -3327,22 +3186,17 @@ def periodos_notas_config(request):
         periodo.anio_lectivo = anio
 
         try:
-            periodo.save()  # aquí dispara full_clean()
+            periodo.save() 
         except ValidationError as e:
-            # e.message_dict trae errores por campo (perfecto para tu clean())
             if hasattr(e, "message_dict"):
                 for campo, lista in e.message_dict.items():
-                    # lista puede ser list de mensajes
                     if isinstance(lista, (list, tuple)):
                         for msg in lista:
                             messages.error(request, f"{campo}: {msg}")
                     else:
                         messages.error(request, f"{campo}: {lista}")
             else:
-                # error general
                 messages.error(request, str(e))
-
-            # devolvemos la misma pantalla sin guardar
             return render(request, "secretaria/periodos_notas_config.html", {
                 "anio": anio,
                 "periodo": periodo,
@@ -3355,7 +3209,7 @@ def periodos_notas_config(request):
         "anio": anio,
         "periodo": periodo,
     })
-# SECRETARÍA: Permisos Extra (por oficio)
+# ================================================== SECRETARÍA PERMISO (por oficio) ==========================================0
 
 def permisos_edicion_lista(request):
     if not _solo_secretaria(request):
@@ -3406,12 +3260,9 @@ def permisos_edicion_crear(request):
         inicio = request.POST.get("inicio")
         fin = request.POST.get("fin")
         motivo = request.POST.get("motivo", "").strip()
-        cedula = request.POST.get("cedula", "").strip()  # opcional, para permiso por estudiante
-
-        # validar asignación
+        cedula = request.POST.get("cedula", "").strip() 
         asignacion = get_object_or_404(DocenteAsignacion, id=asignacion_id, anio_lectivo=anio)
 
-        # convertir fechas
         def to_date(val):
             try:
                 return datetime.strptime(val, "%Y-%m-%d").date()
@@ -3435,7 +3286,6 @@ def permisos_edicion_crear(request):
 
         matricula = None
         if cedula:
-            # buscar matrícula dentro del paralelo y año de esa asignación
             matricula = Matricula.objects.select_related("estudiante").filter(
                 anio_lectivo=asignacion.anio_lectivo,
                 paralelo=asignacion.paralelo,
@@ -3445,7 +3295,6 @@ def permisos_edicion_crear(request):
                 messages.error(request, "No se encontró matrícula con esa cédula en ese paralelo/año.")
                 return redirect("permisos_edicion_crear")
 
-        # autorizado_por (usuario secretaria del sistema)
         usuario_secretaria = None
         try:
             usuario_secretaria = Usuario.objects.get(id=request.session.get("usuario_id"))
@@ -3483,8 +3332,6 @@ def permisos_edicion_anular(request, permiso_id):
     messages.success(request, "Permiso anulado.")
     return redirect("permisos_edicion_lista")
 
-# DOCENTE: Mis notas (vista única editable)
-
 def mis_cursos_notas(request, asignacion_id):
     if not _solo_docente(request):
         return redirect("login")
@@ -3506,7 +3353,6 @@ def mis_cursos_notas(request, asignacion_id):
         "estudiante__nombres"
     )
 
-    # ========================= GUARDADO =========================
     if request.method == "POST":
         errores = []
         guardadas = 0
@@ -3528,7 +3374,6 @@ def mis_cursos_notas(request, asignacion_id):
 
         with transaction.atomic():
             for m in matriculas:
-                # NOTA: aquí SÍ creamos/obtenemos porque vamos a exigir llenado total
                 nota, _ = Nota.objects.get_or_create(matricula=m, asignacion=asignacion)
 
                 estudiante_label = (
@@ -3548,7 +3393,6 @@ def mis_cursos_notas(request, asignacion_id):
 
                 cambios = False
 
-                # ====== T1 OBLIGATORIO SI ESTÁ ABIERTO (global o por permiso) ======
                 if puede_t1:
                     val, err = parse_nota(request.POST.get(f"t1_{m.id}"), "T1", estudiante_label)
                     if err:
@@ -3557,7 +3401,6 @@ def mis_cursos_notas(request, asignacion_id):
                         nota.t1 = val
                         cambios = True
 
-                # ====== T2 OBLIGATORIO SI ESTÁ ABIERTO ======
                 if puede_t2:
                     val, err = parse_nota(request.POST.get(f"t2_{m.id}"), "T2", estudiante_label)
                     if err:
@@ -3566,7 +3409,6 @@ def mis_cursos_notas(request, asignacion_id):
                         nota.t2 = val
                         cambios = True
 
-                # ====== T3 OBLIGATORIO SI ESTÁ ABIERTO ======
                 if puede_t3:
                     val, err = parse_nota(request.POST.get(f"t3_{m.id}"), "T3", estudiante_label)
                     if err:
@@ -3579,7 +3421,6 @@ def mis_cursos_notas(request, asignacion_id):
                     nota.save()
                     guardadas += 1
 
-                # ====== SUPLETORIO (solo si está en SUPLETORIO y está abierto) ======
                 puede_sup_ventana = habil["supletorio"] or extra_sup
                 if puede_sup_ventana and nota.estado == "SUPLETORIO":
                     val, err = parse_nota(request.POST.get(f"sup_{m.id}"), "Supletorio", estudiante_label)
@@ -3589,7 +3430,6 @@ def mis_cursos_notas(request, asignacion_id):
                         nota.supletorio = val
                         nota.save()
 
-            # Si hubo errores, no guardar nada
             if errores:
                 transaction.set_rollback(True)
                 for msg in errores[:10]:
@@ -3658,8 +3498,6 @@ def dashboard_reportes(request):
     total_cursos = Curso.objects.count()
     total_sucursales = Sucursal.objects.count()
     total_docentes = Docente.objects.count()
-    
-    # Estudiantes por sucursal
     estudiantes_por_sucursal = (
         Estudiante.objects.values("sucursal__nombre")
         .annotate(total=Count("id"))
@@ -3669,7 +3507,6 @@ def dashboard_reportes(request):
     sucursal_labels = [e["sucursal__nombre"] for e in estudiantes_por_sucursal]
     sucursal_data = [e["total"] for e in estudiantes_por_sucursal]
 
-    # Matrículas por año lectivo
     matriculas_anio = (
         Matricula.objects.values("anio_lectivo__nombre")
         .annotate(total=Count("id"))
@@ -3679,7 +3516,6 @@ def dashboard_reportes(request):
     anio_labels = [m["anio_lectivo__nombre"] for m in matriculas_anio]
     anio_data = [m["total"] for m in matriculas_anio]
 
-    # Estudiantes por curso
     estudiantes_curso = (
         Matricula.objects.values("paralelo__curso__nombre")
         .annotate(total=Count("id"))

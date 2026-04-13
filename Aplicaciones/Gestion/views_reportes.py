@@ -80,7 +80,7 @@ def promocion_buscar(request):
     resultados = []
 
     if q:
-        # 1) Matrículas (normalmente año activo)
+
         matriculas = (
             Matricula.objects.select_related(
                 "estudiante",
@@ -105,7 +105,6 @@ def promocion_buscar(request):
                 "obj_id": m.id,
             })
 
-        # 2) Promociones históricas (sin matrícula)
         promociones = (
             Promocion.objects.select_related(
                 "estudiante",
@@ -130,7 +129,6 @@ def promocion_buscar(request):
                 "obj_id": p.id,
             })
 
-        # Orden final: año desc, apellido asc
         resultados.sort(key=lambda r: (r["anio"], r["estudiante"].apellido_paterno), reverse=True)
 
     return render(
@@ -160,17 +158,9 @@ def promocion_certificado(request, matricula_id: int):
     estudiante = matricula.estudiante
     curso = matricula.paralelo.curso
     anio_lectivo = matricula.anio_lectivo
-
-    # =========================
-    # COMPORTAMIENTO
-    # =========================
     comp_get = (request.GET.get("comp") or "").upper().strip()
     comportamiento = comp_get
     puede_emitir = bool(comportamiento)
-
-    # =========================
-    # INTENTAR POR NOTAS
-    # =========================
     notas = (
         Nota.objects.select_related("asignacion__asignatura")
         .filter(matricula=matricula, promedio__isnull=False)
@@ -196,9 +186,6 @@ def promocion_certificado(request, matricula_id: int):
         origen = "NOTAS"
 
     else:
-        # =========================
-        # FALLBACK A HISTÓRICO
-        # =========================
         promo = Promocion.objects.filter(
             estudiante=estudiante,
             anio_lectivo=anio_lectivo,
@@ -217,7 +204,6 @@ def promocion_certificado(request, matricula_id: int):
             promedio_general = promo.promedio_final
             origen = "HISTORICO"
 
-            # Si no viene comportamiento por GET, usar el guardado
             if not comportamiento and promo.comportamiento:
                 comportamiento = promo.comportamiento
                 puede_emitir = True
@@ -229,9 +215,6 @@ def promocion_certificado(request, matricula_id: int):
                 "Este estudiante no tiene promedios en notas ni promoción histórica."
             )
 
-    # =========================
-    # POST-PROCESAMIENTO
-    # =========================
     comportamiento_texto = (
         _comportamiento_texto(comportamiento)
         if puede_emitir
@@ -252,10 +235,6 @@ def promocion_certificado(request, matricula_id: int):
     )
 
     regimen, extension = _get_regimen_extension_desde_curso(curso)
-
-    # =========================
-    # CONTEXTO (UNIFICADO)
-    # =========================
     context = {
         "matricula": matricula,
         "estudiante": estudiante,
@@ -285,10 +264,6 @@ def promocion_certificado(request, matricula_id: int):
     }
 
     return render(request, "reportes/certificado_promocion.html", context)
-
-# =========================
-# CERTIFICADO HISTÓRICO (SIN MATRÍCULA)
-# =========================
 
 def promocion_certificado_historico(request, promocion_id: int):
     """
@@ -344,9 +319,6 @@ def promocion_certificado_historico(request, promocion_id: int):
     siguiente_grado = _siguiente_curso_por_orden(promo.curso) if promovido else "—"
 
     regimen, extension = _get_regimen_extension_desde_curso(promo.curso)
-
-    # IMPORTANTE: tu template actual recibe "matricula".
-    # Aquí mandamos matricula=None y además mandamos estudiante/curso/anio para que lo uses si hace falta.
     context = {
         "matricula": None,
         "estudiante": promo.estudiante,
@@ -371,27 +343,22 @@ def promocion_certificado_historico(request, promocion_id: int):
         "promo": promo,
     }
     return render(request, "reportes/certificado_promocion.html", context)
-# ==================================================================================================================
 
 # =================================== NOMINA DE ESTUDIANTES ==========================
 
 def nomina_notas_print(request, asignacion_id):
-    # Solo docente
     if request.session.get("usuario_rol") != "docente":
         return redirect("login")
 
     docente = get_object_or_404(Docente, usuario_id=request.session.get("usuario_id"))
     asignacion = get_object_or_404(DocenteAsignacion, id=asignacion_id, docente=docente)
 
-    # Matrículas del paralelo/año de esa asignación
     matriculas = Matricula.objects.filter(
         paralelo=asignacion.paralelo,
         anio_lectivo=asignacion.anio_lectivo
     ).select_related("estudiante").order_by(
         "estudiante__apellido_paterno", "estudiante__apellido_materno", "estudiante__nombres"
     )
-
-    # Notas de esa asignación (más eficiente: 1 query)
     notas_qs = Nota.objects.filter(asignacion=asignacion, matricula__in=matriculas).select_related("matricula")
     notas_map = {n.matricula_id: n for n in notas_qs}
 
