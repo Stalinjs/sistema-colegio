@@ -74,7 +74,6 @@
 
 {% block scripts %}
 <script>
-/* Validación: obligatorio + fecha fin >= inicio */
 $.validator.addMethod("fechaMayorIgual", function(value, element, params) {
   const fi = $(params).val();
   if (!fi || !value) return true;

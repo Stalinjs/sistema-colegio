@@ -17,12 +17,9 @@
     </ul>
   </div>
 
-  <!-- Filtros -->
   <div class="card mb-3">
     <div class="card-body">
       <form method="get" class="row g-2 align-items-end">
-
-        <!-- Extensión -->
         <div class="col-md-3">
           <label class="form-label mb-1">Extensión</label>
           <select name="sucursal" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -35,7 +32,6 @@
           </select>
         </div>
 
-        <!-- Año lectivo -->
         <div class="col-md-3">
           <label class="form-label mb-1">Año lectivo</label>
           <select name="anio" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -48,7 +44,6 @@
           </select>
         </div>
 
-        <!-- Buscar -->
         <div class="col-md-4">
           <label class="form-label mb-1">Buscar</label>
           <div class="input-group input-group-sm">
@@ -59,7 +54,6 @@
           </div>
         </div>
 
-        <!-- Acciones -->
         <div class="col-md-2 d-flex gap-2">
           <a href="{% url 'promociones_crear' %}?sucursal={{ sucursal_id }}" class="btn btn-success btn-sm w-100">
             <i class="fa fa-plus"></i> Nueva
@@ -74,7 +68,6 @@
     </div>
   </div>
 
-  <!-- Tabla -->
   <div class="card">
     <div class="card-body table-responsive">
 

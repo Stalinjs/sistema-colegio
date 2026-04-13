@@ -187,7 +187,6 @@ $(document).ready(function () {
   $("#resultado").on("change", toggleMaterias);
   toggleMaterias();
 
-  // Agregar fila nueva
   $("#btnAdd").on("click", function () {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -205,7 +204,6 @@ $(document).ready(function () {
     tblBody.appendChild(tr);
   });
 
-  // Quitar fila nueva (solo las que no tienen checkbox)
   $(tblBody).on("click", ".btnDel", function (e) {
     e.preventDefault();
     $(this).closest("tr").remove();
@@ -233,7 +231,6 @@ $(document).ready(function () {
         const cal = $(this).find("input[name='calificacion[]']").val().trim();
         const chk = $(this).find("input[type='checkbox'][name='delete_detalle[]']");
 
-        // Si es fila existente marcada para eliminar, se ignora
         if (chk.length && chk.is(":checked")) return;
 
         if (!asig && !cal) return;

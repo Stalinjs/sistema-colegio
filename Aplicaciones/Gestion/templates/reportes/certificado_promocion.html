@@ -7,8 +7,6 @@
   <link rel="stylesheet" href="{% static 'css/reporte_promocion.css' %}">
 </head>
 <body>
-
-  <!-- TOOLBAR -->
   <div class="toolbar no-print">
     <div class="toolbar-inner">
       <form method="GET" class="toolbar-form">
@@ -45,10 +43,7 @@
     </div>
   </div>
 
-  <!-- CERTIFICADO -->
   <div class="sheet">
-
-    <!-- ENCABEZADO con logos + línea azul -->
     <div class="header-grid">
       <div class="logo-left">
         <img src="{% static 'img/logomini.png' %}" alt="Logo Ministerio">
@@ -68,8 +63,6 @@
     </div>
 
     <div class="blue-line"></div>
-
-    <!-- DATOS TOP como el excel -->
     <table class="top-info">
       <tr>
         <td><strong>AÑO LECTIVO:</strong> {{ anio_lectivo_nombre }}</td>

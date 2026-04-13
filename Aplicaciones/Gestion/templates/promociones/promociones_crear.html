@@ -148,7 +148,6 @@ $(document).ready(function () {
   const form = document.getElementById("frm_promo");
   const tblBody = document.querySelector("#tblDetalles tbody");
 
-  // Bootstrap-select (buscador estudiante)
   $('.selectpicker').selectpicker();
 
   const box = document.getElementById("frontendErrors");
@@ -182,11 +181,9 @@ $(document).ready(function () {
   function limpiarErroresUI() {
     hideBox();
 
-    // inputs/select normales
     $("select, input, textarea").removeClass("is-invalid");
     $("#tblDetalles input").removeClass("is-invalid");
 
-    // bootstrap-select (estudiante)
     $(".bootstrap-select .dropdown-toggle").removeClass("is-invalid");
     $("#err_estudiante").hide();
   }
@@ -202,7 +199,6 @@ $(document).ready(function () {
   $("#resultado").on("change", toggleMaterias);
   toggleMaterias();
 
-  // Agregar fila
   $("#btnAdd").on("click", function () {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -213,7 +209,6 @@ $(document).ready(function () {
     tblBody.appendChild(tr);
   });
 
-  // Quitar fila
   $(tblBody).on("click", ".btnDel", function (e) {
     e.preventDefault();
     $(this).closest("tr").remove();
@@ -257,7 +252,6 @@ $(document).ready(function () {
         const asig = $(this).find("input[name='asignatura_nombre[]']").val().trim();
         const cal = $(this).find("input[name='calificacion[]']").val().trim();
 
-        // fila vacía completa => ignorar
         if (!asig && !cal) return;
 
         if (!asig) {
@@ -281,7 +275,6 @@ $(document).ready(function () {
         }
       });
 
-      // AUTO: mínimo 1 materia válida
       if (resultado === "AUTO" && !tieneDetallesValidos) {
         errores.push("Debes ingresar al menos 1 materia con calificación.");
       }
@@ -303,12 +296,10 @@ $(document).ready(function () {
     return true;
   }
 
-  // Validación en submit
   form.addEventListener("submit", function (e) {
     if (!validar()) e.preventDefault();
   });
 
-  // Limpieza suave al cambiar campos (incluye bootstrap-select)
   $("select, input, textarea").on("change input", function () {
     limpiarErroresUI();
   });
@@ -319,7 +310,7 @@ $(document).ready(function () {
 </script>
 
 <style>
-/* Para que bootstrap-select se vea invalid */
+
 .bootstrap-select .dropdown-toggle.is-invalid{
   border-color: #dc3545 !important;
   box-shadow: 0 0 0 .15rem rgba(220,53,69,.15);

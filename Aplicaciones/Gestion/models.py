@@ -48,7 +48,7 @@ def validar_cedula_ec(cedula: str) -> bool:
     return verificador_calculado == verificador_real
 
 # ============================================================
-# NORMALIZACIÓN GLOBAL: MAYÚSCULAS (y correo en minúsculas)
+# NORMALIZACIÓN GLOBAL: MAYÚSCULAS 
 # ============================================================
 class UpperCaseMixin(models.Model):
     """
@@ -201,7 +201,7 @@ class Usuario(UpperCaseMixin, models.Model):
         "parroquia",
         "direccion"
     ]
-    LOWERCASE_FIELDS = ["correo"]  # correo en minúsculas
+    LOWERCASE_FIELDS = ["correo"]  
 
     cedula = models.CharField(max_length=10, unique=True)
     nombres = models.CharField(max_length=200)
@@ -744,7 +744,6 @@ class PromocionDetalle(UpperCaseMixin, models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        # ✅ Normaliza antes de validar
         self.normalize_fields()
         self.full_clean()
         return super().save(*args, **kwargs)

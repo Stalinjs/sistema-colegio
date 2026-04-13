@@ -19,7 +19,6 @@
     </ul>
   </div>
 
-  <!-- Paso 1: Filtros (GET) -->
   <div class="card">
     <div class="card-header">
       <h5 class="card-title mb-0">Paso 1: Seleccionar Sucursal y Paralelo</h5>
@@ -65,7 +64,6 @@
     </div>
   </div>
 
-  <!-- Paso 2: Formulario (POST) -->
   <div class="card">
     <div class="card-header">
       <h5 class="card-title mb-0">Paso 2: Completar Asignación</h5>
@@ -82,7 +80,6 @@
       <form method="post" id="frm_asignacion">
         {% csrf_token %}
 
-        <!-- IMPORTANTE: paralelo elegido -->
         <input type="hidden" name="paralelo" value="{{ paralelo_id }}">
 
         <div class="row g-3">
@@ -159,7 +156,6 @@
 
 {% block scripts %}
 <script>
-  // Validación simple sin plugins
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("frm_asignacion");
     if (!form) return;

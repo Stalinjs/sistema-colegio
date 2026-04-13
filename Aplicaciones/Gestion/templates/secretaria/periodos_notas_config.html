@@ -38,8 +38,6 @@
     </div>
 
     <div class="card-body">
-
-      <!-- ALERTAS FRONTEND (JS) -->
       <div id="frontendErrors" class="mb-3" style="display:none;">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <div class="fw-bold mb-1">Revisa estos errores:</div>
@@ -53,8 +51,6 @@
         {% csrf_token %}
 
         <div class="row">
-
-          <!-- T1 -->
           <div class="col-12">
             <h6 class="fw-bold mt-2">Primer trimestre (T1)</h6>
             <hr class="mt-0">
@@ -74,7 +70,6 @@
             <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
           </div>
 
-          <!-- T2 -->
           <div class="col-12">
             <h6 class="fw-bold mt-2">Segundo trimestre (T2)</h6>
             <hr class="mt-0">
@@ -94,7 +89,6 @@
             <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
           </div>
 
-          <!-- T3 -->
           <div class="col-12">
             <h6 class="fw-bold mt-2">Tercer trimestre (T3)</h6>
             <hr class="mt-0">
@@ -114,7 +108,6 @@
             <div class="invalid-feedback">La fecha fin no puede ser anterior a inicio.</div>
           </div>
 
-          <!-- Supletorio -->
           <div class="col-12">
             <h6 class="fw-bold mt-2">Supletorio</h6>
             <hr class="mt-0">
@@ -214,18 +207,15 @@
       const ini = parseDate(iniEl.value);
       const fin = parseDate(finEl.value);
 
-      // reset
       setInvalid(p.ini, false);
       setInvalid(p.fin, false);
 
-      // Si uno está y el otro no
       if ((ini && !fin) || (!ini && fin)) {
         setInvalid(p.ini, true);
         setInvalid(p.fin, true);
         return `En ${p.label} debes ingresar fecha inicio y fecha fin.`;
       }
 
-      // Si ambos están y fin < inicio
       if (ini && fin && fin < ini) {
         setInvalid(p.fin, true);
         return `En ${p.label}, la fecha fin no puede ser anterior a la fecha inicio.`;
@@ -235,7 +225,6 @@
     }
 
     function aplicarBloqueosPorOrden() {
-      // Bloquea/desbloquea T2/T3/Supletorio según el anterior esté completo
       const t1Ok = parCompleto(pares[0]);
       const t2Ok = parCompleto(pares[1]);
       const t3Ok = parCompleto(pares[2]);
@@ -246,7 +235,6 @@
     }
 
     function validarOrden(p) {
-      // Si intenta usar T2 pero T1 no está completo, etc.
       if (!p.requiere) return null;
 
       const reqOk = p.requiere.every(id => {
@@ -255,7 +243,6 @@
       });
 
       if (!reqOk) {
-        // marca como inválido el requisito (opcional)
         p.requiere.forEach(id => setInvalid(id, true));
         return `Debes configurar primero ${p.requiereLabel} antes de ${p.label}.`;
       }
@@ -265,9 +252,7 @@
     function validarTodo() {
       const errores = [];
 
-      // Validar pares
       pares.forEach(p => {
-        // si está deshabilitado, no validar
         const iniEl = document.getElementById(p.ini);
         const finEl = document.getElementById(p.fin);
         if (iniEl.disabled && finEl.disabled) return;
@@ -276,7 +261,6 @@
         if (msgPar) errores.push(msgPar);
       });
 
-      // Validar orden (si puso algo en un periodo sin haber completado el anterior)
       pares.forEach(p => {
         const iniEl = document.getElementById(p.ini);
         const finEl = document.getElementById(p.fin);
@@ -291,7 +275,6 @@
       return errores;
     }
 
-    // En vivo
     pares.forEach(p => {
       ["input", "change"].forEach(evt => {
         document.getElementById(p.ini).addEventListener(evt, () => {
@@ -307,10 +290,8 @@
       });
     });
 
-    // Al cargar
     aplicarBloqueosPorOrden();
 
-    // Submit
     form.addEventListener("submit", function (e) {
       limpiarErroresUI();
       aplicarBloqueosPorOrden();

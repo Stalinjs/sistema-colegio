@@ -211,9 +211,7 @@
 </style>
 
 <script>
-// Regla: 0 a 10 y máximo 2 decimales (acepta coma o punto)
 $.validator.addMethod("notaRango", function(value, element) {
-    // si es readonly o disabled, no validar
     if ($(element).prop("readonly") || $(element).prop("disabled")) return true;
 
     value = $.trim(value || "");
