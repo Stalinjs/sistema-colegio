@@ -227,12 +227,10 @@ class Usuario(UpperCaseMixin, models.Model):
         if self.cedula:
             self.cedula = self.cedula.strip()
 
-        if self.nacionalidad == "ECUATORIANA":
             if not validar_cedula_ec(self.cedula):
                 errors["cedula"] = _("Cédula inválida. Debe ser una cédula ecuatoriana válida de 10 dígitos.")
         else:
-            if not self.cedula or len(self.cedula) < 5:
-                errors["cedula"] = _("Ingrese un documento válido.")
+            errors["cedula"] = _("La cédula es obligatoria.")
 
         if errors:
             raise ValidationError(errors)
@@ -241,7 +239,7 @@ class Usuario(UpperCaseMixin, models.Model):
         self.normalize_fields()
         self.full_clean()
         return super().save(*args, **kwargs)
-    
+
     def __str__(self):
         return f"{self.cedula} - {self.nombres} {self.apellido_paterno}"
 # ============================================================
