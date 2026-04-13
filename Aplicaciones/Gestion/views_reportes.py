@@ -281,7 +281,7 @@ def promocion_certificado_historico(request, promocion_id: int):
     comp_get = (request.GET.get("comp") or "").upper().strip()
     comp_db = (promo.comportamiento or "").upper().strip()
 
-    comportamiento = comp_get or comp_db   # ✅ prioridad: GET, si no hay -> BD
+    comportamiento = comp_get or comp_db  
     puede_emitir = bool(comportamiento)
 
     comportamiento_texto = (
@@ -294,7 +294,7 @@ def promocion_certificado_historico(request, promocion_id: int):
     detalles = (
         PromocionDetalle.objects
         .filter(promocion=promo)
-        .order_by("asignatura_nombre")  # si luego pides orden malla, aquí cambiamos
+        .order_by("asignatura_nombre") 
     )
 
     filas = []
@@ -308,7 +308,6 @@ def promocion_certificado_historico(request, promocion_id: int):
     promedio_general = promo.promedio_final
     promedio_cualitativo = _cualitativa(Decimal(promedio_general)) if promedio_general is not None else "—"
 
-    # promovido: usa resultado si está; si no, usa promedio
     if promo.resultado == "APROBADO":
         promovido = True
     elif promo.resultado == "REPROBADO":
